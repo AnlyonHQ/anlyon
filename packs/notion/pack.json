@@ -1,0 +1,3557 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/notion",
+  "version": "0.3.0",
+  "description": "Everything an agent needs on the Notion pages and databases shared with it: search, read pages, content, databases and comments; create pages, databases and rows, edit properties and blocks, comment, and trash or restore, each write counted, governable and read back where Notion allows.",
+  "secrets": [
+    {
+      "name": "NOTION",
+      "kind": "connection",
+      "integrationId": "notion",
+      "hosts": [
+        "api.notion.com"
+      ],
+      "description": "The connected Notion integration token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "search-pages",
+      "description": "Search the pages shared with the integration by title, most recently edited first. Changes nothing. Returns up to 10 pages per call; pass the response's next_cursor as start_cursor for the next page. Leave query out or empty to list every shared page.",
+      "kind": "read",
+      "method": "POST",
+      "urlTemplate": "https://api.notion.com/v1/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "{{input.query}}",
+        "filter": {
+          "property": "object",
+          "value": "page"
+        },
+        "sort": {
+          "direction": "descending",
+          "timestamp": "last_edited_time"
+        },
+        "start_cursor": "{{input.start_cursor}}",
+        "page_size": 10
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{0,200}$",
+            "description": "Text to match against titles"
+          },
+          "start_cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=-]{1,200}$",
+            "description": "The next_cursor of the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-databases",
+      "description": "Search the databases shared with the integration by title, most recently edited first. Changes nothing. Returns up to 10 databases per call; pass the response's next_cursor as start_cursor for the next page. Leave query out or empty to list every shared database.",
+      "kind": "read",
+      "method": "POST",
+      "urlTemplate": "https://api.notion.com/v1/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "{{input.query}}",
+        "filter": {
+          "property": "object",
+          "value": "database"
+        },
+        "sort": {
+          "direction": "descending",
+          "timestamp": "last_edited_time"
+        },
+        "start_cursor": "{{input.start_cursor}}",
+        "page_size": 10
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{0,200}$",
+            "description": "Text to match against titles"
+          },
+          "start_cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=-]{1,200}$",
+            "description": "The next_cursor of the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-page",
+      "description": "Read one page's properties (title, and for a database row every column), parent, url and trash state. Does not return the page's content: use list-block-children with the page id for that. Relation and people values over 25 entries are cut; read them with get-page-property.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.notion.com/v1/pages/{{input.page_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page_id"
+        ],
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The page id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-page-property",
+      "description": "Read one property of a page in full, for values get-page cuts short (long titles and text, relations, people, rollups). property_id is the property's id from get-page with any %XX escapes decoded (for example ':UPp' for '%3AUPp'), or 'title' for the title. Paginated properties return up to 25 items per call; pass next_cursor as start_cursor for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.notion.com/v1/pages/{{input.page_id}}/properties/{{input.property_id}}?page_size=25&start_cursor={{input.start_cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page_id",
+          "property_id"
+        ],
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The page id"
+          },
+          "property_id": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "The property id, decoded"
+          },
+          "start_cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=-]{1,200}$",
+            "description": "The next_cursor of the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-block",
+      "description": "Read one block: its type, its text or other content, whether it has children, and its trash state.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.notion.com/v1/blocks/{{input.block_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "block_id"
+        ],
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The block id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-block-children",
+      "description": "Read a page's content, or the blocks nested under a block, in order. Returns up to 10 blocks per call; pass next_cursor as start_cursor for the next page. Only the first level: a block with has_children true holds more blocks, read with its own id.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.notion.com/v1/blocks/{{input.block_id}}/children?page_size=10&start_cursor={{input.start_cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "block_id"
+        ],
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "A page id or block id"
+          },
+          "start_cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=-]{1,200}$",
+            "description": "The next_cursor of the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-database",
+      "description": "Read one database's title, parent and column schema (each property's name, id, type and options). Fails on a database with more than one data source under the pinned API version.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.notion.com/v1/databases/{{input.database_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "database_id"
+        ],
+        "properties": {
+          "database_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The database id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "query-database",
+      "description": "List the rows (pages) of a database, optionally filtered and sorted. Changes nothing. Returns up to 10 rows per call, each with all its properties; pass next_cursor as start_cursor for the next page. Fails on a database with more than one data source under the pinned API version.",
+      "kind": "read",
+      "method": "POST",
+      "urlTemplate": "https://api.notion.com/v1/databases/{{input.database_id}}/query",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "filter": "{{input.filter}}",
+        "sorts": "{{input.sorts}}",
+        "start_cursor": "{{input.start_cursor}}",
+        "page_size": 10
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "database_id"
+        ],
+        "properties": {
+          "database_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The database id"
+          },
+          "filter": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "property": {
+                "type": "string",
+                "pattern": "^[^\\n]{1,200}$"
+              },
+              "timestamp": {
+                "type": "string",
+                "enum": [
+                  "created_time",
+                  "last_edited_time"
+                ]
+              },
+              "title": {
+                "type": "object"
+              },
+              "rich_text": {
+                "type": "object"
+              },
+              "url": {
+                "type": "object"
+              },
+              "email": {
+                "type": "object"
+              },
+              "phone_number": {
+                "type": "object"
+              },
+              "number": {
+                "type": "object"
+              },
+              "checkbox": {
+                "type": "object"
+              },
+              "select": {
+                "type": "object"
+              },
+              "multi_select": {
+                "type": "object"
+              },
+              "status": {
+                "type": "object"
+              },
+              "date": {
+                "type": "object"
+              },
+              "people": {
+                "type": "object"
+              },
+              "files": {
+                "type": "object"
+              },
+              "relation": {
+                "type": "object"
+              },
+              "rollup": {
+                "type": "object"
+              },
+              "formula": {
+                "type": "object"
+              },
+              "unique_id": {
+                "type": "object"
+              },
+              "created_by": {
+                "type": "object"
+              },
+              "created_time": {
+                "type": "object"
+              },
+              "last_edited_by": {
+                "type": "object"
+              },
+              "last_edited_time": {
+                "type": "object"
+              },
+              "verification": {
+                "type": "object"
+              },
+              "and": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "property": {
+                      "type": "string",
+                      "pattern": "^[^\\n]{1,200}$"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "enum": [
+                        "created_time",
+                        "last_edited_time"
+                      ]
+                    },
+                    "title": {
+                      "type": "object"
+                    },
+                    "rich_text": {
+                      "type": "object"
+                    },
+                    "url": {
+                      "type": "object"
+                    },
+                    "email": {
+                      "type": "object"
+                    },
+                    "phone_number": {
+                      "type": "object"
+                    },
+                    "number": {
+                      "type": "object"
+                    },
+                    "checkbox": {
+                      "type": "object"
+                    },
+                    "select": {
+                      "type": "object"
+                    },
+                    "multi_select": {
+                      "type": "object"
+                    },
+                    "status": {
+                      "type": "object"
+                    },
+                    "date": {
+                      "type": "object"
+                    },
+                    "people": {
+                      "type": "object"
+                    },
+                    "files": {
+                      "type": "object"
+                    },
+                    "relation": {
+                      "type": "object"
+                    },
+                    "rollup": {
+                      "type": "object"
+                    },
+                    "formula": {
+                      "type": "object"
+                    },
+                    "unique_id": {
+                      "type": "object"
+                    },
+                    "created_by": {
+                      "type": "object"
+                    },
+                    "created_time": {
+                      "type": "object"
+                    },
+                    "last_edited_by": {
+                      "type": "object"
+                    },
+                    "last_edited_time": {
+                      "type": "object"
+                    },
+                    "verification": {
+                      "type": "object"
+                    },
+                    "and": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[^\\n]{1,200}$"
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "enum": [
+                              "created_time",
+                              "last_edited_time"
+                            ]
+                          },
+                          "title": {
+                            "type": "object"
+                          },
+                          "rich_text": {
+                            "type": "object"
+                          },
+                          "url": {
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "object"
+                          },
+                          "phone_number": {
+                            "type": "object"
+                          },
+                          "number": {
+                            "type": "object"
+                          },
+                          "checkbox": {
+                            "type": "object"
+                          },
+                          "select": {
+                            "type": "object"
+                          },
+                          "multi_select": {
+                            "type": "object"
+                          },
+                          "status": {
+                            "type": "object"
+                          },
+                          "date": {
+                            "type": "object"
+                          },
+                          "people": {
+                            "type": "object"
+                          },
+                          "files": {
+                            "type": "object"
+                          },
+                          "relation": {
+                            "type": "object"
+                          },
+                          "rollup": {
+                            "type": "object"
+                          },
+                          "formula": {
+                            "type": "object"
+                          },
+                          "unique_id": {
+                            "type": "object"
+                          },
+                          "created_by": {
+                            "type": "object"
+                          },
+                          "created_time": {
+                            "type": "object"
+                          },
+                          "last_edited_by": {
+                            "type": "object"
+                          },
+                          "last_edited_time": {
+                            "type": "object"
+                          },
+                          "verification": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    },
+                    "or": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[^\\n]{1,200}$"
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "enum": [
+                              "created_time",
+                              "last_edited_time"
+                            ]
+                          },
+                          "title": {
+                            "type": "object"
+                          },
+                          "rich_text": {
+                            "type": "object"
+                          },
+                          "url": {
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "object"
+                          },
+                          "phone_number": {
+                            "type": "object"
+                          },
+                          "number": {
+                            "type": "object"
+                          },
+                          "checkbox": {
+                            "type": "object"
+                          },
+                          "select": {
+                            "type": "object"
+                          },
+                          "multi_select": {
+                            "type": "object"
+                          },
+                          "status": {
+                            "type": "object"
+                          },
+                          "date": {
+                            "type": "object"
+                          },
+                          "people": {
+                            "type": "object"
+                          },
+                          "files": {
+                            "type": "object"
+                          },
+                          "relation": {
+                            "type": "object"
+                          },
+                          "rollup": {
+                            "type": "object"
+                          },
+                          "formula": {
+                            "type": "object"
+                          },
+                          "unique_id": {
+                            "type": "object"
+                          },
+                          "created_by": {
+                            "type": "object"
+                          },
+                          "created_time": {
+                            "type": "object"
+                          },
+                          "last_edited_by": {
+                            "type": "object"
+                          },
+                          "last_edited_time": {
+                            "type": "object"
+                          },
+                          "verification": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "or": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "property": {
+                      "type": "string",
+                      "pattern": "^[^\\n]{1,200}$"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "enum": [
+                        "created_time",
+                        "last_edited_time"
+                      ]
+                    },
+                    "title": {
+                      "type": "object"
+                    },
+                    "rich_text": {
+                      "type": "object"
+                    },
+                    "url": {
+                      "type": "object"
+                    },
+                    "email": {
+                      "type": "object"
+                    },
+                    "phone_number": {
+                      "type": "object"
+                    },
+                    "number": {
+                      "type": "object"
+                    },
+                    "checkbox": {
+                      "type": "object"
+                    },
+                    "select": {
+                      "type": "object"
+                    },
+                    "multi_select": {
+                      "type": "object"
+                    },
+                    "status": {
+                      "type": "object"
+                    },
+                    "date": {
+                      "type": "object"
+                    },
+                    "people": {
+                      "type": "object"
+                    },
+                    "files": {
+                      "type": "object"
+                    },
+                    "relation": {
+                      "type": "object"
+                    },
+                    "rollup": {
+                      "type": "object"
+                    },
+                    "formula": {
+                      "type": "object"
+                    },
+                    "unique_id": {
+                      "type": "object"
+                    },
+                    "created_by": {
+                      "type": "object"
+                    },
+                    "created_time": {
+                      "type": "object"
+                    },
+                    "last_edited_by": {
+                      "type": "object"
+                    },
+                    "last_edited_time": {
+                      "type": "object"
+                    },
+                    "verification": {
+                      "type": "object"
+                    },
+                    "and": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[^\\n]{1,200}$"
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "enum": [
+                              "created_time",
+                              "last_edited_time"
+                            ]
+                          },
+                          "title": {
+                            "type": "object"
+                          },
+                          "rich_text": {
+                            "type": "object"
+                          },
+                          "url": {
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "object"
+                          },
+                          "phone_number": {
+                            "type": "object"
+                          },
+                          "number": {
+                            "type": "object"
+                          },
+                          "checkbox": {
+                            "type": "object"
+                          },
+                          "select": {
+                            "type": "object"
+                          },
+                          "multi_select": {
+                            "type": "object"
+                          },
+                          "status": {
+                            "type": "object"
+                          },
+                          "date": {
+                            "type": "object"
+                          },
+                          "people": {
+                            "type": "object"
+                          },
+                          "files": {
+                            "type": "object"
+                          },
+                          "relation": {
+                            "type": "object"
+                          },
+                          "rollup": {
+                            "type": "object"
+                          },
+                          "formula": {
+                            "type": "object"
+                          },
+                          "unique_id": {
+                            "type": "object"
+                          },
+                          "created_by": {
+                            "type": "object"
+                          },
+                          "created_time": {
+                            "type": "object"
+                          },
+                          "last_edited_by": {
+                            "type": "object"
+                          },
+                          "last_edited_time": {
+                            "type": "object"
+                          },
+                          "verification": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    },
+                    "or": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "property": {
+                            "type": "string",
+                            "pattern": "^[^\\n]{1,200}$"
+                          },
+                          "timestamp": {
+                            "type": "string",
+                            "enum": [
+                              "created_time",
+                              "last_edited_time"
+                            ]
+                          },
+                          "title": {
+                            "type": "object"
+                          },
+                          "rich_text": {
+                            "type": "object"
+                          },
+                          "url": {
+                            "type": "object"
+                          },
+                          "email": {
+                            "type": "object"
+                          },
+                          "phone_number": {
+                            "type": "object"
+                          },
+                          "number": {
+                            "type": "object"
+                          },
+                          "checkbox": {
+                            "type": "object"
+                          },
+                          "select": {
+                            "type": "object"
+                          },
+                          "multi_select": {
+                            "type": "object"
+                          },
+                          "status": {
+                            "type": "object"
+                          },
+                          "date": {
+                            "type": "object"
+                          },
+                          "people": {
+                            "type": "object"
+                          },
+                          "files": {
+                            "type": "object"
+                          },
+                          "relation": {
+                            "type": "object"
+                          },
+                          "rollup": {
+                            "type": "object"
+                          },
+                          "formula": {
+                            "type": "object"
+                          },
+                          "unique_id": {
+                            "type": "object"
+                          },
+                          "created_by": {
+                            "type": "object"
+                          },
+                          "created_time": {
+                            "type": "object"
+                          },
+                          "last_edited_by": {
+                            "type": "object"
+                          },
+                          "last_edited_time": {
+                            "type": "object"
+                          },
+                          "verification": {
+                            "type": "object"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "description": "A Notion database filter: { property, <type>: { condition } }, { timestamp, created_time|last_edited_time: { condition } }, or { and|or: [filters] }, nested at most two levels."
+          },
+          "sorts": {
+            "type": "array",
+            "description": "Sort criteria, first one wins: { property, direction } or { timestamp, direction }.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "direction"
+              ],
+              "properties": {
+                "property": {
+                  "type": "string",
+                  "pattern": "^[^\\n]{1,200}$"
+                },
+                "timestamp": {
+                  "type": "string",
+                  "enum": [
+                    "created_time",
+                    "last_edited_time"
+                  ]
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "ascending",
+                    "descending"
+                  ]
+                }
+              }
+            }
+          },
+          "start_cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=-]{1,200}$",
+            "description": "The next_cursor of the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-comments",
+      "description": "List the open (unresolved) comments on a page or block, oldest first, with each comment's discussion_id for replying. Returns up to 25 comments per call; pass next_cursor as start_cursor for the next page. Needs the integration's read comments capability.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.notion.com/v1/comments?block_id={{input.block_id}}&page_size=25&start_cursor={{input.start_cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "block_id"
+        ],
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "A page id or block id"
+          },
+          "start_cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=-]{1,200}$",
+            "description": "The next_cursor of the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-page",
+      "description": "Create one page under a page that is shared with the integration. Read back by page id; the title must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second page.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.notion.com/v1/pages",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "parent": {
+          "page_id": "{{input.parent_page_id}}"
+        },
+        "properties": {
+          "title": {
+            "title": [
+              {
+                "text": {
+                  "content": "{{input.title}}"
+                }
+              }
+            ]
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "parent_page_id",
+          "title"
+        ],
+        "properties": {
+          "parent_page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$"
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/pages/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.title.title.0.plain_text",
+            "equals": "{{input.title}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-database",
+      "description": "Create one database (a table) under a page shared with the integration, with the columns given in properties. Read back by database id; the title must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second database.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.notion.com/v1/databases",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "parent": {
+          "type": "page_id",
+          "page_id": "{{input.parent_page_id}}"
+        },
+        "title": [
+          {
+            "type": "text",
+            "text": {
+              "content": "{{input.title}}"
+            }
+          }
+        ],
+        "properties": "{{input.properties}}",
+        "is_inline": "{{input.is_inline}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "parent_page_id",
+          "title",
+          "properties"
+        ],
+        "properties": {
+          "parent_page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The page the database is created in"
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          },
+          "properties": {
+            "type": "object",
+            "description": "The columns, keyed by name, in Notion's property schema form: exactly one { \"title\": {} } column, plus others such as { \"checkbox\": {} }, { \"select\": { \"options\": [{ \"name\": \"High\" }] } }, { \"date\": {} }."
+          },
+          "is_inline": {
+            "type": "boolean",
+            "description": "Show the database inline in the parent page instead of as a child page"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/databases/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "title.0.plain_text",
+            "equals": "{{input.title}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-database-page",
+      "description": "Add one row (page) to a database, with its property values. database_id must be the hyphenated lowercase id the API returns (search-databases, get-database). Read back by page id; its parent must be that database. Limitation: no provider idempotency, so a retry after an unknown outcome can add a second row.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.notion.com/v1/pages",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "parent": {
+          "type": "database_id",
+          "database_id": "{{input.database_id}}"
+        },
+        "properties": "{{input.properties}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "database_id",
+          "properties"
+        ],
+        "properties": {
+          "database_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "The database id, hyphenated and lowercase as the API returns it"
+          },
+          "properties": {
+            "type": "object",
+            "description": "Property values keyed by column name or id, in Notion's page property value form, e.g. { \"Name\": { \"title\": [{ \"text\": { \"content\": \"Ship it\" } }] }, \"Done\": { \"checkbox\": false } }. Formula, rollup and created/edited columns cannot be set."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/pages/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "parent.type",
+            "equals": "database_id"
+          },
+          {
+            "path": "parent.database_id",
+            "equals": "{{input.database_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-page-properties",
+      "description": "Set property values on one page: the title of any page, or any column of a database row. Properties left out keep their values. Read back by page id: the page must be live and show the last-edited time this update returned; the read-back does not compare the values, whose names the caller chooses.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://api.notion.com/v1/pages/{{input.page_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": "{{input.properties}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page_id",
+          "properties"
+        ],
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The page id"
+          },
+          "properties": {
+            "type": "object",
+            "description": "Property values keyed by name or id, in Notion's page property value form, e.g. { \"Done\": { \"checkbox\": true } } or { \"title\": { \"title\": [{ \"text\": { \"content\": \"New title\" } }] } }. Rollup, formula and created/edited values cannot be set."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/pages/{{input.page_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "last_edited_time",
+            "equals": "{{response.last_edited_time}}"
+          },
+          {
+            "path": "archived",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-page",
+      "description": "Move one page to the trash. Read back from the page; it must be archived. Limitation: the read-back can match a page that was already archived.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://api.notion.com/v1/pages/{{input.page_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "archived": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page_id"
+        ],
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/pages/{{input.page_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "archived",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "restore-page",
+      "description": "Take one page out of the trash. Read back from the page; it must not be archived. Limitation: the read-back can match a page that was never archived.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://api.notion.com/v1/pages/{{input.page_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "archived": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page_id"
+        ],
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The page id"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/pages/{{input.page_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "archived",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "append-paragraph",
+      "description": "Add one paragraph to the end of a page. Read back by the new block's id; the text must match. Limitation: no provider idempotency, so a retry after an unknown outcome can add the paragraph twice.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://api.notion.com/v1/blocks/{{input.page_id}}/children",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "children": [
+          {
+            "object": "block",
+            "type": "paragraph",
+            "paragraph": {
+              "rich_text": [
+                {
+                  "type": "text",
+                  "text": {
+                    "content": "{{input.text}}"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page_id",
+          "text"
+        ],
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/blocks/{{response.results.0.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "paragraph.rich_text.0.plain_text",
+            "equals": "{{input.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "append-blocks",
+      "description": "Add blocks to the end of a page or under a block (or after one of its children with after): paragraphs, headings, bulleted and numbered items, to-dos, toggles, quotes, callouts, code and dividers, text only, no nesting in one call. At most 100 blocks; each counts as one mutation. Read back by the first new block's id; its type and creation time must match. Limitation: no provider idempotency, so a retry after an unknown outcome can add the blocks twice.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://api.notion.com/v1/blocks/{{input.block_id}}/children",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "children": "{{input.children}}",
+        "after": "{{input.after}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "block_id",
+          "children"
+        ],
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The page id, or the block to add children under"
+          },
+          "children": {
+            "type": "array",
+            "description": "The blocks, in order, e.g. { \"type\": \"to_do\", \"to_do\": { \"rich_text\": [{ \"text\": { \"content\": \"Ship\" } }], \"checked\": false } }. The key named by type holds the content.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "type"
+              ],
+              "properties": {
+                "object": {
+                  "type": "string",
+                  "enum": [
+                    "block"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "paragraph",
+                    "heading_1",
+                    "heading_2",
+                    "heading_3",
+                    "bulleted_list_item",
+                    "numbered_list_item",
+                    "to_do",
+                    "toggle",
+                    "quote",
+                    "callout",
+                    "code",
+                    "divider"
+                  ]
+                },
+                "paragraph": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "heading_1": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "is_toggleable": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "heading_2": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "is_toggleable": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "heading_3": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "is_toggleable": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "bulleted_list_item": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "numbered_list_item": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "to_do": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "checked": {
+                      "type": "boolean"
+                    }
+                  }
+                },
+                "toggle": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "quote": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "callout": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "code": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "rich_text",
+                    "language"
+                  ],
+                  "properties": {
+                    "rich_text": {
+                      "type": "array",
+                      "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": [
+                          "text"
+                        ],
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "text"
+                            ]
+                          },
+                          "text": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "required": [
+                              "content"
+                            ],
+                            "properties": {
+                              "content": {
+                                "type": "string",
+                                "pattern": "^[\\s\\S]{1,2000}$"
+                              },
+                              "link": {
+                                "type": "object",
+                                "additionalProperties": false,
+                                "required": [
+                                  "url"
+                                ],
+                                "properties": {
+                                  "url": {
+                                    "type": "string",
+                                    "pattern": "^https?://[^\\s]{1,1990}$"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "annotations": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                              "bold": {
+                                "type": "boolean"
+                              },
+                              "italic": {
+                                "type": "boolean"
+                              },
+                              "strikethrough": {
+                                "type": "boolean"
+                              },
+                              "underline": {
+                                "type": "boolean"
+                              },
+                              "code": {
+                                "type": "boolean"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "language": {
+                      "type": "string",
+                      "pattern": "^[a-z0-9 +#./-]{1,30}$",
+                      "description": "A Notion code language, e.g. plain text, javascript, python, sql"
+                    }
+                  }
+                },
+                "divider": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {}
+                }
+              }
+            }
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "Insert after this existing child block instead of at the end"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "count(input.children)",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/blocks/{{response.results.0.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "type",
+            "equals": "{{input.children.0.type}}"
+          },
+          {
+            "path": "created_time",
+            "equals": "{{response.results.0.created_time}}"
+          },
+          {
+            "path": "archived",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-block-text",
+      "description": "Replace the text of one block, or tick or untick a to-do. Give exactly one content object, named by the block's current type (get-block shows it); its rich_text replaces the whole text, and checked alone ticks a to-do. Read back by block id: the block must be live and show the last-edited time this update returned; the read-back does not compare the text.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://api.notion.com/v1/blocks/{{input.block_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "paragraph": "{{input.paragraph}}",
+        "heading_1": "{{input.heading_1}}",
+        "heading_2": "{{input.heading_2}}",
+        "heading_3": "{{input.heading_3}}",
+        "bulleted_list_item": "{{input.bulleted_list_item}}",
+        "numbered_list_item": "{{input.numbered_list_item}}",
+        "to_do": "{{input.to_do}}",
+        "toggle": "{{input.toggle}}",
+        "quote": "{{input.quote}}",
+        "callout": "{{input.callout}}",
+        "code": "{{input.code}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "block_id"
+        ],
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The block id"
+          },
+          "paragraph": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "heading_1": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "is_toggleable": {
+                "type": "boolean"
+              }
+            }
+          },
+          "heading_2": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "is_toggleable": {
+                "type": "boolean"
+              }
+            }
+          },
+          "heading_3": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "is_toggleable": {
+                "type": "boolean"
+              }
+            }
+          },
+          "bulleted_list_item": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "numbered_list_item": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "to_do": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "checked": {
+                "type": "boolean"
+              }
+            }
+          },
+          "toggle": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "quote": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "callout": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "code": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [],
+            "properties": {
+              "rich_text": {
+                "type": "array",
+                "description": "Rich text: a list of text runs. Each run's content is at most 2000 characters; Notion takes at most 100 runs.",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "text"
+                  ],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "text"
+                      ]
+                    },
+                    "text": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": [
+                        "content"
+                      ],
+                      "properties": {
+                        "content": {
+                          "type": "string",
+                          "pattern": "^[\\s\\S]{1,2000}$"
+                        },
+                        "link": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": [
+                            "url"
+                          ],
+                          "properties": {
+                            "url": {
+                              "type": "string",
+                              "pattern": "^https?://[^\\s]{1,1990}$"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "annotations": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "bold": {
+                          "type": "boolean"
+                        },
+                        "italic": {
+                          "type": "boolean"
+                        },
+                        "strikethrough": {
+                          "type": "boolean"
+                        },
+                        "underline": {
+                          "type": "boolean"
+                        },
+                        "code": {
+                          "type": "boolean"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "language": {
+                "type": "string",
+                "pattern": "^[a-z0-9 +#./-]{1,30}$",
+                "description": "A Notion code language, e.g. plain text, javascript, python, sql"
+              }
+            }
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/blocks/{{input.block_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "last_edited_time",
+            "equals": "{{response.last_edited_time}}"
+          },
+          {
+            "path": "archived",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-block",
+      "description": "Move one block (a paragraph, heading, to-do or other content block) to the trash. Read back from the block; it must be archived. Limitation: the read-back can match a block that was already archived. Use archive-page for a page.",
+      "kind": "write",
+      "method": "DELETE",
+      "urlTemplate": "https://api.notion.com/v1/blocks/{{input.block_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "block_id"
+        ],
+        "properties": {
+          "block_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The block id"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/blocks/{{input.block_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "archived",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-comment",
+      "description": "Start a new comment discussion on a page. Read back by comment id; the text must match. Needs the integration's insert comments capability. Limitation: no provider idempotency, so a retry after an unknown outcome can post the comment twice.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.notion.com/v1/comments",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "parent": {
+          "page_id": "{{input.page_id}}"
+        },
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "{{input.text}}"
+            }
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "page_id",
+          "text"
+        ],
+        "properties": {
+          "page_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The page id"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/comments/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "rich_text.0.plain_text",
+            "equals": "{{input.text}}"
+          },
+          {
+            "path": "discussion_id",
+            "equals": "{{response.discussion_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reply-to-comment",
+      "description": "Reply in an existing comment discussion (on a page or on selected text), using a discussion_id from list-comments. Read back by comment id; the discussion and the text must match. Needs the integration's insert comments capability. Limitation: no provider idempotency, so a retry after an unknown outcome can post the reply twice.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.notion.com/v1/comments",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "discussion_id": "{{input.discussion_id}}",
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "{{input.text}}"
+            }
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "discussion_id",
+          "text"
+        ],
+        "properties": {
+          "discussion_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "The discussion id, hyphenated and lowercase as list-comments returns it"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/comments/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "discussion_id",
+            "equals": "{{input.discussion_id}}"
+          },
+          {
+            "path": "rich_text.0.plain_text",
+            "equals": "{{input.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-comment",
+      "description": "Replace the text of one comment the integration itself posted (Notion answers 404 for anyone else's). Read back by comment id; the text must match. Needs the integration's insert comments capability.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://api.notion.com/v1/comments/{{input.comment_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "{{input.text}}"
+            }
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "comment_id",
+          "text"
+        ],
+        "properties": {
+          "comment_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The comment id"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.notion.com/v1/comments/{{input.comment_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "rich_text.0.plain_text",
+            "equals": "{{input.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-comment",
+      "description": "Delete one comment the integration itself posted (Notion answers 404 for anyone else's). Needs the integration's insert comments capability. No read-back: Notion does not document what reading a deleted comment returns, so the receipt is graded acknowledged.",
+      "kind": "write",
+      "method": "DELETE",
+      "urlTemplate": "https://api.notion.com/v1/comments/{{input.comment_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:notion}}",
+        "Notion-Version": "2022-06-28"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "comment_id"
+        ],
+        "properties": {
+          "comment_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$",
+            "description": "The comment id"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "notion: approve archiving a page",
+      "matchKind": "action",
+      "matchActionName": "archive-page",
+      "effect": "require_approval"
+    },
+    {
+      "name": "notion: approve deleting a block",
+      "matchKind": "action",
+      "matchActionName": "delete-block",
+      "effect": "require_approval"
+    },
+    {
+      "name": "notion: approve deleting a comment",
+      "matchKind": "action",
+      "matchActionName": "delete-comment",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "notion: pages created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-page"
+    },
+    {
+      "name": "notion: databases created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "create-database"
+    },
+    {
+      "name": "notion: database rows created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "create-database-page"
+    },
+    {
+      "name": "notion: page property updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "update-page-properties"
+    },
+    {
+      "name": "notion: pages archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "archive-page"
+    },
+    {
+      "name": "notion: pages restored per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "restore-page"
+    },
+    {
+      "name": "notion: paragraphs added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "append-paragraph"
+    },
+    {
+      "name": "notion: blocks added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 1000,
+      "actionName": "append-blocks"
+    },
+    {
+      "name": "notion: block edits per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "update-block-text"
+    },
+    {
+      "name": "notion: blocks deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "delete-block"
+    },
+    {
+      "name": "notion: comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "add-comment"
+    },
+    {
+      "name": "notion: comment replies per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "reply-to-comment"
+    },
+    {
+      "name": "notion: comment edits per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-comment"
+    },
+    {
+      "name": "notion: comments deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "delete-comment"
+    }
+  ]
+}

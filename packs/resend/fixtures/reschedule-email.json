@@ -1,0 +1,13 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/emails/update-email).",
+  "params": {},
+  "input": {
+    "email_id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794",
+    "scheduled_at": "2026-10-21T09:00:00.000Z"
+  },
+  "expectedUrl": "https://api.resend.com/emails/49a3999c-0ce1-4ea6-ab68-afcd6dc2e794",
+  "response": {
+    "object": "email",
+    "id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794"
+  }
+}

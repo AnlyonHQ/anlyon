@@ -1,0 +1,855 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/trello",
+  "version": "0.1.0",
+  "description": "Trello for an agent: read boards, lists, labels, cards and comments, search cards; create, update, move, archive, restore and delete cards, comment, and add or remove labels, with every write governed.",
+  "secrets": [
+    {
+      "name": "TRELLO",
+      "kind": "connection",
+      "integrationId": "trello",
+      "hosts": [
+        "api.trello.com"
+      ],
+      "description": "The connected Trello API key and token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-boards",
+      "kind": "read",
+      "description": "List the boards the connected Trello account is a member of. Returns each board's id, name, closed flag, url, workspace id (idOrganization) and starred flag. Filter by open, closed, starred or all; Trello's default is all. Trello does not page this list.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/members/me/boards?filter={{input.filter}}&fields=name,closed,url,idOrganization,starred",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "filter": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed",
+              "starred",
+              "all"
+            ],
+            "description": "Which boards: open, closed, starred or all."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-board",
+      "kind": "read",
+      "description": "Get one board: its id, name, description, closed flag, url, workspace id, last activity date and the names of its color labels (labelNames). Use list-lists and list-labels for its lists and labels.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/boards/{{input.board_id}}?fields=name,desc,closed,url,idOrganization,dateLastActivity,labelNames",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The board's 24-character id, from list-boards."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-lists",
+      "kind": "read",
+      "description": "List the lists (columns) on a board, in board order. Returns each list's id, name, closed flag, position and board id. Open lists by default; pass filter closed or all for archived ones. Trello does not page this list.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/boards/{{input.board_id}}/lists?filter={{input.filter}}&fields=name,closed,pos,idBoard",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The board's 24-character id, from list-boards."
+          },
+          "filter": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed",
+              "all"
+            ],
+            "description": "Which lists: open (the default), closed or all."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-labels",
+      "kind": "read",
+      "description": "List the labels defined on a board. Returns up to 50, each with id, name, color and board id. Use a label id with add-label or remove-label.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/boards/{{input.board_id}}/labels?fields=name,color,idBoard&limit=50",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The board's 24-character id, from list-boards."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-board-cards",
+      "kind": "read",
+      "description": "List the open cards on a board, 50 a page, each with id, name, list id, board id, closed flag, due date, due complete, label ids, member ids, short url, last activity and position. The description is left out; read it with get-card. For the next page, pass the id of the last card as before.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/boards/{{input.board_id}}/cards?fields=name,idList,idBoard,closed,due,dueComplete,idLabels,idMembers,shortUrl,dateLastActivity,pos&limit=50&before={{input.before}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The board's 24-character id, from list-boards."
+          },
+          "before": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The id of the last item on the previous page. Leave out to start with the newest."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-list-cards",
+      "kind": "read",
+      "description": "List the open cards in one list, 50 a page, each with id, name, list id, board id, closed flag, due date, due complete, label ids, member ids, short url, last activity and position. The description is left out; read it with get-card. For the next page, pass the id of the last card as before.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/lists/{{input.list_id}}/cards?fields=name,idList,idBoard,closed,due,dueComplete,idLabels,idMembers,shortUrl,dateLastActivity,pos&limit=50&before={{input.before}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The list's 24-character id, from list-lists."
+          },
+          "before": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The id of the last item on the previous page. Leave out to start with the newest."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-cards",
+      "kind": "read",
+      "description": "Search cards by text in their name, description and comments, across the boards the account can reach or on one board. Returns up to 20 cards a page under cards, each with id, name, list id, board id, closed flag, due date, due complete, label ids, member ids, short url, last activity and position. The description is left out; read it with get-card. Pass page 1, 2 and so on for later pages. Set partial to true to match the start of words. Limitation: a card just created or changed can take a moment to appear in search.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/search?query={{input.query}}&modelTypes=cards&idBoards={{input.board_id}}&partial={{input.partial}}&card_fields=name,idList,idBoard,closed,due,dueComplete,idLabels,idMembers,shortUrl,dateLastActivity,pos&cards_limit=20&cards_page={{input.page}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "What to search for. Trello's search operators work here (label:, list:, due:, is:open)."
+          },
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "Search this board alone (an id from list-boards). Leave out to search every board the account can reach."
+          },
+          "partial": {
+            "type": "boolean",
+            "description": "true to match words that start with the query."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page, from 0 (the default)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-card",
+      "kind": "read",
+      "description": "Get one card: its name, description, list, board, closed flag, due and start dates, labels (id, name, color), members, badges (comment and checklist counts) and urls.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-card-comments",
+      "kind": "read",
+      "description": "List the comments on a card, newest at the top, 50 a page. Each is an action of type commentCard with its id, date, author (memberCreator) and the text under data.text. Pass page 1, 2 and so on for later pages; Trello serves up to page 19.",
+      "method": "GET",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}/actions?filter=commentCard&page={{input.page}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page, from 0 (the default) to 19."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-card",
+      "kind": "write",
+      "description": "Create one card at the top or bottom of a list, with a name and optionally a description, a due date and labels. Returns the card with its id. Read back by the new card's id; its name and list must match. Limitation: the fields travel in the URL query, as Trello documents them, so the description is bounded to 4000 characters here.",
+      "method": "POST",
+      "urlTemplate": "https://api.trello.com/1/cards?idList={{input.list_id}}&name={{input.name}}&desc={{input.desc}}&pos={{input.pos}}&due={{input.due}}&idLabels={{input.label_ids}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The list to add the card to, from list-lists."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "The card's title, one line."
+          },
+          "desc": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,4000}$",
+            "description": "The card's description, in Markdown."
+          },
+          "pos": {
+            "type": "string",
+            "enum": [
+              "top",
+              "bottom"
+            ],
+            "description": "Where in the list: top or bottom."
+          },
+          "due": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,3})?)?(Z|[+-][0-9]{2}:[0-9]{2}))?$",
+            "description": "The due date, ISO 8601 (2026-11-02 or 2026-11-02T17:00:00Z)."
+          },
+          "label_ids": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}(,[0-9a-f]{24}){0,9}$",
+            "description": "Label ids to put on the card, comma separated, from list-labels."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.trello.com/1/cards/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          },
+          {
+            "path": "idList",
+            "equals": "{{input.list_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-card",
+      "kind": "write",
+      "description": "Update a card's name, description, due date or due-complete flag. Pass at least one; fields you leave out stay as they are. Returns the card. Read back by card id; name, description and due complete must equal what Trello returned. Limitation: the due date is sent but not read back. Use move-card to change the list and archive-card to archive.",
+      "method": "PUT",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}?name={{input.name}}&desc={{input.desc}}&due={{input.due}}&dueComplete={{input.due_complete}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "The card's title, one line."
+          },
+          "desc": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,4000}$",
+            "description": "The card's description, in Markdown."
+          },
+          "due": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,3})?)?(Z|[+-][0-9]{2}:[0-9]{2}))?$",
+            "description": "The due date, ISO 8601 (2026-11-02 or 2026-11-02T17:00:00Z)."
+          },
+          "due_complete": {
+            "type": "boolean",
+            "description": "true when the due date is met."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.trello.com/1/cards/{{input.card_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.card_id}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{response.name}}"
+          },
+          {
+            "path": "desc",
+            "equals": "{{response.desc}}"
+          },
+          {
+            "path": "dueComplete",
+            "equals": "{{response.dueComplete}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "move-card",
+      "kind": "write",
+      "description": "Move a card to another list, on the same board or, with board_id, on another board. Optionally put it at the top or bottom. Returns the card. Read back by card id; its list must be the one given.",
+      "method": "PUT",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}?idList={{input.list_id}}&idBoard={{input.board_id}}&pos={{input.pos}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id",
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          },
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The list to move the card to, from list-lists."
+          },
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The list's board, when it is not the card's board (an id from list-boards)."
+          },
+          "pos": {
+            "type": "string",
+            "enum": [
+              "top",
+              "bottom"
+            ],
+            "description": "Where in the list: top or bottom."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.trello.com/1/cards/{{input.card_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.card_id}}"
+          },
+          {
+            "path": "idList",
+            "equals": "{{input.list_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-card",
+      "kind": "write",
+      "description": "Archive (close) a card. It leaves the board's lists and can be restored with restore-card. Returns the card. Read back by card id; closed must be true.",
+      "method": "PUT",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}?closed=true",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.trello.com/1/cards/{{input.card_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.card_id}}"
+          },
+          {
+            "path": "closed",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "restore-card",
+      "kind": "write",
+      "description": "Restore an archived card to its list. Returns the card. Read back by card id; closed must be false.",
+      "method": "PUT",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}?closed=false",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.trello.com/1/cards/{{input.card_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.card_id}}"
+          },
+          {
+            "path": "closed",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-comment",
+      "kind": "write",
+      "description": "Add one comment to a card. Board members see it, and a member it @mentions is notified. Returns the comment action with its id. Read back the action by id; it must be a commentCard on this card, with the text Trello stored. Limitation: the text travels in the URL query, as Trello documents it, so it is bounded to 4000 characters here.",
+      "method": "POST",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}/actions/comments?text={{input.text}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,4000}$",
+            "description": "The comment, in Markdown."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.trello.com/1/actions/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "type",
+            "equals": "commentCard"
+          },
+          {
+            "path": "data.card.id",
+            "equals": "{{input.card_id}}"
+          },
+          {
+            "path": "data.text",
+            "equals": "{{response.data.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-label",
+      "kind": "write",
+      "description": "Put one of the board's labels on a card. Labels already on the card stay. Read back the card's label ids; the label must be among them.",
+      "method": "POST",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}/idLabels?value={{input.label_id}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id",
+          "label_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          },
+          "label_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The label's 24-character id, from list-labels on the card's board."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.trello.com/1/cards/{{input.card_id}}?fields=idLabels",
+        "status": 200,
+        "match": [
+          {
+            "path": "idLabels.*",
+            "equals": "{{input.label_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "remove-label",
+      "kind": "write",
+      "description": "Take one label off a card. The label stays on the board. Read back the card's label ids; the label must no longer be among them.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}/idLabels/{{input.label_id}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id",
+          "label_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          },
+          "label_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The label's 24-character id, from list-labels on the card's board."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.trello.com/1/cards/{{input.card_id}}?fields=idLabels",
+        "status": 200,
+        "match": [
+          {
+            "path": "idLabels.*",
+            "equals": "{{input.label_id}}",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-card",
+      "kind": "write",
+      "description": "Delete a card for good, with its comments and checklists. It cannot be restored; use archive-card to keep it. No read-back: Trello's reference does not say what a read of a deleted card answers, so the receipt is acknowledged. Check with get-card.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.trello.com/1/cards/{{input.card_id}}",
+      "headers": {
+        "Authorization": "OAuth {{connection:trello}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "card_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "card_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The card's 24-character id, from list-board-cards, list-list-cards or search-cards."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "trello: approve deleting a card",
+      "matchKind": "action",
+      "matchActionName": "delete-card",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "trello: cards created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-card"
+    },
+    {
+      "name": "trello: cards updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-card"
+    },
+    {
+      "name": "trello: cards moved per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "move-card"
+    },
+    {
+      "name": "trello: cards archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "archive-card"
+    },
+    {
+      "name": "trello: cards restored per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "restore-card"
+    },
+    {
+      "name": "trello: comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-comment"
+    },
+    {
+      "name": "trello: labels added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-label"
+    },
+    {
+      "name": "trello: labels removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "remove-label"
+    },
+    {
+      "name": "trello: cards deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-card"
+    }
+  ]
+}

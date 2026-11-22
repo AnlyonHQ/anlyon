@@ -1,0 +1,28 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/getstoriesfortask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210",
+    "resource_subtype": "comment_added",
+    "sort_ascending": false
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210/stories?limit=20&resource_subtype=comment_added&sort_ascending=false&opt_fields=created_at,created_by.name,resource_subtype,type,text",
+  "response": {
+    "data": [
+      {
+        "gid": "1208811122334455",
+        "resource_type": "story",
+        "created_at": "2026-10-14T10:05:00.000Z",
+        "created_by": {
+          "gid": "1208800000000042",
+          "resource_type": "user",
+          "name": "Dana Lee"
+        },
+        "resource_subtype": "comment_added",
+        "type": "comment",
+        "text": "Sent the review this morning."
+      }
+    ],
+    "next_page": null
+  }
+}

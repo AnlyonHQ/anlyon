@@ -1,0 +1,65 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/activities/notes, POST /activity/note/).",
+  "params": {},
+  "input": {
+    "lead_id": "lead_Acme01",
+    "note": "Jo asked for the 2027 price list."
+  },
+  "expectedUrl": "https://api.close.com/api/v1/activity/note/",
+  "expectedBody": {
+    "lead_id": "lead_Acme01",
+    "note": "Jo asked for the 2027 price list."
+  },
+  "response": {
+    "id": "acti_NoteAcme01",
+    "_type": "Note",
+    "organization_id": "orga_Example01",
+    "lead_id": "lead_Acme01",
+    "contact_id": null,
+    "user_id": "user_Alice01",
+    "user_name": "Alice Example",
+    "note": "Jo asked for the 2027 price list.",
+    "note_html": "<p>Jo asked for the 2027 price list.</p>",
+    "date_created": "2026-10-24T08:20:00.000000+00:00",
+    "date_updated": "2026-10-24T08:20:00.000000+00:00",
+    "created_by": "user_Alice01",
+    "updated_by": "user_Alice01"
+  },
+  "expectedReadBackUrl": "https://api.close.com/api/v1/activity/note/acti_NoteAcme01/",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "acti_NoteAcme01",
+      "_type": "Note",
+      "organization_id": "orga_Example01",
+      "lead_id": "lead_Acme01",
+      "contact_id": null,
+      "user_id": "user_Alice01",
+      "user_name": "Alice Example",
+      "note": "Jo asked for the 2027 price list.",
+      "note_html": "<p>Jo asked for the 2027 price list.</p>",
+      "date_created": "2026-10-24T08:20:00.000000+00:00",
+      "date_updated": "2026-10-24T08:20:00.000000+00:00",
+      "created_by": "user_Alice01",
+      "updated_by": "user_Alice01"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "acti_NoteAcme01",
+      "_type": "Note",
+      "organization_id": "orga_Example01",
+      "lead_id": "lead_Acme01",
+      "contact_id": null,
+      "user_id": "user_Alice01",
+      "user_name": "Alice Example",
+      "note": "Jo asked for the price list.",
+      "note_html": "<p>Jo asked for the price list.</p>",
+      "date_created": "2026-10-24T08:20:00.000000+00:00",
+      "date_updated": "2026-10-24T08:20:00.000000+00:00",
+      "created_by": "user_Alice01",
+      "updated_by": "user_Alice01"
+    }
+  }
+}

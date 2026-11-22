@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/leads, GET /lead/).",
+  "params": {},
+  "input": {
+    "query": "name:\"Acme\""
+  },
+  "expectedUrl": "https://api.close.com/api/v1/lead/?query=name%3A%22Acme%22&_limit=20&_fields=id,display_name,status_id,status_label,url,date_created,date_updated",
+  "response": {
+    "has_more": false,
+    "total_results": 1,
+    "data": [
+      {
+        "id": "lead_Acme01",
+        "display_name": "Acme",
+        "status_id": "stat_LeadQualified01",
+        "status_label": "Qualified",
+        "url": "https://acme.example",
+        "date_created": "2026-10-20T09:12:44.000000+00:00",
+        "date_updated": "2026-10-22T15:30:00.000000+00:00"
+      }
+    ]
+  }
+}

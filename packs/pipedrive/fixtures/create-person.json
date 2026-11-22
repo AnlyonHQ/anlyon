@@ -1,0 +1,89 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi-v2.yaml, POST /persons).",
+  "params": {},
+  "input": {
+    "name": "Priya Nair",
+    "email": "priya@acme.example",
+    "org_id": 311
+  },
+  "expectedUrl": "https://api.pipedrive.com/api/v2/persons",
+  "response": {
+    "success": true,
+    "data": {
+      "id": 1043,
+      "name": "Priya Nair",
+      "first_name": "Priya",
+      "last_name": "Nair",
+      "owner_id": 13540546,
+      "org_id": 311,
+      "add_time": "2026-10-24T08:10:00Z",
+      "update_time": "2026-10-24T08:10:00Z",
+      "emails": [
+        {
+          "value": "priya@acme.example",
+          "primary": true,
+          "label": "work"
+        }
+      ],
+      "phones": [],
+      "is_deleted": false,
+      "visible_to": 3,
+      "label_ids": [],
+      "picture_id": null,
+      "custom_fields": {}
+    }
+  },
+  "expectedReadBackUrl": "https://api.pipedrive.com/api/v2/persons/1043",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "id": 1043,
+        "name": "Priya Nair",
+        "first_name": "Priya",
+        "last_name": "Nair",
+        "owner_id": 13540546,
+        "org_id": 311,
+        "add_time": "2026-10-24T08:10:00Z",
+        "update_time": "2026-10-24T08:10:00Z",
+        "emails": [
+          {
+            "value": "priya@acme.example",
+            "primary": true,
+            "label": "work"
+          }
+        ],
+        "phones": [],
+        "is_deleted": false,
+        "visible_to": 3,
+        "label_ids": [],
+        "picture_id": null,
+        "custom_fields": {}
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "id": 1043,
+        "name": "Priya Nair",
+        "first_name": "Priya",
+        "last_name": "Nair",
+        "owner_id": 13540546,
+        "org_id": 311,
+        "add_time": "2026-10-24T08:10:00Z",
+        "update_time": "2026-10-24T08:10:00Z",
+        "emails": [],
+        "phones": [],
+        "is_deleted": false,
+        "visible_to": 3,
+        "label_ids": [],
+        "picture_id": null,
+        "custom_fields": {}
+      }
+    }
+  }
+}

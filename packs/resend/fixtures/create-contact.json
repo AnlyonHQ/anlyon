@@ -1,0 +1,41 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/contacts/create-contact).",
+  "params": {},
+  "input": {
+    "email": "anlyon-exercise-a1b2c3@example.com",
+    "first_name": "Anlyon",
+    "last_name": "Exercise"
+  },
+  "expectedUrl": "https://api.resend.com/contacts",
+  "response": {
+    "object": "contact",
+    "id": "479e3145-dd38-476b-932c-529ceb705947"
+  },
+  "expectedReadBackUrl": "https://api.resend.com/contacts/479e3145-dd38-476b-932c-529ceb705947",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "object": "contact",
+      "id": "479e3145-dd38-476b-932c-529ceb705947",
+      "email": "anlyon-exercise-a1b2c3@example.com",
+      "first_name": "Anlyon",
+      "last_name": "Exercise",
+      "created_at": "2026-10-15 09:00:00.000+00",
+      "unsubscribed": false,
+      "properties": {}
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "object": "contact",
+      "id": "e169aa45-1ecf-4183-9955-b1499d5701d3",
+      "email": "steve.wozniak@example.com",
+      "first_name": "Steve",
+      "last_name": "Wozniak",
+      "created_at": "2026-10-06 23:47:56.678+00",
+      "unsubscribed": false,
+      "properties": {}
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"status\": \"reconnect_required\",\n  \"integration\": \"gmail\",\n  \"connectUrl\": \"https://api.anlyon.com/connect/eul_fixture\",\n  \"message\": \"The user's gmail connection has stopped working, so nothing was done. Ask them to reconnect it, then try again.\"\n}"
+    }
+  ],
+  "structuredContent": {
+    "status": "reconnect_required",
+    "integration": "gmail",
+    "connectUrl": "https://api.anlyon.com/connect/eul_fixture",
+    "message": "The user's gmail connection has stopped working, so nothing was done. Ask them to reconnect it, then try again."
+  }
+}

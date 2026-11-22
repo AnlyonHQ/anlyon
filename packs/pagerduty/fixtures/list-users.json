@@ -1,0 +1,27 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "query": "dana"
+  },
+  "expectedUrl": "https://api.pagerduty.com/users?limit=25&query=dana",
+  "response": {
+    "users": [
+      {
+        "id": "PXPGF42",
+        "type": "user",
+        "summary": "Dana Lee",
+        "name": "Dana Lee",
+        "email": "dana@example.com",
+        "time_zone": "Europe/London",
+        "role": "user",
+        "job_title": "SRE",
+        "teams": []
+      }
+    ],
+    "limit": 25,
+    "offset": 0,
+    "more": false,
+    "total": null
+  }
+}

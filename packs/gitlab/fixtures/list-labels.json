@@ -1,0 +1,19 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/labels/).",
+  "params": {},
+  "input": {
+    "project": "acme/web"
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/labels?with_counts=true&per_page=50",
+  "response": [
+    {
+      "id": 7001,
+      "name": "bug",
+      "color": "#d9534f",
+      "description": "Something is broken",
+      "open_issues_count": 4,
+      "closed_issues_count": 20,
+      "open_merge_requests_count": 1
+    }
+  ]
+}

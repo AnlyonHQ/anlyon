@@ -1,0 +1,22 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_mc_contacts_v3.json, GetImportContact).",
+  "params": {},
+  "input": {
+    "job_id": "1c7f8d2e-5a3b-4e6f-9d01-23456789abcd"
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/marketing/contacts/imports/1c7f8d2e-5a3b-4e6f-9d01-23456789abcd",
+  "response": {
+    "id": "1c7f8d2e-5a3b-4e6f-9d01-23456789abcd",
+    "status": "completed",
+    "job_type": "upsert",
+    "results": {
+      "requested_count": 1,
+      "created_count": 1,
+      "updated_count": 0,
+      "deleted_count": 0,
+      "errored_count": 0
+    },
+    "started_at": "2026-10-24T10:00:01Z",
+    "finished_at": "2026-10-24T10:00:09Z"
+  }
+}

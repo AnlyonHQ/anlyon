@@ -1,0 +1,32 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation requestRollback). Vercel answers 201 with no body; the read-back is getAlias.",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "project_id": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+    "deployment_id": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+    "domain": "www.acme.com",
+    "reason": "Checkout errors after the last release"
+  },
+  "expectedUrl": "https://api.vercel.com/v1/projects/prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3/rollback/dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F&description=Checkout%20errors%20after%20the%20last%20release",
+  "response": {},
+  "expectedReadBackUrl": "https://api.vercel.com/v4/aliases/www.acme.com?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "uid": "2WjyKQmM8ZnGcJsPWMrHRHrE",
+      "alias": "www.acme.com",
+      "deploymentId": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+      "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "uid": "2WjyKQmM8ZnGcJsPWMrHRHrE",
+      "alias": "www.acme.com",
+      "deploymentId": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6",
+      "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3"
+    }
+  }
+}

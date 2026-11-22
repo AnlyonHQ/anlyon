@@ -1,0 +1,21 @@
+# action               operation                                                kind
+# Jira Cloud platform REST API v3 (https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/), written by hand
+get-myself             GET /rest/api/3/myself
+list-projects          GET /rest/api/3/project/search
+list-issue-types       GET /rest/api/3/issue/createmeta/{projectIdOrKey}/issuetypes
+list-priorities        GET /rest/api/3/priority/search
+# the enhanced JQL search; GET /rest/api/3/search was removed from Jira Cloud
+search-issues          GET /rest/api/3/search/jql
+get-issue              GET /rest/api/3/issue/{issueIdOrKey}
+list-transitions       GET /rest/api/3/issue/{issueIdOrKey}/transitions
+list-comments          GET /rest/api/3/issue/{issueIdOrKey}/comment
+get-comment            GET /rest/api/3/issue/{issueIdOrKey}/comment/{id}
+create-issue           POST /rest/api/3/issue
+rename-issue           PUT /rest/api/3/issue/{issueIdOrKey}
+add-issue-label        PUT /rest/api/3/issue/{issueIdOrKey}
+set-issue-priority     PUT /rest/api/3/issue/{issueIdOrKey}
+assign-issue           PUT /rest/api/3/issue/{issueIdOrKey}/assignee
+transition-issue       POST /rest/api/3/issue/{issueIdOrKey}/transitions
+add-comment            POST /rest/api/3/issue/{issueIdOrKey}/comment
+delete-comment         DELETE /rest/api/3/issue/{issueIdOrKey}/comment/{id}
+delete-issue           DELETE /rest/api/3/issue/{issueIdOrKey}

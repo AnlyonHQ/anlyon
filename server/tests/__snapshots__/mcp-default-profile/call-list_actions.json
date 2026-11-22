@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "[\n  {\n    \"id\": \"act_<id>\",\n    \"name\": \"update-ticket-priority\",\n    \"description\": \"Change a support ticket priority.\",\n    \"method\": \"PATCH\",\n    \"urlTemplate\": \"https://support.example.com/tickets/{{input.ticketId}}\",\n    \"headers\": {},\n    \"bodyTemplate\": null,\n    \"inputSchema\": {\n      \"type\": \"object\",\n      \"required\": [\n        \"ticketId\",\n        \"priority\"\n      ],\n      \"properties\": {\n        \"priority\": {\n          \"enum\": [\n            \"low\",\n            \"high\"\n          ],\n          \"type\": \"string\"\n        },\n        \"ticketId\": {\n          \"type\": \"string\"\n        }\n      }\n    },\n    \"requiresApproval\": true,\n    \"enabled\": true,\n    \"secrets\": [],\n    \"currentVersionId\": \"acv_<id>\",\n    \"environmentId\": \"<environment>\",\n    \"adapter\": null,\n    \"governed\": false,\n    \"impact\": null,\n    \"verify\": null,\n    \"createdAt\": \"<time>\",\n    \"updatedAt\": \"<time>\"\n  }\n]"
+    }
+  ]
+}

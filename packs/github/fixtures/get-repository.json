@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/repos/repos#get-a-repository).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets",
+  "response": {
+    "id": 1296269,
+    "name": "widgets",
+    "full_name": "acme/widgets",
+    "private": true,
+    "owner": {
+      "login": "acme",
+      "id": 9919,
+      "type": "Organization"
+    },
+    "default_branch": "main",
+    "description": "The widgets service",
+    "visibility": "private",
+    "has_issues": true,
+    "open_issues_count": 12,
+    "topics": [
+      "payments"
+    ],
+    "archived": false
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/addtaskforsection).",
+  "params": {},
+  "input": {
+    "section_gid": "1208805555555555",
+    "task_gid": "1208809876543210"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/sections/1208805555555555/addTask",
+  "response": {
+    "data": {}
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210?opt_fields=memberships.section.name",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "memberships": [
+          {
+            "section": {
+              "gid": "1208805555555555",
+              "resource_type": "section",
+              "name": "In progress"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "memberships": [
+          {
+            "section": {
+              "gid": "1208805555555550",
+              "resource_type": "section",
+              "name": "To do"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

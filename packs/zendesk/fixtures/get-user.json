@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.zendesk.com/api-reference/ticketing/users/users/, GET /api/v2/users/{user_id}).",
+  "params": {},
+  "accountHost": "acme.zendesk.com",
+  "input": {
+    "user_id": 20978392
+  },
+  "expectedUrl": "https://acme.zendesk.com/api/v2/users/20978392.json",
+  "response": {
+    "user": {
+      "id": 20978392,
+      "url": "https://acme.zendesk.com/api/v2/users/20978392.json",
+      "name": "Dana Whitfield",
+      "email": "dana.whitfield@example.com",
+      "created_at": "2025-03-11T10:20:00Z",
+      "updated_at": "2026-10-23T14:02:11Z",
+      "time_zone": "London",
+      "iana_time_zone": "Europe/London",
+      "phone": null,
+      "locale": "en-US",
+      "organization_id": 509974,
+      "role": "end-user",
+      "verified": true,
+      "active": true,
+      "suspended": false,
+      "tags": [
+        "enterprise"
+      ],
+      "external_id": null,
+      "user_fields": {}
+    }
+  }
+}

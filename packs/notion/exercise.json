@@ -1,0 +1,289 @@
+{
+  "needs": {
+    "parent_page_id": "A page shared with the integration (the integration needs read, update and insert content, and read and insert comments): the last 32 characters of its URL. The run creates everything else under it and trashes it at the end."
+  },
+  "steps": [
+    {
+      "action": "search-pages",
+      "input": {
+        "query": ""
+      }
+    },
+    {
+      "action": "search-databases",
+      "input": {}
+    },
+    {
+      "action": "create-page",
+      "input": {
+        "parent_page_id": "{{needs.parent_page_id}}",
+        "title": "Anlyon exercise {{run}}"
+      },
+      "save": {
+        "page_id": "id"
+      }
+    },
+    {
+      "action": "get-page",
+      "input": {
+        "page_id": "{{saved.page_id}}"
+      }
+    },
+    {
+      "action": "get-page-property",
+      "input": {
+        "page_id": "{{saved.page_id}}",
+        "property_id": "title"
+      }
+    },
+    {
+      "action": "update-page-properties",
+      "input": {
+        "page_id": "{{saved.page_id}}",
+        "properties": {
+          "title": {
+            "title": [
+              {
+                "text": {
+                  "content": "Anlyon exercise {{run}} (renamed)"
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "action": "append-paragraph",
+      "input": {
+        "page_id": "{{saved.page_id}}",
+        "text": "Anlyon exercise paragraph {{run}}"
+      },
+      "save": {
+        "paragraph_id": "results.0.id"
+      }
+    },
+    {
+      "action": "append-blocks",
+      "input": {
+        "block_id": "{{saved.page_id}}",
+        "children": [
+          {
+            "type": "heading_2",
+            "heading_2": {
+              "rich_text": [
+                {
+                  "text": {
+                    "content": "Checklist {{run}}"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "bulleted_list_item",
+            "bulleted_list_item": {
+              "rich_text": [
+                {
+                  "text": {
+                    "content": "A bulleted item"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "type": "to_do",
+            "to_do": {
+              "rich_text": [
+                {
+                  "text": {
+                    "content": "A to-do"
+                  }
+                }
+              ],
+              "checked": false
+            }
+          }
+        ]
+      },
+      "save": {
+        "todo_id": "results.2.id"
+      }
+    },
+    {
+      "action": "list-block-children",
+      "input": {
+        "block_id": "{{saved.page_id}}"
+      }
+    },
+    {
+      "action": "get-block",
+      "input": {
+        "block_id": "{{saved.todo_id}}"
+      }
+    },
+    {
+      "action": "update-block-text",
+      "input": {
+        "block_id": "{{saved.todo_id}}",
+        "to_do": {
+          "rich_text": [
+            {
+              "text": {
+                "content": "A to-do, done"
+              }
+            }
+          ],
+          "checked": true
+        }
+      }
+    },
+    {
+      "action": "delete-block",
+      "input": {
+        "block_id": "{{saved.paragraph_id}}"
+      }
+    },
+    {
+      "action": "add-comment",
+      "input": {
+        "page_id": "{{saved.page_id}}",
+        "text": "Anlyon exercise comment {{run}}"
+      },
+      "save": {
+        "comment_id": "id",
+        "discussion_id": "discussion_id"
+      }
+    },
+    {
+      "action": "reply-to-comment",
+      "input": {
+        "discussion_id": "{{saved.discussion_id}}",
+        "text": "Anlyon exercise reply {{run}}"
+      },
+      "save": {
+        "reply_id": "id"
+      }
+    },
+    {
+      "action": "list-comments",
+      "input": {
+        "block_id": "{{saved.page_id}}"
+      }
+    },
+    {
+      "action": "update-comment",
+      "input": {
+        "comment_id": "{{saved.comment_id}}",
+        "text": "Anlyon exercise comment {{run}} (edited)"
+      }
+    },
+    {
+      "action": "delete-comment",
+      "input": {
+        "comment_id": "{{saved.reply_id}}"
+      }
+    },
+    {
+      "action": "delete-comment",
+      "input": {
+        "comment_id": "{{saved.comment_id}}"
+      }
+    },
+    {
+      "action": "create-database",
+      "input": {
+        "parent_page_id": "{{saved.page_id}}",
+        "title": "Anlyon exercise tasks {{run}}",
+        "properties": {
+          "Name": {
+            "title": {}
+          },
+          "Done": {
+            "checkbox": {}
+          }
+        }
+      },
+      "save": {
+        "database_id": "id"
+      }
+    },
+    {
+      "action": "get-database",
+      "input": {
+        "database_id": "{{saved.database_id}}"
+      }
+    },
+    {
+      "action": "create-database-page",
+      "input": {
+        "database_id": "{{saved.database_id}}",
+        "properties": {
+          "Name": {
+            "title": [
+              {
+                "text": {
+                  "content": "Exercise row {{run}}"
+                }
+              }
+            ]
+          },
+          "Done": {
+            "checkbox": false
+          }
+        }
+      },
+      "save": {
+        "row_id": "id"
+      }
+    },
+    {
+      "action": "query-database",
+      "input": {
+        "database_id": "{{saved.database_id}}",
+        "filter": {
+          "property": "Done",
+          "checkbox": {
+            "equals": false
+          }
+        },
+        "sorts": [
+          {
+            "timestamp": "created_time",
+            "direction": "descending"
+          }
+        ]
+      }
+    },
+    {
+      "action": "update-page-properties",
+      "input": {
+        "page_id": "{{saved.row_id}}",
+        "properties": {
+          "Done": {
+            "checkbox": true
+          }
+        }
+      }
+    },
+    {
+      "action": "archive-page",
+      "input": {
+        "page_id": "{{saved.page_id}}"
+      }
+    },
+    {
+      "action": "restore-page",
+      "input": {
+        "page_id": "{{saved.page_id}}"
+      }
+    },
+    {
+      "action": "archive-page",
+      "input": {
+        "page_id": "{{saved.page_id}}"
+      }
+    }
+  ]
+}

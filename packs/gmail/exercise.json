@@ -1,0 +1,13 @@
+{
+  "needs": {
+    "raw": "A short RFC 2822 message to an inbox you own, base64url-encoded: printf 'To: you@example.com\\r\\nSubject: Anlyon exercise\\r\\n\\r\\nHello.\\r\\n' | base64 -w0 | tr '+/' '-_' | tr -d '='"
+  },
+  "steps": [
+    {
+      "action": "send-email",
+      "input": {
+        "raw": "{{needs.raw}}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,1364 @@
+{
+ "$schema": "../schema/anlyon-pack.v1.json",
+ "format": "anlyon-pack/v1",
+ "pack": "anlyon/linear-key",
+ "version": "0.1.0",
+ "description": "Linear for an agent: list teams, workflow states and labels, list, search and read issues and their comments; create and update issues, assign them, move them between states, add and remove labels, comment and archive, with every write governed.",
+ "secrets": [
+  {
+   "name": "LINEAR_KEY",
+   "kind": "connection",
+   "integrationId": "linear-key",
+   "hosts": [
+    "api.linear.app"
+   ],
+   "description": "The connected Linear personal API key"
+  }
+ ],
+ "actions": [
+  {
+   "name": "list-teams",
+   "kind": "read",
+   "description": "List the teams whose issues the key's user can see. Returns 50 a page, each with id, key (the prefix of issue identifiers, such as ENG) and name. When pageInfo.hasNextPage is true, pass pageInfo.endCursor as after. A GraphQL query that changes nothing.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "query ListTeams($after: String) { teams(first: 50, after: $after) { nodes { id key name description } pageInfo { hasNextPage endCursor } } }",
+    "variables": {
+     "after": "{{input.after}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [],
+    "additionalProperties": false,
+    "properties": {
+     "after": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_=+/:.-]{1,512}$",
+      "description": "pageInfo.endCursor from the previous page, when pageInfo.hasNextPage is true. Leave out to start at the beginning."
+     }
+    }
+   },
+   "requiresApproval": false
+  },
+  {
+   "name": "list-workflow-states",
+   "kind": "read",
+   "description": "List one team's workflow states (its issue statuses), 50 a page. Each has id, name, type (triage, backlog, unstarted, started, completed, canceled or duplicate) and position. Use a state's id with move-issue or in a list-issues filter. A GraphQL query that changes nothing.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "query ListWorkflowStates($teamId: String!, $after: String) { team(id: $teamId) { id key states(first: 50, after: $after) { nodes { id name type position } pageInfo { hasNextPage endCursor } } } }",
+    "variables": {
+     "teamId": "{{input.team_id}}",
+     "after": "{{input.after}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "team_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "team_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The team's id, from list-teams."
+     },
+     "after": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_=+/:.-]{1,512}$",
+      "description": "pageInfo.endCursor from the previous page, when pageInfo.hasNextPage is true. Leave out to start at the beginning."
+     }
+    }
+   },
+   "requiresApproval": false
+  },
+  {
+   "name": "list-labels",
+   "kind": "read",
+   "description": "List the issue labels the key's user can see, of the workspace and of every team, 50 a page. Each has id, name, whether it is a group, and its team (null for a workspace label). A team label can be added to issues of that team. A GraphQL query that changes nothing.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "query ListLabels($after: String) { issueLabels(first: 50, after: $after) { nodes { id name isGroup team { id key } parent { id name } } pageInfo { hasNextPage endCursor } } }",
+    "variables": {
+     "after": "{{input.after}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [],
+    "additionalProperties": false,
+    "properties": {
+     "after": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_=+/:.-]{1,512}$",
+      "description": "pageInfo.endCursor from the previous page, when pageInfo.hasNextPage is true. Leave out to start at the beginning."
+     }
+    }
+   },
+   "requiresApproval": false
+  },
+  {
+   "name": "list-issues",
+   "kind": "read",
+   "description": "List issues, 25 a page, ordered by creation time, or by last update when order_by is updatedAt. Filter by team, state (by id or type), assignee (by id, the key's own user, or unassigned), label, priority, title text and last update. Each issue has id, identifier, title, priority, url, due date, state, team, assignee and up to 10 labels; descriptions are left out, use get-issue. Archived issues are left out. When pageInfo.hasNextPage is true, pass pageInfo.endCursor as after. A GraphQL query that changes nothing.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "query ListIssues($filter: IssueFilter, $orderBy: PaginationOrderBy, $after: String) { issues(first: 25, after: $after, filter: $filter, orderBy: $orderBy) { nodes { id identifier title priority priorityLabel url dueDate createdAt updatedAt state { id name type } team { id key } assignee { id name } labels(first: 10) { nodes { id name } } } pageInfo { hasNextPage endCursor } } }",
+    "variables": {
+     "filter": "{{input.filter}}",
+     "orderBy": "{{input.order_by}}",
+     "after": "{{input.after}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [],
+    "additionalProperties": false,
+    "properties": {
+     "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "team": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "id": {
+          "type": "object",
+          "required": [
+           "eq"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "eq": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The team's id, from list-teams."
+           }
+          },
+          "description": "The team id."
+         }
+        },
+        "description": "Issues of one team."
+       },
+       "state": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "id": {
+          "type": "object",
+          "required": [
+           "eq"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "eq": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The state's id, from list-workflow-states."
+           }
+          },
+          "description": "One state."
+         },
+         "type": {
+          "type": "object",
+          "required": [
+           "in"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "in": {
+            "type": "array",
+            "items": {
+             "type": "string",
+             "enum": [
+              "triage",
+              "backlog",
+              "unstarted",
+              "started",
+              "completed",
+              "canceled"
+             ],
+             "description": "A state type."
+            },
+            "description": "The state types, for example [\"unstarted\", \"started\"] for open work."
+           }
+          },
+          "description": "Any state of these types."
+         }
+        },
+        "description": "Issues in a workflow state. Give id or type."
+       },
+       "assignee": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "id": {
+          "type": "object",
+          "required": [
+           "eq"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "eq": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The user's id, as an issue's assignee.id shows it."
+           }
+          },
+          "description": "One user."
+         },
+         "isMe": {
+          "type": "object",
+          "required": [
+           "eq"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "eq": {
+            "type": "boolean",
+            "description": "true for issues assigned to the key's own user."
+           }
+          },
+          "description": "The key's own user."
+         },
+         "null": {
+          "type": "boolean",
+          "description": "true for unassigned issues."
+         }
+        },
+        "description": "Issues by assignee. Give id, isMe or null."
+       },
+       "labels": {
+        "type": "object",
+        "required": [
+         "some"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "some": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+           "id": {
+            "type": "object",
+            "required": [
+             "eq"
+            ],
+            "additionalProperties": false,
+            "properties": {
+             "eq": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "The label's id, from list-labels."
+             }
+            },
+            "description": "One label."
+           },
+           "name": {
+            "type": "object",
+            "required": [
+             "eqIgnoreCase"
+            ],
+            "additionalProperties": false,
+            "properties": {
+             "eqIgnoreCase": {
+              "type": "string",
+              "pattern": "^[^\\n]{1,100}$",
+              "description": "The label's name, not case sensitive."
+             }
+            },
+            "description": "A label by name."
+           }
+          },
+          "description": "A label the issue carries. Give id or name."
+         }
+        },
+        "description": "Issues that carry a label."
+       },
+       "priority": {
+        "type": "object",
+        "required": [
+         "eq"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "eq": {
+          "type": "integer",
+          "enum": [
+           0,
+           1,
+           2,
+           3,
+           4
+          ],
+          "description": "0 no priority, 1 urgent, 2 high, 3 medium, 4 low."
+         }
+        },
+        "description": "Issues of one priority."
+       },
+       "title": {
+        "type": "object",
+        "required": [
+         "containsIgnoreCase"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "containsIgnoreCase": {
+          "type": "string",
+          "pattern": "^[^\\n]{1,200}$",
+          "description": "The text, not case sensitive."
+         }
+        },
+        "description": "Issues whose title contains a text."
+       },
+       "updatedAt": {
+        "type": "object",
+        "required": [
+         "gte"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "gte": {
+          "type": "string",
+          "pattern": "^(-?P[0-9WDTHMS.]{1,20}|[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9:.]{2,15}Z?)?)$",
+          "description": "An ISO 8601 date or time (2026-10-01), or a duration back from now (-P2W)."
+         }
+        },
+        "description": "Issues updated since a time."
+       }
+      },
+      "description": "Which issues to return. Every part is optional and they combine with AND. Leave the whole filter out for every issue you can see."
+     },
+     "order_by": {
+      "type": "string",
+      "enum": [
+       "createdAt",
+       "updatedAt"
+      ],
+      "description": "createdAt (the default) or updatedAt."
+     },
+     "after": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_=+/:.-]{1,512}$",
+      "description": "pageInfo.endCursor from the previous page, when pageInfo.hasNextPage is true. Leave out to start at the beginning."
+     }
+    }
+   },
+   "requiresApproval": false
+  },
+  {
+   "name": "search-issues",
+   "kind": "read",
+   "description": "Search issues by text in their title and description, and in their comments when include_comments is true. Returns 25 a page, ranked by relevance, with the same fields as list-issues and the same filter. team_id limits the results to one team. Linear rate-limits this search more tightly than other queries (30 a minute by its schema). When pageInfo.hasNextPage is true, pass pageInfo.endCursor as after. A GraphQL query that changes nothing.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "query SearchIssues($term: String!, $filter: IssueFilter, $teamId: String, $includeComments: Boolean, $after: String) { searchIssues(term: $term, first: 25, after: $after, filter: $filter, teamId: $teamId, includeComments: $includeComments) { nodes { id identifier title priority priorityLabel url dueDate createdAt updatedAt state { id name type } team { id key } assignee { id name } labels(first: 10) { nodes { id name } } } pageInfo { hasNextPage endCursor } totalCount } }",
+    "variables": {
+     "term": "{{input.term}}",
+     "filter": "{{input.filter}}",
+     "teamId": "{{input.team_id}}",
+     "includeComments": "{{input.include_comments}}",
+     "after": "{{input.after}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "term"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "term": {
+      "type": "string",
+      "pattern": "^[^\\n]{1,200}$",
+      "description": "What to search for."
+     },
+     "filter": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+       "team": {
+        "type": "object",
+        "required": [
+         "id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "id": {
+          "type": "object",
+          "required": [
+           "eq"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "eq": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The team's id, from list-teams."
+           }
+          },
+          "description": "The team id."
+         }
+        },
+        "description": "Issues of one team."
+       },
+       "state": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "id": {
+          "type": "object",
+          "required": [
+           "eq"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "eq": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The state's id, from list-workflow-states."
+           }
+          },
+          "description": "One state."
+         },
+         "type": {
+          "type": "object",
+          "required": [
+           "in"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "in": {
+            "type": "array",
+            "items": {
+             "type": "string",
+             "enum": [
+              "triage",
+              "backlog",
+              "unstarted",
+              "started",
+              "completed",
+              "canceled"
+             ],
+             "description": "A state type."
+            },
+            "description": "The state types, for example [\"unstarted\", \"started\"] for open work."
+           }
+          },
+          "description": "Any state of these types."
+         }
+        },
+        "description": "Issues in a workflow state. Give id or type."
+       },
+       "assignee": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+         "id": {
+          "type": "object",
+          "required": [
+           "eq"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "eq": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The user's id, as an issue's assignee.id shows it."
+           }
+          },
+          "description": "One user."
+         },
+         "isMe": {
+          "type": "object",
+          "required": [
+           "eq"
+          ],
+          "additionalProperties": false,
+          "properties": {
+           "eq": {
+            "type": "boolean",
+            "description": "true for issues assigned to the key's own user."
+           }
+          },
+          "description": "The key's own user."
+         },
+         "null": {
+          "type": "boolean",
+          "description": "true for unassigned issues."
+         }
+        },
+        "description": "Issues by assignee. Give id, isMe or null."
+       },
+       "labels": {
+        "type": "object",
+        "required": [
+         "some"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "some": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+           "id": {
+            "type": "object",
+            "required": [
+             "eq"
+            ],
+            "additionalProperties": false,
+            "properties": {
+             "eq": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+              "description": "The label's id, from list-labels."
+             }
+            },
+            "description": "One label."
+           },
+           "name": {
+            "type": "object",
+            "required": [
+             "eqIgnoreCase"
+            ],
+            "additionalProperties": false,
+            "properties": {
+             "eqIgnoreCase": {
+              "type": "string",
+              "pattern": "^[^\\n]{1,100}$",
+              "description": "The label's name, not case sensitive."
+             }
+            },
+            "description": "A label by name."
+           }
+          },
+          "description": "A label the issue carries. Give id or name."
+         }
+        },
+        "description": "Issues that carry a label."
+       },
+       "priority": {
+        "type": "object",
+        "required": [
+         "eq"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "eq": {
+          "type": "integer",
+          "enum": [
+           0,
+           1,
+           2,
+           3,
+           4
+          ],
+          "description": "0 no priority, 1 urgent, 2 high, 3 medium, 4 low."
+         }
+        },
+        "description": "Issues of one priority."
+       },
+       "title": {
+        "type": "object",
+        "required": [
+         "containsIgnoreCase"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "containsIgnoreCase": {
+          "type": "string",
+          "pattern": "^[^\\n]{1,200}$",
+          "description": "The text, not case sensitive."
+         }
+        },
+        "description": "Issues whose title contains a text."
+       },
+       "updatedAt": {
+        "type": "object",
+        "required": [
+         "gte"
+        ],
+        "additionalProperties": false,
+        "properties": {
+         "gte": {
+          "type": "string",
+          "pattern": "^(-?P[0-9WDTHMS.]{1,20}|[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9:.]{2,15}Z?)?)$",
+          "description": "An ISO 8601 date or time (2026-10-01), or a duration back from now (-P2W)."
+         }
+        },
+        "description": "Issues updated since a time."
+       }
+      },
+      "description": "Which issues to return. Every part is optional and they combine with AND. Leave the whole filter out for every issue you can see."
+     },
+     "team_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "A team to limit the results to, from list-teams."
+     },
+     "include_comments": {
+      "type": "boolean",
+      "description": "true to search comments too."
+     },
+     "after": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_=+/:.-]{1,512}$",
+      "description": "pageInfo.endCursor from the previous page, when pageInfo.hasNextPage is true. Leave out to start at the beginning."
+     }
+    }
+   },
+   "requiresApproval": false
+  },
+  {
+   "name": "get-issue",
+   "kind": "read",
+   "description": "Get one issue by id or identifier (ENG-123): title, description (markdown), priority, url, due date, estimate, state, team, assignee, creator, project, parent, labels (up to 50) and when it was created, updated, completed or archived. A GraphQL query that changes nothing.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "query GetIssue($id: String!) { issue(id: $id) { id identifier title description priority priorityLabel estimate url dueDate createdAt updatedAt startedAt completedAt canceledAt archivedAt state { id name type } team { id key name } assignee { id name } creator { id name } project { id name } parent { id identifier title } labels(first: 50) { nodes { id name } } } }",
+    "variables": {
+     "id": "{{input.issue_id}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[A-Za-z][A-Za-z0-9_]{0,9}-[0-9]{1,9})$",
+      "description": "The issue: its id, or its identifier such as ENG-123 (from list-issues or search-issues)."
+     }
+    }
+   },
+   "requiresApproval": false
+  },
+  {
+   "name": "list-issue-comments",
+   "kind": "read",
+   "description": "List the comments on one issue, 20 a page, in the order they were made. Each has id, body (markdown), author, when it was created and edited, and the comment it replies to. When pageInfo.hasNextPage is true, pass pageInfo.endCursor as after. A GraphQL query that changes nothing.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "query ListIssueComments($id: String!, $after: String) { issue(id: $id) { id identifier comments(first: 20, after: $after) { nodes { id body createdAt editedAt url user { id name } parent { id } } pageInfo { hasNextPage endCursor } } } }",
+    "variables": {
+     "id": "{{input.issue_id}}",
+     "after": "{{input.after}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[A-Za-z][A-Za-z0-9_]{0,9}-[0-9]{1,9})$",
+      "description": "The issue: its id, or its identifier such as ENG-123 (from list-issues or search-issues)."
+     },
+     "after": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_=+/:.-]{1,512}$",
+      "description": "pageInfo.endCursor from the previous page, when pageInfo.hasNextPage is true. Leave out to start at the beginning."
+     }
+    }
+   },
+   "requiresApproval": false
+  },
+  {
+   "name": "create-issue",
+   "kind": "write",
+   "description": "Create one issue in a team, with a title and optionally a markdown description, priority, assignee, state, labels and due date. Returns its id, identifier and url. Read back by id; the title and team must match. Limitation: Linear accepts two issues with the same title, so a retry after an unknown outcome can create a second one. Search with search-issues before you create one. GraphQL answers most errors with HTTP 200, so a refused create shows as a read-back that does not match.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "mutation CreateIssue($input: IssueCreateInput!) { issueCreate(input: $input) { success issue { id identifier title url priority state { id name } team { id key } } } }",
+    "variables": {
+     "input": {
+      "teamId": "{{input.team_id}}",
+      "title": "{{input.title}}",
+      "description": "{{input.description}}",
+      "priority": "{{input.priority}}",
+      "assigneeId": "{{input.assignee_id}}",
+      "stateId": "{{input.state_id}}",
+      "labelIds": "{{input.label_ids}}",
+      "dueDate": "{{input.due_date}}"
+     }
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "team_id",
+     "title"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "team_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The team's id, from list-teams."
+     },
+     "title": {
+      "type": "string",
+      "pattern": "^[^\\n]{1,255}$",
+      "description": "The issue's title."
+     },
+     "description": {
+      "type": "string",
+      "pattern": "^[\\s\\S]{1,20000}$",
+      "description": "The description, in markdown."
+     },
+     "priority": {
+      "type": "integer",
+      "enum": [
+       0,
+       1,
+       2,
+       3,
+       4
+      ],
+      "description": "0 no priority (the default), 1 urgent, 2 high, 3 medium, 4 low."
+     },
+     "assignee_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The user to assign, as an issue's assignee.id shows it. Leave out for unassigned."
+     },
+     "state_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The workflow state, from list-workflow-states for this team. Leave out for the team's default."
+     },
+     "label_ids": {
+      "type": "array",
+      "items": {
+       "type": "string",
+       "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+       "description": "A label id, from list-labels: a workspace label or one of this team."
+      },
+      "description": "The labels to put on it."
+     },
+     "due_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "The due date, YYYY-MM-DD."
+     }
+    }
+   },
+   "requiresApproval": false,
+   "impact": {
+    "dimension": "resource_mutations",
+    "amount": "1",
+    "bound": "exact"
+   },
+   "verify": {
+    "url": "https://api.linear.app/graphql",
+    "status": 200,
+    "graphql": {
+     "query": "query IssueReadBack($id: String!) { issue(id: $id) { id identifier title priority dueDate updatedAt archivedAt state { id name type } team { id } assignee { id } labels(first: 50) { nodes { id name } } } }",
+     "variables": {
+      "id": "{{response.data.issueCreate.issue.id}}"
+     }
+    },
+    "match": [
+     {
+      "path": "data.issue.title",
+      "equals": "{{input.title}}"
+     },
+     {
+      "path": "data.issue.team.id",
+      "equals": "{{input.team_id}}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "update-issue",
+   "kind": "write",
+   "description": "Update one issue's title, description, priority or due date. Give at least one; the fields you leave out do not change. Read back by issue; the title, priority and last update time must equal what Linear answered for this update. Limitation: the description and due date are sent but not read back. To assign, move or label an issue use assign-issue, move-issue and add-issue-label. GraphQL answers most errors with HTTP 200, so a refused update shows as a read-back that does not match.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "mutation UpdateIssue($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success issue { id identifier title priority dueDate updatedAt } } }",
+    "variables": {
+     "id": "{{input.issue_id}}",
+     "input": {
+      "title": "{{input.title}}",
+      "description": "{{input.description}}",
+      "priority": "{{input.priority}}",
+      "dueDate": "{{input.due_date}}"
+     }
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[A-Za-z][A-Za-z0-9_]{0,9}-[0-9]{1,9})$",
+      "description": "The issue: its id, or its identifier such as ENG-123 (from list-issues or search-issues)."
+     },
+     "title": {
+      "type": "string",
+      "pattern": "^[^\\n]{1,255}$",
+      "description": "The new title."
+     },
+     "description": {
+      "type": "string",
+      "pattern": "^[\\s\\S]{1,20000}$",
+      "description": "The new description, in markdown. It replaces the old one."
+     },
+     "priority": {
+      "type": "integer",
+      "enum": [
+       0,
+       1,
+       2,
+       3,
+       4
+      ],
+      "description": "0 no priority, 1 urgent, 2 high, 3 medium, 4 low."
+     },
+     "due_date": {
+      "type": "string",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "description": "The new due date, YYYY-MM-DD."
+     }
+    }
+   },
+   "requiresApproval": false,
+   "impact": {
+    "dimension": "resource_mutations",
+    "amount": "1",
+    "bound": "exact"
+   },
+   "verify": {
+    "url": "https://api.linear.app/graphql",
+    "status": 200,
+    "graphql": {
+     "query": "query IssueReadBack($id: String!) { issue(id: $id) { id identifier title priority dueDate updatedAt archivedAt state { id name type } team { id } assignee { id } labels(first: 50) { nodes { id name } } } }",
+     "variables": {
+      "id": "{{input.issue_id}}"
+     }
+    },
+    "match": [
+     {
+      "path": "data.issue.title",
+      "equals": "{{response.data.issueUpdate.issue.title}}"
+     },
+     {
+      "path": "data.issue.priority",
+      "equals": "{{response.data.issueUpdate.issue.priority}}"
+     },
+     {
+      "path": "data.issue.updatedAt",
+      "equals": "{{response.data.issueUpdate.issue.updatedAt}}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "assign-issue",
+   "kind": "write",
+   "description": "Assign one issue to a user. Read back by issue; the assignee must be that user. Limitation: a user id comes from an issue's assignee.id or creator.id; the pack does not list workspace members. GraphQL answers most errors with HTTP 200, so a refused change shows as a read-back that does not match.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "mutation AssignIssue($id: String!, $assigneeId: String!) { issueUpdate(id: $id, input: { assigneeId: $assigneeId }) { success issue { id identifier assignee { id name } } } }",
+    "variables": {
+     "id": "{{input.issue_id}}",
+     "assigneeId": "{{input.assignee_id}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id",
+     "assignee_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[A-Za-z][A-Za-z0-9_]{0,9}-[0-9]{1,9})$",
+      "description": "The issue: its id, or its identifier such as ENG-123 (from list-issues or search-issues)."
+     },
+     "assignee_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The user to assign, as an issue's assignee.id or creator.id shows it."
+     }
+    }
+   },
+   "requiresApproval": false,
+   "impact": {
+    "dimension": "resource_mutations",
+    "amount": "1",
+    "bound": "exact"
+   },
+   "verify": {
+    "url": "https://api.linear.app/graphql",
+    "status": 200,
+    "graphql": {
+     "query": "query IssueReadBack($id: String!) { issue(id: $id) { id identifier title priority dueDate updatedAt archivedAt state { id name type } team { id } assignee { id } labels(first: 50) { nodes { id name } } } }",
+     "variables": {
+      "id": "{{input.issue_id}}"
+     }
+    },
+    "match": [
+     {
+      "path": "data.issue.assignee.id",
+      "equals": "{{input.assignee_id}}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "move-issue",
+   "kind": "write",
+   "description": "Move one issue to another workflow state of its team, such as In Progress or Done. Read back by issue; the state must be the one given. Limitation: the state must belong to the issue's team (list-workflow-states). GraphQL answers most errors with HTTP 200, so a refused move shows as a read-back that does not match.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "mutation MoveIssue($id: String!, $stateId: String!) { issueUpdate(id: $id, input: { stateId: $stateId }) { success issue { id identifier state { id name type } } } }",
+    "variables": {
+     "id": "{{input.issue_id}}",
+     "stateId": "{{input.state_id}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id",
+     "state_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[A-Za-z][A-Za-z0-9_]{0,9}-[0-9]{1,9})$",
+      "description": "The issue: its id, or its identifier such as ENG-123 (from list-issues or search-issues)."
+     },
+     "state_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The state to move it to, from list-workflow-states for the issue's team."
+     }
+    }
+   },
+   "requiresApproval": false,
+   "impact": {
+    "dimension": "resource_mutations",
+    "amount": "1",
+    "bound": "exact"
+   },
+   "verify": {
+    "url": "https://api.linear.app/graphql",
+    "status": 200,
+    "graphql": {
+     "query": "query IssueReadBack($id: String!) { issue(id: $id) { id identifier title priority dueDate updatedAt archivedAt state { id name type } team { id } assignee { id } labels(first: 50) { nodes { id name } } } }",
+     "variables": {
+      "id": "{{input.issue_id}}"
+     }
+    },
+    "match": [
+     {
+      "path": "data.issue.state.id",
+      "equals": "{{input.state_id}}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "add-issue-label",
+   "kind": "write",
+   "description": "Add one label to an issue, keeping its other labels. Read back by issue; the label must be among its labels. Limitation: a team label can be added to issues of that team. GraphQL answers most errors with HTTP 200, so a refused change shows as a read-back that does not match.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "mutation AddIssueLabel($id: String!, $labelId: String!) { issueAddLabel(id: $id, labelId: $labelId) { success issue { id identifier labels(first: 50) { nodes { id name } } } } }",
+    "variables": {
+     "id": "{{input.issue_id}}",
+     "labelId": "{{input.label_id}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id",
+     "label_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[A-Za-z][A-Za-z0-9_]{0,9}-[0-9]{1,9})$",
+      "description": "The issue: its id, or its identifier such as ENG-123 (from list-issues or search-issues)."
+     },
+     "label_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The label, from list-labels."
+     }
+    }
+   },
+   "requiresApproval": false,
+   "impact": {
+    "dimension": "resource_mutations",
+    "amount": "1",
+    "bound": "exact"
+   },
+   "verify": {
+    "url": "https://api.linear.app/graphql",
+    "status": 200,
+    "graphql": {
+     "query": "query IssueReadBack($id: String!) { issue(id: $id) { id identifier title priority dueDate updatedAt archivedAt state { id name type } team { id } assignee { id } labels(first: 50) { nodes { id name } } } }",
+     "variables": {
+      "id": "{{input.issue_id}}"
+     }
+    },
+    "match": [
+     {
+      "path": "data.issue.labels.nodes.*.id",
+      "equals": "{{input.label_id}}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "remove-issue-label",
+   "kind": "write",
+   "description": "Remove one label from an issue, keeping its other labels. Read back by issue; the label must no longer be among its labels. GraphQL answers most errors with HTTP 200, so a refused change shows as a read-back that does not match.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "mutation RemoveIssueLabel($id: String!, $labelId: String!) { issueRemoveLabel(id: $id, labelId: $labelId) { success issue { id identifier labels(first: 50) { nodes { id name } } } } }",
+    "variables": {
+     "id": "{{input.issue_id}}",
+     "labelId": "{{input.label_id}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id",
+     "label_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[A-Za-z][A-Za-z0-9_]{0,9}-[0-9]{1,9})$",
+      "description": "The issue: its id, or its identifier such as ENG-123 (from list-issues or search-issues)."
+     },
+     "label_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The label to remove, from the issue's labels."
+     }
+    }
+   },
+   "requiresApproval": false,
+   "impact": {
+    "dimension": "resource_mutations",
+    "amount": "1",
+    "bound": "exact"
+   },
+   "verify": {
+    "url": "https://api.linear.app/graphql",
+    "status": 200,
+    "graphql": {
+     "query": "query IssueReadBack($id: String!) { issue(id: $id) { id identifier title priority dueDate updatedAt archivedAt state { id name type } team { id } assignee { id } labels(first: 50) { nodes { id name } } } }",
+     "variables": {
+      "id": "{{input.issue_id}}"
+     }
+    },
+    "match": [
+     {
+      "path": "data.issue.id",
+      "equals": "{{response.data.issueRemoveLabel.issue.id}}"
+     },
+     {
+      "path": "data.issue.labels.nodes.*.id",
+      "equals": "{{input.label_id}}",
+      "absent": true
+     }
+    ]
+   }
+  },
+  {
+   "name": "add-comment",
+   "kind": "write",
+   "description": "Add one comment, in markdown, to an issue. Linear notifies the issue's subscribers and anyone mentioned. Returns the comment's id and url. Read back by comment id; the body must equal what Linear stored and the comment must be on this issue. Limitation: a retry after an unknown outcome can post a second comment. GraphQL answers most errors with HTTP 200, so a refused comment shows as a read-back that does not match.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "mutation AddComment($input: CommentCreateInput!) { commentCreate(input: $input) { success comment { id body url createdAt issue { id identifier } } } }",
+    "variables": {
+     "input": {
+      "issueId": "{{input.issue_id}}",
+      "body": "{{input.body}}"
+     }
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id",
+     "body"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+      "description": "The issue's id (not its identifier), from get-issue or list-issues."
+     },
+     "body": {
+      "type": "string",
+      "pattern": "^[\\s\\S]{1,20000}$",
+      "description": "The comment, in markdown."
+     }
+    }
+   },
+   "requiresApproval": false,
+   "impact": {
+    "dimension": "resource_mutations",
+    "amount": "1",
+    "bound": "exact"
+   },
+   "verify": {
+    "url": "https://api.linear.app/graphql",
+    "status": 200,
+    "graphql": {
+     "query": "query CommentReadBack($id: String!) { comment(id: $id) { id body issue { id } } }",
+     "variables": {
+      "id": "{{response.data.commentCreate.comment.id}}"
+     }
+    },
+    "match": [
+     {
+      "path": "data.comment.body",
+      "equals": "{{response.data.commentCreate.comment.body}}"
+     },
+     {
+      "path": "data.comment.issue.id",
+      "equals": "{{input.issue_id}}"
+     }
+    ]
+   }
+  },
+  {
+   "name": "archive-issue",
+   "kind": "write",
+   "description": "Archive one issue. It leaves the team's views and lists, and can be restored in Linear. Read back by issue; its archive time must equal what Linear answered. Limitation: the pack does not restore an archived issue; restore it in Linear. GraphQL answers most errors with HTTP 200, so a refused archive shows as a read-back that does not match.",
+   "method": "POST",
+   "urlTemplate": "https://api.linear.app/graphql",
+   "graphql": true,
+   "headers": {
+    "Authorization": "{{connection:linear-key}}",
+    "Content-Type": "application/json"
+   },
+   "bodyTemplate": {
+    "query": "mutation ArchiveIssue($id: String!) { issueArchive(id: $id) { success entity { id identifier archivedAt } } }",
+    "variables": {
+     "id": "{{input.issue_id}}"
+    }
+   },
+   "inputSchema": {
+    "type": "object",
+    "required": [
+     "issue_id"
+    ],
+    "additionalProperties": false,
+    "properties": {
+     "issue_id": {
+      "type": "string",
+      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[A-Za-z][A-Za-z0-9_]{0,9}-[0-9]{1,9})$",
+      "description": "The issue: its id, or its identifier such as ENG-123 (from list-issues or search-issues)."
+     }
+    }
+   },
+   "requiresApproval": false,
+   "impact": {
+    "dimension": "resource_mutations",
+    "amount": "1",
+    "bound": "exact"
+   },
+   "verify": {
+    "url": "https://api.linear.app/graphql",
+    "status": 200,
+    "graphql": {
+     "query": "query IssueReadBack($id: String!) { issue(id: $id) { id identifier title priority dueDate updatedAt archivedAt state { id name type } team { id } assignee { id } labels(first: 50) { nodes { id name } } } }",
+     "variables": {
+      "id": "{{input.issue_id}}"
+     }
+    },
+    "match": [
+     {
+      "path": "data.issue.archivedAt",
+      "equals": "{{response.data.issueArchive.entity.archivedAt}}"
+     }
+    ]
+   }
+  }
+ ],
+ "policies": [
+  {
+   "name": "linear-key: approve archiving an issue",
+   "matchKind": "action",
+   "matchActionName": "archive-issue",
+   "effect": "require_approval"
+  }
+ ],
+ "limits": [
+  {
+   "name": "linear-key: issues created per day",
+   "dimension": "resource_mutations",
+   "period": "day",
+   "amount": 50,
+   "actionName": "create-issue"
+  },
+  {
+   "name": "linear-key: issues updated per day",
+   "dimension": "resource_mutations",
+   "period": "day",
+   "amount": 200,
+   "actionName": "update-issue"
+  },
+  {
+   "name": "linear-key: issues assigned per day",
+   "dimension": "resource_mutations",
+   "period": "day",
+   "amount": 100,
+   "actionName": "assign-issue"
+  },
+  {
+   "name": "linear-key: issues moved per day",
+   "dimension": "resource_mutations",
+   "period": "day",
+   "amount": 200,
+   "actionName": "move-issue"
+  },
+  {
+   "name": "linear-key: labels added per day",
+   "dimension": "resource_mutations",
+   "period": "day",
+   "amount": 200,
+   "actionName": "add-issue-label"
+  },
+  {
+   "name": "linear-key: labels removed per day",
+   "dimension": "resource_mutations",
+   "period": "day",
+   "amount": 100,
+   "actionName": "remove-issue-label"
+  },
+  {
+   "name": "linear-key: comments per day",
+   "dimension": "resource_mutations",
+   "period": "day",
+   "amount": 200,
+   "actionName": "add-comment"
+  },
+  {
+   "name": "linear-key: issues archived per day",
+   "dimension": "resource_mutations",
+   "period": "day",
+   "amount": 20,
+   "actionName": "archive-issue"
+  }
+ ]
+}

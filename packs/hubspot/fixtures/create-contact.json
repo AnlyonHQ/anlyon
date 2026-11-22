@@ -1,0 +1,36 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/create-contact).",
+  "params": {},
+  "input": {
+    "email": "ada@example.com",
+    "firstname": "Ada",
+    "lastname": "Lovelace"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/contacts",
+  "response": {
+    "id": "512",
+    "properties": {
+      "email": "ada@example.com",
+      "firstname": "Ada",
+      "lastname": "Lovelace"
+    }
+  },
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/contacts/512?properties=email",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "512",
+      "properties": {
+        "email": "ada@example.com",
+        "hs_object_id": "512"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 404,
+    "json": {
+      "status": "error",
+      "category": "OBJECT_NOT_FOUND"
+    }
+  }
+}

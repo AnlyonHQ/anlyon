@@ -1,0 +1,57 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/comments#create-an-issue-comment).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "pull_number": "57",
+    "body": "CI is green; ready for review."
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/issues/57/comments",
+  "response": {
+    "id": 3051120099,
+    "user": {
+      "login": "octo-dev",
+      "id": 583231,
+      "type": "User",
+      "html_url": "https://github.com/octo-dev"
+    },
+    "body": "CI is green; ready for review.",
+    "created_at": "2026-10-15T08:01:12Z",
+    "updated_at": "2026-10-15T08:01:12Z",
+    "html_url": "https://github.com/acme/widgets/pull/57#issuecomment-3051120099"
+  },
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/issues/comments/3051120099",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 3051120099,
+      "user": {
+        "login": "octo-dev",
+        "id": 583231,
+        "type": "User",
+        "html_url": "https://github.com/octo-dev"
+      },
+      "body": "CI is green; ready for review.",
+      "created_at": "2026-10-15T08:01:12Z",
+      "updated_at": "2026-10-15T08:01:12Z",
+      "html_url": "https://github.com/acme/widgets/issues/412#issuecomment-3051120077"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 3051120099,
+      "user": {
+        "login": "octo-dev",
+        "id": 583231,
+        "type": "User",
+        "html_url": "https://github.com/octo-dev"
+      },
+      "body": "Something else.",
+      "created_at": "2026-10-15T08:01:12Z",
+      "updated_at": "2026-10-15T08:01:12Z",
+      "html_url": "https://github.com/acme/widgets/issues/412#issuecomment-3051120077"
+    }
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "channel": "C0123456789",
+    "topic": "Release coordination"
+  },
+  "expectedUrl": "https://slack.com/api/conversations.setTopic",
+  "response": {
+    "ok": true,
+    "channel": {
+      "id": "C0123456789",
+      "topic": {
+        "value": "Release coordination"
+      }
+    }
+  },
+  "expectedReadBackUrl": "https://slack.com/api/conversations.info?channel=C0123456789",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "ok": true,
+      "channel": {
+        "id": "C0123456789",
+        "topic": {
+          "value": "Release coordination",
+          "creator": "U01"
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "ok": false,
+      "error": "not_in_channel"
+    }
+  }
+}

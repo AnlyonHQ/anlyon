@@ -1,0 +1,189 @@
+{
+  "needs": {
+    "list_id": "The id of an audience you test with (list-audiences shows it)",
+    "member_email": "An address you own that may join that audience; the run adds it as transactional, tags it and archives it at the end",
+    "segment_id": "The numeric id of a tag in that audience that is safe to put on the test member (list-segments with type static shows it)",
+    "campaign_id": "The id of a draft campaign to that audience (status save), which the run tests, schedules and unschedules",
+    "schedule_time": "A UTC time on the quarter hour at least an hour ahead, for example 2026-11-03T15:30:00Z; the run unschedules it straight away"
+  },
+  "steps": [
+    {
+      "action": "list-audiences",
+      "input": {}
+    },
+    {
+      "action": "get-audience",
+      "input": {
+        "list_id": "{{needs.list_id}}"
+      }
+    },
+    {
+      "action": "upsert-member",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "email": "{{needs.member_email}}",
+        "status_if_new": "transactional",
+        "first_name": "Anlyon",
+        "last_name": "Exercise"
+      },
+      "save": {
+        "member_id": "id"
+      }
+    },
+    {
+      "action": "get-member",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member": "{{saved.member_id}}"
+      }
+    },
+    {
+      "action": "search-members",
+      "input": {
+        "query": "{{needs.member_email}}",
+        "list_id": "{{needs.list_id}}"
+      }
+    },
+    {
+      "action": "list-members",
+      "input": {
+        "list_id": "{{needs.list_id}}"
+      }
+    },
+    {
+      "action": "update-member-name",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}",
+        "first_name": "Anlyon",
+        "last_name": "Exercise {{run}}"
+      }
+    },
+    {
+      "action": "add-member-tag",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}",
+        "tag": "anlyon-exercise-{{run}}"
+      }
+    },
+    {
+      "action": "list-member-tags",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}"
+      }
+    },
+    {
+      "action": "remove-member-tag",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}",
+        "tag": "anlyon-exercise-{{run}}"
+      }
+    },
+    {
+      "action": "add-member-note",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}",
+        "note": "Anlyon exercise {{run}}"
+      }
+    },
+    {
+      "action": "list-member-notes",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}"
+      }
+    },
+    {
+      "action": "get-member-activity",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}"
+      }
+    },
+    {
+      "action": "list-segments",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "type": "static"
+      }
+    },
+    {
+      "action": "add-to-segment",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "segment_id": "{{needs.segment_id}}",
+        "email": "{{needs.member_email}}"
+      }
+    },
+    {
+      "action": "list-segment-members",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "segment_id": "{{needs.segment_id}}"
+      }
+    },
+    {
+      "action": "remove-from-segment",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "segment_id": "{{needs.segment_id}}",
+        "member_id": "{{saved.member_id}}"
+      }
+    },
+    {
+      "action": "set-member-status",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}",
+        "status": "unsubscribed"
+      }
+    },
+    {
+      "action": "list-campaigns",
+      "input": {
+        "status": "save",
+        "list_id": "{{needs.list_id}}"
+      }
+    },
+    {
+      "action": "get-campaign",
+      "input": {
+        "campaign_id": "{{needs.campaign_id}}"
+      }
+    },
+    {
+      "action": "send-test-email",
+      "input": {
+        "campaign_id": "{{needs.campaign_id}}",
+        "test_emails": [
+          "{{needs.member_email}}"
+        ],
+        "send_type": "html"
+      }
+    },
+    {
+      "action": "schedule-campaign",
+      "input": {
+        "campaign_id": "{{needs.campaign_id}}",
+        "schedule_time": "{{needs.schedule_time}}"
+      }
+    },
+    {
+      "action": "unschedule-campaign",
+      "input": {
+        "campaign_id": "{{needs.campaign_id}}"
+      }
+    },
+    {
+      "action": "archive-member",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "member_id": "{{saved.member_id}}"
+      }
+    }
+  ]
+}

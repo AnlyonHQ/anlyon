@@ -1,0 +1,24 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/merge_requests/).",
+  "params": {},
+  "input": {
+    "project": "acme/web",
+    "merge_request_iid": "7"
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/merge_requests/7/diffs?per_page=5",
+  "response": [
+    {
+      "old_path": "src/checkout.ts",
+      "new_path": "src/checkout.ts",
+      "a_mode": "100644",
+      "b_mode": "100644",
+      "diff": "@@ -1 +1 @@\n-const pay = old();\n+const pay = fixed();\n",
+      "new_file": false,
+      "renamed_file": false,
+      "deleted_file": false,
+      "collapsed": false,
+      "too_large": false,
+      "generated_file": false
+    }
+  ]
+}

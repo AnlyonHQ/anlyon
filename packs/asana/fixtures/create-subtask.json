@@ -1,0 +1,47 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/createsubtaskfortask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210",
+    "name": "Send the questionnaire",
+    "due_on": "2026-10-22"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210/subtasks",
+  "response": {
+    "data": {
+      "gid": "1208809876549999",
+      "resource_type": "task",
+      "name": "Send the questionnaire",
+      "parent": {
+        "gid": "1208809876543210",
+        "resource_type": "task",
+        "name": "Follow up with Acme"
+      }
+    }
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/tasks/1208809876549999?opt_fields=name,parent",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876549999",
+        "name": "Send the questionnaire",
+        "parent": {
+          "gid": "1208809876543210",
+          "resource_type": "task",
+          "name": "Follow up with Acme"
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876549999",
+        "name": "Send the questionnaire",
+        "parent": null
+      }
+    }
+  }
+}

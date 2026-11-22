@@ -1,0 +1,19 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/gettagsforworkspace).",
+  "params": {},
+  "input": {
+    "workspace_gid": "1208800000000001"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/workspaces/1208800000000001/tags?limit=50&opt_fields=name,color",
+  "response": {
+    "data": [
+      {
+        "gid": "1208807777777777",
+        "resource_type": "tag",
+        "name": "Waiting on customer",
+        "color": "light-orange"
+      }
+    ],
+    "next_page": null
+  }
+}

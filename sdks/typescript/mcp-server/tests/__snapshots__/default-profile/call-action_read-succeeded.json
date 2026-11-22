@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Invalid arguments for action_get-ticket: \"ticketId\" is required"
+    }
+  ],
+  "isError": true
+}

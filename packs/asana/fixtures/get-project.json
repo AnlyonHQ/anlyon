@@ -1,0 +1,43 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/getproject).",
+  "params": {},
+  "input": {
+    "project_gid": "1208801234567890"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/projects/1208801234567890?opt_fields=name,notes,archived,completed,owner.name,team.name,workspace.name,start_on,due_on,current_status_update.title,created_at,modified_at,permalink_url",
+  "response": {
+    "data": {
+      "gid": "1208801234567890",
+      "resource_type": "project",
+      "name": "Customer onboarding",
+      "notes": "Every new account, kickoff to go-live.",
+      "archived": false,
+      "completed": false,
+      "owner": {
+        "gid": "1208800000000042",
+        "resource_type": "user",
+        "name": "Dana Lee"
+      },
+      "team": {
+        "gid": "1208800000000077",
+        "resource_type": "team",
+        "name": "Success"
+      },
+      "workspace": {
+        "gid": "1208800000000001",
+        "resource_type": "workspace",
+        "name": "Acme"
+      },
+      "start_on": null,
+      "due_on": "2026-12-31",
+      "current_status_update": {
+        "gid": "1208800000000300",
+        "resource_type": "status_update",
+        "title": "On track"
+      },
+      "created_at": "2026-08-01T09:00:00.000Z",
+      "modified_at": "2026-10-14T16:20:11.512Z",
+      "permalink_url": "https://app.asana.com/0/1208801234567890/1208801234567890"
+    }
+  }
+}

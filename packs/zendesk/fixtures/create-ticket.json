@@ -1,0 +1,241 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.zendesk.com/api-reference/ticketing/tickets/tickets/, POST /api/v2/tickets).",
+  "params": {},
+  "accountHost": "acme.zendesk.com",
+  "input": {
+    "subject": "Follow-up on your billing address",
+    "body": "We have corrected the address on your account. The next invoice will show it.",
+    "public": true,
+    "requester": {
+      "name": "Dana Whitfield",
+      "email": "dana.whitfield@example.com"
+    },
+    "priority": "normal",
+    "type": "task",
+    "group_id": 98738,
+    "tags": [
+      "billing"
+    ]
+  },
+  "expectedUrl": "https://acme.zendesk.com/api/v2/tickets.json",
+  "expectedBody": {
+    "ticket": {
+      "subject": "Follow-up on your billing address",
+      "comment": {
+        "body": "We have corrected the address on your account. The next invoice will show it.",
+        "public": true
+      },
+      "requester": {
+        "name": "Dana Whitfield",
+        "email": "dana.whitfield@example.com"
+      },
+      "priority": "normal",
+      "type": "task",
+      "group_id": 98738,
+      "tags": [
+        "billing"
+      ]
+    }
+  },
+  "response": {
+    "ticket": {
+      "id": 35501,
+      "url": "https://acme.zendesk.com/api/v2/tickets/35501.json",
+      "external_id": null,
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "to": {},
+          "rel": null
+        }
+      },
+      "created_at": "2026-10-24T08:25:00Z",
+      "updated_at": "2026-10-24T08:25:00Z",
+      "type": "task",
+      "subject": "Follow-up on your billing address",
+      "raw_subject": "Follow-up on your billing address",
+      "description": "We have corrected the address on your account. The next invoice will show it.",
+      "priority": "normal",
+      "status": "open",
+      "recipient": "support@acme.zendesk.com",
+      "requester_id": 20978392,
+      "submitter_id": 20978392,
+      "assignee_id": 235323,
+      "organization_id": 509974,
+      "group_id": 98738,
+      "collaborator_ids": [],
+      "follower_ids": [],
+      "email_cc_ids": [],
+      "problem_id": null,
+      "has_incidents": false,
+      "is_public": true,
+      "due_at": null,
+      "tags": [
+        "billing"
+      ],
+      "custom_fields": [],
+      "satisfaction_rating": null,
+      "custom_status_id": 123,
+      "ticket_form_id": 9001,
+      "brand_id": 1234,
+      "allow_channelback": false,
+      "allow_attachments": true
+    },
+    "audit": {
+      "id": 432600,
+      "ticket_id": 35501,
+      "created_at": "2026-10-24T08:25:00Z",
+      "author_id": 235323,
+      "metadata": {
+        "system": {},
+        "custom": {}
+      },
+      "events": [
+        {
+          "id": 1301,
+          "type": "Comment",
+          "author_id": 235323,
+          "body": "We have corrected the address on your account. The next invoice will show it.",
+          "html_body": "<div class=\"zd-comment\"><p>We have corrected the address on your account. The next invoice will show it.</p></div>",
+          "plain_body": "We have corrected the address on your account. The next invoice will show it.",
+          "public": true,
+          "attachments": [],
+          "audit_id": 432600,
+          "via": {
+            "channel": "email",
+            "source": {
+              "from": {},
+              "to": {},
+              "rel": null
+            }
+          },
+          "created_at": "2026-10-24T08:25:00Z",
+          "metadata": {
+            "system": {},
+            "custom": {}
+          }
+        }
+      ],
+      "via": {
+        "channel": "api",
+        "source": {
+          "from": {},
+          "to": {},
+          "rel": null
+        }
+      }
+    }
+  },
+  "expectedReadBackUrl": "https://acme.zendesk.com/api/v2/tickets/35501.json",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "ticket": {
+        "id": 35501,
+        "url": "https://acme.zendesk.com/api/v2/tickets/35501.json",
+        "external_id": null,
+        "via": {
+          "channel": "api",
+          "source": {
+            "from": {},
+            "to": {},
+            "rel": null
+          }
+        },
+        "created_at": "2026-10-24T08:25:00Z",
+        "updated_at": "2026-10-24T08:25:00Z",
+        "type": "task",
+        "subject": "Follow-up on your billing address",
+        "raw_subject": "Follow-up on your billing address",
+        "description": "We have corrected the address on your account. The next invoice will show it.",
+        "priority": "normal",
+        "status": "open",
+        "recipient": "support@acme.zendesk.com",
+        "requester_id": 20978392,
+        "submitter_id": 20978392,
+        "assignee_id": 235323,
+        "organization_id": 509974,
+        "group_id": 98738,
+        "collaborator_ids": [],
+        "follower_ids": [],
+        "email_cc_ids": [],
+        "problem_id": null,
+        "has_incidents": false,
+        "is_public": true,
+        "due_at": null,
+        "tags": [
+          "billing"
+        ],
+        "custom_fields": [],
+        "satisfaction_rating": null,
+        "custom_status_id": 123,
+        "ticket_form_id": 9001,
+        "brand_id": 1234,
+        "allow_channelback": false,
+        "allow_attachments": true
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "ticket": {
+        "id": 35501,
+        "url": "https://acme.zendesk.com/api/v2/tickets/35436.json",
+        "external_id": null,
+        "via": {
+          "channel": "email",
+          "source": {
+            "from": {
+              "address": "dana.whitfield@example.com",
+              "name": "Dana Whitfield"
+            },
+            "to": {
+              "address": "support@acme.zendesk.com",
+              "name": "Acme Support"
+            },
+            "rel": null
+          }
+        },
+        "created_at": "2026-10-23T14:02:11Z",
+        "updated_at": "2026-10-24T08:25:00Z",
+        "type": "question",
+        "subject": "Billing question",
+        "raw_subject": "Billing question",
+        "description": "Hello, the October invoice still shows our old address in Leeds. Can you correct it?",
+        "priority": "normal",
+        "status": "open",
+        "recipient": "support@acme.zendesk.com",
+        "requester_id": 20978392,
+        "submitter_id": 20978392,
+        "assignee_id": 235323,
+        "organization_id": 509974,
+        "group_id": 98738,
+        "collaborator_ids": [],
+        "follower_ids": [],
+        "email_cc_ids": [],
+        "problem_id": null,
+        "has_incidents": false,
+        "is_public": true,
+        "due_at": null,
+        "tags": [
+          "billing",
+          "invoice"
+        ],
+        "custom_fields": [
+          {
+            "id": 27642,
+            "value": "745"
+          }
+        ],
+        "satisfaction_rating": null,
+        "custom_status_id": 123,
+        "ticket_form_id": 9001,
+        "brand_id": 1234,
+        "allow_channelback": false,
+        "allow_attachments": true
+      }
+    }
+  }
+}

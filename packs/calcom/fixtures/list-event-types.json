@@ -1,0 +1,27 @@
+{
+  "_source": "Shaped after the provider's documented response (https://cal.com/docs/api-reference/v2/event-types/get-all-event-types).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.cal.com/v2/event-types",
+  "response": {
+    "status": "success",
+    "data": [
+      {
+        "id": 88231,
+        "title": "Intro call",
+        "slug": "intro-call",
+        "lengthInMinutes": 30,
+        "description": "",
+        "locations": [
+          {
+            "type": "integration",
+            "integration": "cal-video"
+          }
+        ],
+        "hidden": false,
+        "bookingUrl": "https://cal.com/samlee/intro-call",
+        "ownerId": 1201
+      }
+    ]
+  }
+}

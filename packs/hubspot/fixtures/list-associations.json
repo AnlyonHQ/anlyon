@@ -1,0 +1,45 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/associations/associate-records/get-associations).",
+  "params": {},
+  "input": {
+    "objectType": "companies",
+    "objectId": "9001",
+    "toObjectType": "contacts"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v4/objects/companies/9001/associations/contacts?limit=100",
+  "response": {
+    "results": [
+      {
+        "toObjectId": 151,
+        "associationTypes": [
+          {
+            "category": "HUBSPOT_DEFINED",
+            "typeId": 280,
+            "label": null
+          },
+          {
+            "category": "HUBSPOT_DEFINED",
+            "typeId": 2,
+            "label": "Primary"
+          }
+        ]
+      },
+      {
+        "toObjectId": 152,
+        "associationTypes": [
+          {
+            "category": "HUBSPOT_DEFINED",
+            "typeId": 280,
+            "label": null
+          }
+        ]
+      }
+    ],
+    "paging": {
+      "next": {
+        "after": "MTUy",
+        "link": "https://api.hubapi.com/crm/v4/objects/companies/9001/associations/contacts?limit=100&after=MTUy"
+      }
+    }
+  }
+}

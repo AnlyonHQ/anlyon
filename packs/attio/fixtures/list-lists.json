@@ -1,0 +1,28 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.attio.com/rest-api/endpoint-reference/lists/list-all-lists).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.attio.com/v2/lists",
+  "response": {
+    "data": [
+      {
+        "id": {
+          "workspace_id": "14beef7a-99f7-4534-a87e-70b564330a4c",
+          "list_id": "33ebdbe9-e529-47c9-b894-0ba25e9c15c0"
+        },
+        "api_slug": "sales_pipeline",
+        "name": "Sales pipeline",
+        "parent_object": [
+          "people"
+        ],
+        "workspace_access": "read-and-write",
+        "workspace_member_access": [],
+        "created_by_actor": {
+          "type": "workspace-member",
+          "id": "50cf242c-7fa3-4cad-87d0-75b1af71c57b"
+        },
+        "created_at": "2026-10-15T09:30:00.000000000Z"
+      }
+    ]
+  }
+}

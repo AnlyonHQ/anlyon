@@ -1,0 +1,19 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/teams/listteams).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.intercom.io/teams",
+  "response": {
+    "type": "team.list",
+    "teams": [
+      {
+        "type": "team",
+        "id": "814865",
+        "name": "Billing",
+        "admin_ids": [
+          991267708
+        ]
+      }
+    ]
+  }
+}

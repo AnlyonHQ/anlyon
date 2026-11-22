@@ -1,0 +1,14 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"status\": \"connect_required\",\n  \"integration\": \"gmail\",\n  \"connectUrl\": \"https://api.anlyon.com/connect/eul_fixture\",\n  \"message\": \"The user has not connected gmail yet, so nothing was done. Ask them to connect it, then try again.\"\n}"
+    }
+  ],
+  "structuredContent": {
+    "status": "connect_required",
+    "integration": "gmail",
+    "connectUrl": "https://api.anlyon.com/connect/eul_fixture",
+    "message": "The user has not connected gmail yet, so nothing was done. Ask them to connect it, then try again."
+  }
+}

@@ -1,0 +1,909 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/postmark",
+  "version": "0.1.0",
+  "description": "Postmark for an agent: search sent and received email, bounces, suppressions, templates and stats on one server; send an email or a template email to one recipient, reactivate a bounced address, and suppress or unsuppress an address, with every write governed.",
+  "secrets": [
+    {
+      "name": "POSTMARK",
+      "kind": "connection",
+      "integrationId": "postmark",
+      "hosts": [
+        "api.postmarkapp.com"
+      ],
+      "description": "The connected Postmark Server API token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-message-streams",
+      "kind": "read",
+      "description": "List the server's message streams that are not archived: id, name, type (Transactional, Broadcasts, Inbound) and unsubscribe handling. Use a stream's id as message_stream in the other actions. A server has few streams, so they come in one response.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/message-streams?MessageStreamType={{input.type}}&IncludeArchivedStreams=false",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "All",
+              "Inbound",
+              "Transactional",
+              "Broadcasts"
+            ],
+            "description": "Filter to streams of this type. All when absent."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-outbound-messages",
+      "kind": "read",
+      "description": "Search sent and queued emails: message id, recipients, from, subject, tag, status, metadata and stream, without bodies (use get-outbound-message). 20 a page. Messages are kept for the server's retention period, 45 days unless changed in Postmark.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/messages/outbound?count=20&offset={{input.offset}}&recipient={{input.recipient}}&fromemail={{input.from_email}}&tag={{input.tag}}&status={{input.status}}&subject={{input.subject}}&messagestream={{input.message_stream}}&fromdate={{input.fromdate}}&todate={{input.todate}}",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "offset"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. 0 to start; add 20 for each next page. offset plus 20 may not pass 10000."
+          },
+          "recipient": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "Filter to emails sent to this address."
+          },
+          "from_email": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "Filter to emails sent from this address."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1000}$",
+            "description": "Filter to emails with this tag."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "sent"
+            ],
+            "description": "Filter to queued, or to sent, emails."
+          },
+          "subject": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,2000}$",
+            "description": "Filter to emails with this subject."
+          },
+          "message_stream": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,29}$",
+            "description": "Filter to emails in this stream. Postmark searches the outbound stream when absent."
+          },
+          "fromdate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
+            "description": "Filter to results from this date or time, inclusive, in US Eastern time: 2026-10-01 or 2026-10-01T09:00:00."
+          },
+          "todate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
+            "description": "Filter to results up to this date or time, inclusive, in US Eastern time."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-outbound-message",
+      "kind": "read",
+      "description": "Get one sent email by message id: recipients, from, subject, text and HTML bodies, tag, metadata, status, and its events (Delivered, Bounced, Opened, LinkClicked, Transient, SubscriptionChanged) with their times. A long body can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/messages/outbound/{{input.message_id}}/details",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "message_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The MessageID a send returned, or one from search-outbound-messages."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-inbound-messages",
+      "kind": "read",
+      "description": "Search emails the server received: message id, from, to, subject, mailbox hash, attachments' names and sizes, and status. 20 a page. Postmark returns processed messages unless status is given.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/messages/inbound?count=20&offset={{input.offset}}&recipient={{input.recipient}}&fromemail={{input.from_email}}&subject={{input.subject}}&mailboxhash={{input.mailbox_hash}}&status={{input.status}}&fromdate={{input.fromdate}}&todate={{input.todate}}",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "offset"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. 0 to start; add 20 for each next page. offset plus 20 may not pass 10000."
+          },
+          "recipient": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "Filter to emails received at this address."
+          },
+          "from_email": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "Filter to emails from this address."
+          },
+          "subject": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,2000}$",
+            "description": "Filter to emails with this subject."
+          },
+          "mailbox_hash": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._+-]{1,200}$",
+            "description": "Filter to emails sent to this mailbox hash (the part after + in the inbound address)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "blocked",
+              "processed",
+              "queued",
+              "failed",
+              "scheduled"
+            ],
+            "description": "Filter to emails with this status. processed when absent."
+          },
+          "fromdate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
+            "description": "Filter to results from this date or time, inclusive, in US Eastern time: 2026-10-01 or 2026-10-01T09:00:00."
+          },
+          "todate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
+            "description": "Filter to results up to this date or time, inclusive, in US Eastern time."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-inbound-message",
+      "kind": "read",
+      "description": "Get one received email by message id: from, to, cc, reply-to, subject, date, text and HTML bodies, headers, attachments' names, status and, if it was blocked, why. A long body can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/messages/inbound/{{input.message_id}}/details",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "message_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "A MessageID from search-inbound-messages."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-bounces",
+      "kind": "read",
+      "description": "List bounces: bounce id, type (HardBounce, SoftBounce, Transient and others), the address, the message id, when, and whether Postmark deactivated the address and it can be reactivated (Inactive, CanActivate). 20 a page.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/bounces?count=20&offset={{input.offset}}&type={{input.type}}&inactive={{input.inactive}}&emailFilter={{input.email}}&tag={{input.tag}}&messageID={{input.message_id}}&messagestream={{input.message_stream}}&fromdate={{input.fromdate}}&todate={{input.todate}}",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "offset"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. 0 to start; add 20 for each next page. offset plus 20 may not pass 10000."
+          },
+          "type": {
+            "type": "string",
+            "pattern": "^[A-Za-z]{1,40}$",
+            "description": "Filter to bounces of this type, for example HardBounce, SoftBounce or Transient."
+          },
+          "inactive": {
+            "type": "boolean",
+            "description": "true for bounces that deactivated their address, false for the rest. Both when absent."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "Filter to bounces for this address."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1000}$",
+            "description": "Filter to bounces of emails with this tag."
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Filter to the bounces of this message."
+          },
+          "message_stream": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,29}$",
+            "description": "Filter to bounces in this stream. Postmark uses the outbound stream when absent."
+          },
+          "fromdate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
+            "description": "Filter to results from this date or time, inclusive, in US Eastern time: 2026-10-01 or 2026-10-01T09:00:00."
+          },
+          "todate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2})?$",
+            "description": "Filter to results up to this date or time, inclusive, in US Eastern time."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-bounce",
+      "kind": "read",
+      "description": "Get one bounce by id: type, description, details, the address, the message id, when, whether the address is inactive and can be reactivated, and the bounce content. Long content can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/bounces/{{input.bounce_id}}",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "bounce_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "bounce_id": {
+            "type": "integer",
+            "description": "A bounce ID from list-bounces."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-delivery-stats",
+      "kind": "read",
+      "description": "Get the server's bounce totals by type, and how many addresses are inactive because of a bounce or a complaint. Changes nothing.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/deliverystats",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-outbound-stats",
+      "kind": "read",
+      "description": "Get the server's sending totals: sent, bounced, bounce rate, spam complaints, opens, unique opens and clicks, for all time or a date range, optionally for one tag or stream. Dates are US Eastern time.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/stats/outbound?tag={{input.tag}}&fromdate={{input.fromdate}}&todate={{input.todate}}&messagestream={{input.message_stream}}",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "tag": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1000}$",
+            "description": "Filter to emails with this tag."
+          },
+          "fromdate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "From this date, inclusive: 2026-10-01."
+          },
+          "todate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Up to this date, inclusive."
+          },
+          "message_stream": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,29}$",
+            "description": "Filter to this stream. Every stream when absent."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-suppressions",
+      "kind": "read",
+      "description": "List the addresses a stream will not send to, with the reason (HardBounce, SpamComplaint, ManualSuppression), the origin (Recipient, Customer, Admin) and when. Postmark returns every match in one response, so give an address or a date range on a large list: a response over the limit is cut.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/message-streams/{{input.message_stream}}/suppressions/dump?EmailAddress={{input.email}}&SuppressionReason={{input.reason}}&Origin={{input.origin}}&fromdate={{input.fromdate}}&todate={{input.todate}}",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "message_stream"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "message_stream": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,29}$",
+            "description": "A message stream id from list-message-streams, for example outbound (the default transactional stream) or broadcast."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "Filter to this address."
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "HardBounce",
+              "SpamComplaint",
+              "ManualSuppression"
+            ],
+            "description": "Filter to suppressions for this reason."
+          },
+          "origin": {
+            "type": "string",
+            "enum": [
+              "Recipient",
+              "Customer",
+              "Admin"
+            ],
+            "description": "Filter to suppressions added this way."
+          },
+          "fromdate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "From this date: 2026-10-01."
+          },
+          "todate": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Up to this date."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-templates",
+      "kind": "read",
+      "description": "List the server's templates: id, name, alias, whether it is active, and its type (Standard or Layout). 20 a page. Use an id or alias in get-template or send-template-email.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/templates?Count=20&Offset={{input.offset}}&TemplateType={{input.type}}",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "offset"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "How many templates to skip. 0 to start; add 20 for each next page."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "All",
+              "Standard",
+              "Layout"
+            ],
+            "description": "Filter to templates of this type. All when absent."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-template",
+      "kind": "read",
+      "description": "Get one template by id or alias: name, subject, HTML and text bodies with their placeholders, whether it is active, and its layout. Read it before send-template-email to know which values template_model needs.",
+      "method": "GET",
+      "urlTemplate": "https://api.postmarkapp.com/templates/{{input.template}}",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "template"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "template": {
+            "type": "string",
+            "pattern": "^([0-9]{1,20}|[A-Za-z][A-Za-z0-9._-]{0,99})$",
+            "description": "A template id (digits) or alias from list-templates."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "send-email",
+      "kind": "write",
+      "description": "Send one email to one recipient from a confirmed sender signature or domain, in a message stream. Give text_body, html_body or both. Returns the MessageID. Read back by MessageID from the stream's activity; the subject must match. Limitations: one To address and no Cc, Bcc or attachments, so each call is one email; there is no idempotency, so a retry after an unknown outcome can send it twice; an address Postmark marked inactive is refused.",
+      "method": "POST",
+      "urlTemplate": "https://api.postmarkapp.com/email",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "From": "{{input.from}}",
+        "To": "{{input.to}}",
+        "Subject": "{{input.subject}}",
+        "TextBody": "{{input.text_body}}",
+        "HtmlBody": "{{input.html_body}}",
+        "ReplyTo": "{{input.reply_to}}",
+        "Tag": "{{input.tag}}",
+        "MessageStream": "{{input.message_stream}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "to",
+          "subject",
+          "message_stream"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{3,255}$",
+            "description": "The sender: an address on a confirmed sender signature or domain, alone or as \"Full Name <sender@example.com>\"."
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "The one recipient's address."
+          },
+          "subject": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,2000}$",
+            "description": "The subject line."
+          },
+          "text_body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,100000}$",
+            "description": "The plain-text body. Give this, html_body, or both."
+          },
+          "html_body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,100000}$",
+            "description": "The HTML body."
+          },
+          "reply_to": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "Where replies go. The sender signature's reply-to when absent."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1000}$",
+            "description": "A tag to group the email in Postmark's statistics."
+          },
+          "message_stream": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,29}$",
+            "description": "The stream to send in: outbound for transactional email, or a broadcast stream id from list-message-streams."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "emails",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.postmarkapp.com/messages/outbound/{{response.MessageID}}/details",
+        "status": 200,
+        "match": [
+          {
+            "path": "MessageID",
+            "equals": "{{response.MessageID}}"
+          },
+          {
+            "path": "Subject",
+            "equals": "{{input.subject}}"
+          },
+          {
+            "path": "MessageStream",
+            "equals": "{{input.message_stream}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "send-template-email",
+      "kind": "write",
+      "description": "Send one email to one recipient from a server template, filled with template_model. Give template_id or template_alias. Returns the MessageID. Read back by MessageID from the stream's activity; the stream must match. Limitations: one To address and no Cc, Bcc or attachments; the subject and bodies come from the template, so they are not checked; no idempotency, so a retry after an unknown outcome can send it twice.",
+      "method": "POST",
+      "urlTemplate": "https://api.postmarkapp.com/email/withTemplate",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "TemplateId": "{{input.template_id}}",
+        "TemplateAlias": "{{input.template_alias}}",
+        "TemplateModel": "{{input.template_model}}",
+        "From": "{{input.from}}",
+        "To": "{{input.to}}",
+        "ReplyTo": "{{input.reply_to}}",
+        "Tag": "{{input.tag}}",
+        "MessageStream": "{{input.message_stream}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "template_model",
+          "from",
+          "to",
+          "message_stream"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "template_id": {
+            "type": "integer",
+            "description": "The template's id from list-templates. Give this or template_alias."
+          },
+          "template_alias": {
+            "type": "string",
+            "pattern": "^[A-Za-z][A-Za-z0-9._-]{0,99}$",
+            "description": "The template's alias from list-templates."
+          },
+          "template_model": {
+            "type": "object",
+            "description": "The values the template's placeholders use, by name: {\"name\": \"Ada\", \"product_name\": \"Pro\"}. get-template shows the placeholders."
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{3,255}$",
+            "description": "The sender: an address on a confirmed sender signature or domain, alone or as \"Full Name <sender@example.com>\"."
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "The one recipient's address."
+          },
+          "reply_to": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "Where replies go."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1000}$",
+            "description": "A tag to group the email in Postmark's statistics."
+          },
+          "message_stream": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,29}$",
+            "description": "The stream to send in: outbound for transactional email, or a broadcast stream id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "emails",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.postmarkapp.com/messages/outbound/{{response.MessageID}}/details",
+        "status": 200,
+        "match": [
+          {
+            "path": "MessageID",
+            "equals": "{{response.MessageID}}"
+          },
+          {
+            "path": "MessageStream",
+            "equals": "{{input.message_stream}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "activate-bounce",
+      "kind": "write",
+      "description": "Reactivate an address Postmark deactivated after a bounce, so email to it is sent again. A bounce can be reactivated when its CanActivate is true. Read back from the bounce; Inactive must be false. Limitation: a hard bounce usually means the address does not exist, and sending to it again can hurt the server's reputation.",
+      "method": "PUT",
+      "urlTemplate": "https://api.postmarkapp.com/bounces/{{input.bounce_id}}/activate",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "bounce_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "bounce_id": {
+            "type": "integer",
+            "description": "A bounce ID from list-bounces with Inactive and CanActivate true."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.postmarkapp.com/bounces/{{input.bounce_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "ID",
+            "equals": "{{input.bounce_id}}"
+          },
+          {
+            "path": "Inactive",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "suppress-recipient",
+      "kind": "write",
+      "description": "Stop a stream from sending to one address (a manual suppression). Email to it is then refused until the suppression is removed. Read back from the stream's suppressions; the address must be among them. Postmark answers 200 when it could not suppress an address, so the read-back is what shows it worked.",
+      "method": "POST",
+      "urlTemplate": "https://api.postmarkapp.com/message-streams/{{input.message_stream}}/suppressions",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "Suppressions": [
+          {
+            "EmailAddress": "{{input.email}}"
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "message_stream",
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "message_stream": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,29}$",
+            "description": "A message stream id from list-message-streams, for example outbound (the default transactional stream) or broadcast."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "The address to suppress, in lower case as Postmark lists it."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.postmarkapp.com/message-streams/{{input.message_stream}}/suppressions/dump?EmailAddress={{input.email}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "Suppressions.*.EmailAddress",
+            "equals": "{{input.email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unsuppress-recipient",
+      "kind": "write",
+      "description": "Remove one address from a stream's suppressions, so email to it is sent again. A suppression for a spam complaint cannot be removed. Read back from the stream's suppressions; the address must be gone. Postmark answers 200 when it could not remove an address, so the read-back is what shows it worked. Limitation: the person may have asked not to be emailed.",
+      "method": "POST",
+      "urlTemplate": "https://api.postmarkapp.com/message-streams/{{input.message_stream}}/suppressions/delete",
+      "headers": {
+        "X-Postmark-Server-Token": "{{connection:postmark}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "Suppressions": [
+          {
+            "EmailAddress": "{{input.email}}"
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "message_stream",
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "message_stream": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9-]{0,29}$",
+            "description": "A message stream id from list-message-streams, for example outbound (the default transactional stream) or broadcast."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$",
+            "description": "The suppressed address, in lower case as list-suppressions shows it."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.postmarkapp.com/message-streams/{{input.message_stream}}/suppressions/dump?EmailAddress={{input.email}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "Suppressions.*.EmailAddress",
+            "equals": "{{input.email}}",
+            "absent": true
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "postmark: approve sending an email",
+      "matchKind": "action",
+      "matchActionName": "send-email",
+      "effect": "require_approval"
+    },
+    {
+      "name": "postmark: approve sending a template email",
+      "matchKind": "action",
+      "matchActionName": "send-template-email",
+      "effect": "require_approval"
+    },
+    {
+      "name": "postmark: approve reactivating a bounced address",
+      "matchKind": "action",
+      "matchActionName": "activate-bounce",
+      "effect": "require_approval"
+    },
+    {
+      "name": "postmark: approve removing a suppression",
+      "matchKind": "action",
+      "matchActionName": "unsuppress-recipient",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "postmark: emails sent per day",
+      "dimension": "emails",
+      "period": "day",
+      "amount": 200,
+      "actionName": "send-email"
+    },
+    {
+      "name": "postmark: template emails sent per day",
+      "dimension": "emails",
+      "period": "day",
+      "amount": 200,
+      "actionName": "send-template-email"
+    },
+    {
+      "name": "postmark: bounced addresses reactivated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "activate-bounce"
+    },
+    {
+      "name": "postmark: addresses suppressed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "suppress-recipient"
+    },
+    {
+      "name": "postmark: suppressions removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "unsuppress-recipient"
+    }
+  ]
+}

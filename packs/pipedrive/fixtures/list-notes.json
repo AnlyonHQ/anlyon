@@ -1,0 +1,54 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi.yaml, GET /notes).",
+  "params": {},
+  "input": {
+    "deal_id": 4217
+  },
+  "expectedUrl": "https://api.pipedrive.com/v1/notes?deal_id=4217&limit=10",
+  "response": {
+    "success": true,
+    "data": [
+      {
+        "id": 5530,
+        "active_flag": true,
+        "add_time": "2026-10-24 08:06:12",
+        "content": "Dana asked for the renewal quote by Friday.",
+        "deal": {
+          "title": "Acme renewal 2027"
+        },
+        "lead_id": null,
+        "deal_id": 4217,
+        "last_update_user_id": 13540546,
+        "org_id": 311,
+        "organization": {
+          "name": "Acme Corp"
+        },
+        "person": {
+          "name": "Dana Whitfield"
+        },
+        "person_id": 902,
+        "project_id": null,
+        "pinned_to_lead_flag": false,
+        "pinned_to_deal_flag": false,
+        "pinned_to_organization_flag": false,
+        "pinned_to_person_flag": false,
+        "pinned_to_project_flag": false,
+        "update_time": "2026-10-24 08:06:12",
+        "user": {
+          "email": "sam@acme-sales.example",
+          "icon_url": null,
+          "is_you": true,
+          "name": "Sam Reyes"
+        },
+        "user_id": 13540546
+      }
+    ],
+    "additional_data": {
+      "pagination": {
+        "start": 0,
+        "limit": 10,
+        "more_items_in_collection": false
+      }
+    }
+  }
+}

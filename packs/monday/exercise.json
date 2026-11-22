@@ -1,0 +1,24 @@
+{
+  "needs": {
+    "board_id": "A test board the token's user can edit, with at least two groups, a text column and more than 20 items (so list-items returns a cursor)",
+    "text_column_id": "The id of a text column on that board (get-board lists the columns)"
+  },
+  "steps": [
+    { "action": "list-boards", "input": {} },
+    { "action": "get-board", "input": { "board_id": "{{needs.board_id}}" }, "save": { "group_a": "data.boards.0.groups.0.id", "group_b": "data.boards.0.groups.1.id" } },
+    { "action": "list-items", "input": { "board_id": "{{needs.board_id}}" }, "save": { "cursor": "data.boards.0.items_page.cursor" } },
+    { "action": "next-items-page", "input": { "cursor": "{{saved.cursor}}" } },
+    { "action": "create-item", "input": { "board_id": "{{needs.board_id}}", "item_name": "Anlyon exercise {{run}}", "group_id": "{{saved.group_a}}" }, "save": { "item_id": "data.create_item.id" } },
+    { "action": "get-item", "input": { "item_id": "{{saved.item_id}}" } },
+    { "action": "set-column-value", "input": { "board_id": "{{needs.board_id}}", "item_id": "{{saved.item_id}}", "column_id": "{{needs.text_column_id}}", "value": "Anlyon exercise {{run}}" } },
+    { "action": "search-items", "input": { "board_id": "{{needs.board_id}}", "column_id": "{{needs.text_column_id}}", "value": "Anlyon exercise {{run}}" } },
+    { "action": "change-column-values", "input": { "board_id": "{{needs.board_id}}", "item_id": "{{saved.item_id}}", "column_values": "{\"{{needs.text_column_id}}\":\"Anlyon exercise {{run}} changed\"}" } },
+    { "action": "move-item-to-group", "input": { "item_id": "{{saved.item_id}}", "group_id": "{{saved.group_b}}" } },
+    { "action": "list-group-items", "input": { "board_id": "{{needs.board_id}}", "group_id": "{{saved.group_b}}" } },
+    { "action": "add-update", "input": { "item_id": "{{saved.item_id}}", "body": "Anlyon exercise {{run}} update" } },
+    { "action": "list-updates", "input": { "item_id": "{{saved.item_id}}" } },
+    { "action": "create-item", "input": { "board_id": "{{needs.board_id}}", "item_name": "Anlyon exercise {{run}} (archive)", "group_id": "{{saved.group_a}}" }, "save": { "archive_item_id": "data.create_item.id" } },
+    { "action": "archive-item", "input": { "item_id": "{{saved.archive_item_id}}" } },
+    { "action": "delete-item", "input": { "item_id": "{{saved.item_id}}" } }
+  ]
+}

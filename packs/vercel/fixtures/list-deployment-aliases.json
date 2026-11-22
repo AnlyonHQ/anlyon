@@ -1,0 +1,18 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation listDeploymentAliases).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "deployment_id": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd"
+  },
+  "expectedUrl": "https://api.vercel.com/v2/deployments/dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd/aliases?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "response": {
+    "aliases": [
+      {
+        "uid": "2WjyKQmM8ZnGcJsPWMrHRHrE",
+        "alias": "www.acme.com",
+        "created": "2026-10-24T09:00:00.000Z"
+      }
+    ]
+  }
+}

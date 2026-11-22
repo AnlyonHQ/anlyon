@@ -1,0 +1,10 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/get-user-id-scopes).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.airtable.com/v0/meta/whoami",
+  "response": {
+    "id": "usrL2PNC5o3H4lBEi",
+    "email": "ada@example.com"
+  }
+}

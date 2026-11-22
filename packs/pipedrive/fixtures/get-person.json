@@ -1,0 +1,40 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi-v2.yaml, GET /persons/{id}).",
+  "params": {},
+  "input": {
+    "person_id": 902
+  },
+  "expectedUrl": "https://api.pipedrive.com/api/v2/persons/902",
+  "response": {
+    "success": true,
+    "data": {
+      "id": 902,
+      "name": "Dana Whitfield",
+      "first_name": "Dana",
+      "last_name": "Whitfield",
+      "owner_id": 13540546,
+      "org_id": 311,
+      "add_time": "2026-10-20T09:10:02Z",
+      "update_time": "2026-10-24T08:00:00Z",
+      "emails": [
+        {
+          "value": "dana@acme.example",
+          "primary": true,
+          "label": "work"
+        }
+      ],
+      "phones": [
+        {
+          "value": "+1 415 555 0134",
+          "primary": true,
+          "label": "work"
+        }
+      ],
+      "is_deleted": false,
+      "visible_to": 3,
+      "label_ids": [],
+      "picture_id": null,
+      "custom_fields": {}
+    }
+  }
+}

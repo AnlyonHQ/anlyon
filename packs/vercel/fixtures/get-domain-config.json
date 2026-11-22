@@ -1,0 +1,30 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation getDomainConfig).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "domain": "www.acme.com"
+  },
+  "expectedUrl": "https://api.vercel.com/v6/domains/www.acme.com/config?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "response": {
+    "configuredBy": "CNAME",
+    "misconfigured": false,
+    "acceptedChallenges": [
+      "http-01"
+    ],
+    "recommendedCNAME": [
+      {
+        "rank": 1,
+        "value": "cname.vercel-dns.com."
+      }
+    ],
+    "recommendedIPv4": [
+      {
+        "rank": 1,
+        "value": [
+          "76.76.21.21"
+        ]
+      }
+    ]
+  }
+}

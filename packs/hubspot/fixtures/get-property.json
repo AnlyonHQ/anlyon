@@ -1,0 +1,80 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/properties/get-property).",
+  "params": {},
+  "input": {
+    "objectType": "contacts",
+    "propertyName": "hs_lead_status"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/properties/contacts/hs_lead_status",
+  "response": {
+    "name": "hs_lead_status",
+    "label": "Lead Status",
+    "type": "enumeration",
+    "fieldType": "radio",
+    "groupName": "sales_properties",
+    "description": "The contact's sales, prospecting or outreach status",
+    "options": [
+      {
+        "label": "New",
+        "value": "NEW",
+        "displayOrder": 0,
+        "hidden": false
+      },
+      {
+        "label": "Open",
+        "value": "OPEN",
+        "displayOrder": 1,
+        "hidden": false
+      },
+      {
+        "label": "In Progress",
+        "value": "IN_PROGRESS",
+        "displayOrder": 2,
+        "hidden": false
+      },
+      {
+        "label": "Open Deal",
+        "value": "OPEN_DEAL",
+        "displayOrder": 3,
+        "hidden": false
+      },
+      {
+        "label": "Unqualified",
+        "value": "UNQUALIFIED",
+        "displayOrder": 4,
+        "hidden": false
+      },
+      {
+        "label": "Attempted to Contact",
+        "value": "ATTEMPTED_TO_CONTACT",
+        "displayOrder": 5,
+        "hidden": false
+      },
+      {
+        "label": "Connected",
+        "value": "CONNECTED",
+        "displayOrder": 6,
+        "hidden": false
+      },
+      {
+        "label": "Bad Timing",
+        "value": "BAD_TIMING",
+        "displayOrder": 7,
+        "hidden": false
+      }
+    ],
+    "hasUniqueValue": false,
+    "hidden": false,
+    "modificationMetadata": {
+      "archivable": false,
+      "readOnlyDefinition": true,
+      "readOnlyValue": false
+    },
+    "formField": true,
+    "calculated": false,
+    "externalOptions": false,
+    "archived": false,
+    "createdAt": "2019-08-06T02:41:52.071Z",
+    "updatedAt": "2025-04-02T18:12:20.410Z"
+  }
+}

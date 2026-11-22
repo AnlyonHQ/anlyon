@@ -1,0 +1,28 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi-v2.yaml, GET /organizations/{id}).",
+  "params": {},
+  "input": {
+    "org_id": 311
+  },
+  "expectedUrl": "https://api.pipedrive.com/api/v2/organizations/311",
+  "response": {
+    "success": true,
+    "data": {
+      "id": 311,
+      "name": "Acme Corp",
+      "owner_id": 13540546,
+      "add_time": "2026-10-20T09:08:30Z",
+      "update_time": "2026-10-20T09:08:30Z",
+      "address": null,
+      "is_deleted": false,
+      "visible_to": 3,
+      "label_ids": [],
+      "website": null,
+      "linkedin": null,
+      "industry": null,
+      "annual_revenue": null,
+      "employee_count": null,
+      "custom_fields": {}
+    }
+  }
+}

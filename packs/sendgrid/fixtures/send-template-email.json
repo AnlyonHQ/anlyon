@@ -1,0 +1,25 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_mail_v3.json, SendMail).",
+  "params": {},
+  "input": {
+    "template_id": "d-8f2a1c3b4d5e6f708192a3b4c5d6e7f8",
+    "to": [
+      {
+        "email": "ada@example.com"
+      },
+      {
+        "email": "charles@example.com",
+        "name": "Charles Babbage"
+      }
+    ],
+    "from": {
+      "email": "support@example.com"
+    },
+    "dynamic_template_data": {
+      "first_name": "Ada",
+      "order_id": "1042"
+    }
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/mail/send",
+  "response": {}
+}

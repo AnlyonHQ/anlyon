@@ -1,0 +1,103 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-get).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {
+    "issue_key": "OPS-142"
+  },
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142?fields=summary,status,assignee,reporter,priority,issuetype,project,labels,description,parent,duedate,resolution,created,updated",
+  "response": {
+    "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+    "id": "10142",
+    "self": "https://acme.atlassian.net/rest/api/3/issue/10142",
+    "key": "OPS-142",
+    "fields": {
+      "summary": "Renew the TLS certificate for status.acme.example",
+      "status": {
+        "self": "https://acme.atlassian.net/rest/api/3/status/10000",
+        "description": "",
+        "iconUrl": "https://acme.atlassian.net/images/icons/statuses/generic.png",
+        "name": "To Do",
+        "id": "10000",
+        "statusCategory": {
+          "self": "https://acme.atlassian.net/rest/api/3/statuscategory/2",
+          "id": 2,
+          "key": "new",
+          "colorName": "blue-gray",
+          "name": "To Do"
+        }
+      },
+      "assignee": {
+        "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+        "accountId": "5b10a2844c20165700ede21g",
+        "avatarUrls": {
+          "48x48": "https://avatar-management.example/mia-48.png"
+        },
+        "displayName": "Mia Krystof",
+        "active": true,
+        "timeZone": "Europe/Berlin",
+        "accountType": "atlassian"
+      },
+      "priority": {
+        "self": "https://acme.atlassian.net/rest/api/3/priority/3",
+        "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "3"
+      },
+      "issuetype": {
+        "self": "https://acme.atlassian.net/rest/api/3/issuetype/10001",
+        "id": "10001",
+        "description": "A small, distinct piece of work.",
+        "iconUrl": "https://acme.atlassian.net/images/icons/task.svg",
+        "name": "Task",
+        "subtask": false,
+        "hierarchyLevel": 0
+      },
+      "project": {
+        "self": "https://acme.atlassian.net/rest/api/3/project/10000",
+        "id": "10000",
+        "key": "OPS",
+        "name": "Operations",
+        "projectTypeKey": "software",
+        "simplified": false,
+        "avatarUrls": {
+          "48x48": "https://acme.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/10400"
+        }
+      },
+      "labels": [
+        "infra"
+      ],
+      "created": "2026-10-20T09:12:44.000+0000",
+      "updated": "2026-10-24T08:20:00.000+0000",
+      "reporter": {
+        "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+        "accountId": "5b10a2844c20165700ede21g",
+        "avatarUrls": {
+          "48x48": "https://avatar-management.example/mia-48.png"
+        },
+        "displayName": "Mia Krystof",
+        "active": true,
+        "timeZone": "Europe/Berlin",
+        "accountType": "atlassian"
+      },
+      "description": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The certificate expires on 2026-11-02. Renew it and deploy it to both load balancers."
+              }
+            ]
+          }
+        ]
+      },
+      "parent": null,
+      "duedate": "2026-10-31",
+      "resolution": null
+    }
+  }
+}

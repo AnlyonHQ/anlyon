@@ -1,0 +1,30 @@
+{
+  "needs": {
+    "guild_id": "The test server's id (Developer Mode on, right-click the server icon, Copy Server ID)",
+    "channel_id": "A text channel in that server where the bot has View Channel, Send Messages, Read Message History, Add Reactions, Pin Messages, Create Public Threads and Send Messages in Threads (right-click the channel, Copy Channel ID)"
+  },
+  "steps": [
+    { "action": "list-channels", "input": { "guild_id": "{{needs.guild_id}}" } },
+    { "action": "get-channel", "input": { "channel_id": "{{needs.channel_id}}" } },
+    { "action": "post-message", "input": { "channel_id": "{{needs.channel_id}}", "content": "Anlyon exercise {{run}}" }, "save": { "message_id": "id" } },
+    { "action": "get-message", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}" } },
+    { "action": "edit-message", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}", "content": "Anlyon exercise {{run}} (edited)" } },
+    { "action": "reply-to-message", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}", "content": "Anlyon exercise {{run}} reply" }, "save": { "reply_id": "id" } },
+    { "action": "list-messages", "input": { "channel_id": "{{needs.channel_id}}" } },
+    { "action": "add-reaction", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}", "emoji": "👍" } },
+    { "action": "remove-reaction", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}", "emoji": "👍" } },
+    { "action": "pin-message", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}" } },
+    { "action": "list-pinned-messages", "input": { "channel_id": "{{needs.channel_id}}" } },
+    { "action": "unpin-message", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}" } },
+    { "action": "start-thread", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}", "name": "Anlyon exercise {{run}}" }, "save": { "thread_id": "id" } },
+    { "action": "join-thread", "input": { "thread_id": "{{saved.thread_id}}" } },
+    { "action": "post-thread-message", "input": { "thread_id": "{{saved.thread_id}}", "content": "Anlyon exercise {{run}} in thread" }, "save": { "thread_message_id": "id" } },
+    { "action": "list-thread-messages", "input": { "thread_id": "{{saved.thread_id}}" } },
+    { "action": "list-active-threads", "input": { "guild_id": "{{needs.guild_id}}" } },
+    { "action": "delete-message", "input": { "channel_id": "{{saved.thread_id}}", "message_id": "{{saved.thread_message_id}}" } },
+    { "action": "archive-thread", "input": { "thread_id": "{{saved.thread_id}}" } },
+    { "action": "list-archived-threads", "input": { "channel_id": "{{needs.channel_id}}" } },
+    { "action": "delete-message", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.reply_id}}" } },
+    { "action": "delete-message", "input": { "channel_id": "{{needs.channel_id}}", "message_id": "{{saved.message_id}}" } }
+  ]
+}

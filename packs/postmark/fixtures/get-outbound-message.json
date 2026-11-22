@@ -1,0 +1,48 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/messages-api).",
+  "params": {},
+  "input": {
+    "message_id": "0a129aee-e1cd-480d-b08d-4f48548ff48d"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/messages/outbound/0a129aee-e1cd-480d-b08d-4f48548ff48d/details",
+  "response": {
+    "TextBody": "Your order 5454 has shipped.",
+    "HtmlBody": "",
+    "Body": "SMTP dump data",
+    "Tag": "orders",
+    "MessageID": "0a129aee-e1cd-480d-b08d-4f48548ff48d",
+    "MessageStream": "outbound",
+    "To": [
+      {
+        "Email": "ada@example.com",
+        "Name": null
+      }
+    ],
+    "Cc": [],
+    "Bcc": [],
+    "Recipients": [
+      "ada@example.com"
+    ],
+    "ReceivedAt": "2026-10-24T07:25:02.8782715-04:00",
+    "From": "\"Acme Support\" <support@acme.example>",
+    "Subject": "Your order has shipped",
+    "Attachments": [],
+    "Status": "Sent",
+    "TrackOpens": false,
+    "TrackLinks": "None",
+    "Metadata": {},
+    "Sandboxed": false,
+    "MessageEvents": [
+      {
+        "Recipient": "ada@example.com",
+        "Type": "Delivered",
+        "ReceivedAt": "2026-10-24T07:25:10.8054242-04:00",
+        "Details": {
+          "DeliveryMessage": "smtp;250 2.0.0 OK",
+          "DestinationServer": "mx.example.com",
+          "DestinationIP": "192.0.2.10"
+        }
+      }
+    ]
+  }
+}

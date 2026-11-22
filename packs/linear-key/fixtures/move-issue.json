@@ -1,0 +1,95 @@
+{
+  "_source": "Shaped after the provider's documented response (https://github.com/linear/linear/blob/master/packages/sdk/src/schema.graphql, Mutation.issueUpdate, IssueUpdateInput.stateId; https://linear.app/developers/graphql).",
+  "params": {},
+  "input": {
+    "issue_id": "ENG-412",
+    "state_id": "8d2f4a6c-9e1b-4c3d-a5f7-2b4d6e8f0a13"
+  },
+  "expectedUrl": "https://api.linear.app/graphql",
+  "expectedBody": {
+    "query": "mutation MoveIssue($id: String!, $stateId: String!) { issueUpdate(id: $id, input: { stateId: $stateId }) { success issue { id identifier state { id name type } } } }",
+    "variables": {
+      "id": "ENG-412",
+      "stateId": "8d2f4a6c-9e1b-4c3d-a5f7-2b4d6e8f0a13"
+    }
+  },
+  "response": {
+    "data": {
+      "issueUpdate": {
+        "success": true,
+        "issue": {
+          "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+          "identifier": "ENG-412",
+          "state": {
+            "id": "8d2f4a6c-9e1b-4c3d-a5f7-2b4d6e8f0a13",
+            "name": "In Progress",
+            "type": "started"
+          }
+        }
+      }
+    }
+  },
+  "expectedReadBackUrl": "https://api.linear.app/graphql",
+  "expectedReadBackBody": {
+    "query": "query IssueReadBack($id: String!) { issue(id: $id) { id identifier title priority dueDate updatedAt archivedAt state { id name type } team { id } assignee { id } labels(first: 50) { nodes { id name } } } }",
+    "variables": {
+      "id": "ENG-412"
+    }
+  },
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "issue": {
+          "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+          "identifier": "ENG-412",
+          "title": "Checkout page times out for large carts",
+          "priority": 2,
+          "dueDate": null,
+          "updatedAt": "2026-10-24T08:10:00.000Z",
+          "archivedAt": null,
+          "state": {
+            "id": "8d2f4a6c-9e1b-4c3d-a5f7-2b4d6e8f0a13",
+            "name": "In Progress",
+            "type": "started"
+          },
+          "team": {
+            "id": "5f1c2a8e-3b7d-4e9a-8c21-6d0f4b2e9a17"
+          },
+          "assignee": null,
+          "labels": {
+            "nodes": []
+          }
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "issue": {
+          "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+          "identifier": "ENG-412",
+          "title": "Checkout page times out for large carts",
+          "priority": 2,
+          "dueDate": null,
+          "updatedAt": "2026-10-24T08:10:00.000Z",
+          "archivedAt": null,
+          "state": {
+            "id": "0b6e8f2a-1c3d-4e5f-8a9b-7c6d5e4f3a21",
+            "name": "Todo",
+            "type": "unstarted"
+          },
+          "team": {
+            "id": "5f1c2a8e-3b7d-4e9a-8c21-6d0f4b2e9a17"
+          },
+          "assignee": null,
+          "labels": {
+            "nodes": []
+          }
+        }
+      }
+    }
+  }
+}

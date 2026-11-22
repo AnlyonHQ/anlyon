@@ -1,0 +1,58 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/items).",
+  "params": {},
+  "input": {
+    "item_id": "9120000010"
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "mutation ($item_id: ID!) { delete_item(item_id: $item_id) { id state } }",
+    "variables": {
+      "item_id": "9120000010"
+    }
+  },
+  "response": {
+    "data": {
+      "delete_item": {
+        "id": "9120000010",
+        "state": "deleted"
+      }
+    },
+    "extensions": {
+      "request_id": "req_delete_item_1"
+    }
+  },
+  "expectedReadBackUrl": "https://api.monday.com/v2",
+  "expectedReadBackBody": {
+    "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id state } }",
+    "variables": {
+      "item_id": "9120000010"
+    }
+  },
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000010",
+            "state": "deleted"
+          }
+        ]
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000010",
+            "state": "active"
+          }
+        ]
+      }
+    }
+  }
+}

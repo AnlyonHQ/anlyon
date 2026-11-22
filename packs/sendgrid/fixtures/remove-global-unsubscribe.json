@@ -1,0 +1,20 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_suppressions_v3.json, DeleteGlobalSuppression and GetGlobalSuppression).",
+  "params": {},
+  "input": {
+    "email": "ada@example.com"
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/asm/suppressions/global/ada%40example.com",
+  "response": {},
+  "expectedReadBackUrl": "https://api.sendgrid.com/v3/asm/suppressions/global/ada%40example.com",
+  "readBack": {
+    "status": 200,
+    "json": {}
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "recipient_email": "ada@example.com"
+    }
+  }
+}

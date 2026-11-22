@@ -1,0 +1,1465 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/pipedrive",
+  "version": "0.1.0",
+  "description": "Pipedrive for an agent: search and read deals, people, organizations, activities, notes, pipelines and stages; create and update people, organizations and deals, move a deal's stage, mark it won or lost, log activities and notes, and delete, with every write governed.",
+  "secrets": [
+    {
+      "name": "PIPEDRIVE",
+      "kind": "connection",
+      "integrationId": "pipedrive",
+      "hosts": [
+        "api.pipedrive.com"
+      ],
+      "description": "The connected Pipedrive API token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "search-deals",
+      "kind": "read",
+      "description": "Search deals by title, notes and custom fields. Returns up to 20 matches a page, each with id, title, value, currency, status, stage, owner, person and organization. Filter by person, organization or status. When additional_data.next_cursor is present, pass it as cursor for the next page. Pipedrive caps a filtered search at 2000 deals.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/deals/search?term={{input.term}}&exact_match={{input.exact_match}}&person_id={{input.person_id}}&organization_id={{input.organization_id}}&status={{input.status}}&limit=20&cursor={{input.cursor}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "term"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "term": {
+            "type": "string",
+            "pattern": "^[^\\n]{2,100}$",
+            "description": "What to search for, at least 2 characters."
+          },
+          "exact_match": {
+            "type": "boolean",
+            "description": "true to match the whole term exactly (not case sensitive)."
+          },
+          "person_id": {
+            "type": "integer",
+            "description": "Deals of this person (an id from search-persons)."
+          },
+          "organization_id": {
+            "type": "integer",
+            "description": "Deals of this organization (an id from search-organizations)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "won",
+              "lost"
+            ],
+            "description": "Deals with this status."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "additional_data.next_cursor from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-persons",
+      "kind": "read",
+      "description": "Search people by name, email, phone, notes and custom fields. Returns up to 20 matches a page, each with id, name, emails, phones, owner and organization. Filter by organization. When additional_data.next_cursor is present, pass it as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/persons/search?term={{input.term}}&exact_match={{input.exact_match}}&organization_id={{input.organization_id}}&limit=20&cursor={{input.cursor}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "term"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "term": {
+            "type": "string",
+            "pattern": "^[^\\n]{2,100}$",
+            "description": "What to search for, at least 2 characters."
+          },
+          "exact_match": {
+            "type": "boolean",
+            "description": "true to match the whole term exactly (not case sensitive)."
+          },
+          "organization_id": {
+            "type": "integer",
+            "description": "People of this organization (an id from search-organizations)."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "additional_data.next_cursor from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-organizations",
+      "kind": "read",
+      "description": "Search organizations by name, address, notes and custom fields. Returns up to 20 matches a page, each with id, name, address and owner. When additional_data.next_cursor is present, pass it as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/organizations/search?term={{input.term}}&exact_match={{input.exact_match}}&limit=20&cursor={{input.cursor}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "term"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "term": {
+            "type": "string",
+            "pattern": "^[^\\n]{2,100}$",
+            "description": "What to search for, at least 2 characters."
+          },
+          "exact_match": {
+            "type": "boolean",
+            "description": "true to match the whole term exactly (not case sensitive)."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "additional_data.next_cursor from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-deals",
+      "kind": "read",
+      "description": "List deals, 20 a page, filtered by owner, person, organization, pipeline, stage, status or last update. Without status it returns open, won and lost deals; status deleted returns deals deleted in the last 30 days. Archived deals are not listed. Each deal has its id, title, value, currency, status, pipeline, stage, person, organization and dates. When additional_data.next_cursor is present, pass it as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/deals?owner_id={{input.owner_id}}&person_id={{input.person_id}}&org_id={{input.org_id}}&pipeline_id={{input.pipeline_id}}&stage_id={{input.stage_id}}&status={{input.status}}&updated_since={{input.updated_since}}&sort_by={{input.sort_by}}&sort_direction={{input.sort_direction}}&limit=20&cursor={{input.cursor}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "owner_id": {
+            "type": "integer",
+            "description": "Deals owned by this Pipedrive user id."
+          },
+          "person_id": {
+            "type": "integer",
+            "description": "Deals of this person."
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "Deals of this organization."
+          },
+          "pipeline_id": {
+            "type": "integer",
+            "description": "Deals in this pipeline (an id from list-pipelines)."
+          },
+          "stage_id": {
+            "type": "integer",
+            "description": "Deals in this stage (an id from list-stages)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "won",
+              "lost",
+              "deleted"
+            ],
+            "description": "Deals with this status."
+          },
+          "updated_since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "Deals updated at or after this time, RFC 3339 in UTC, e.g. 2026-10-01T00:00:00Z."
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "id",
+              "update_time",
+              "add_time"
+            ],
+            "description": "Sort field. Pipedrive's default is id."
+          },
+          "sort_direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Sort direction. Pipedrive's default is asc."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "additional_data.next_cursor from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-deal",
+      "kind": "read",
+      "description": "Get one deal: title, value, currency, status, pipeline and stage, person, organization, owner, dates, lost reason and custom field values (keyed by the field's hash).",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/deals/{{input.deal_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "deal_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "description": "The deal's id, from search-deals or list-deals."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-person",
+      "kind": "read",
+      "description": "Get one person: name, emails, phones, organization, owner, labels and custom field values (keyed by the field's hash).",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/persons/{{input.person_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "description": "The person's id, from search-persons."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-organization",
+      "kind": "read",
+      "description": "Get one organization: name, address, owner, labels and custom field values (keyed by the field's hash).",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/organizations/{{input.org_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "org_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "org_id": {
+            "type": "integer",
+            "description": "The organization's id, from search-organizations."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-activities",
+      "kind": "read",
+      "description": "List activities (calls, meetings, tasks and other types), 20 a page, filtered by owner, deal, person, organization or done. Each has its id, subject, type, due date and time, duration, done, and the deal, person and organization it is linked to. When additional_data.next_cursor is present, pass it as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/activities?owner_id={{input.owner_id}}&deal_id={{input.deal_id}}&person_id={{input.person_id}}&org_id={{input.org_id}}&done={{input.done}}&sort_by={{input.sort_by}}&sort_direction={{input.sort_direction}}&limit=20&cursor={{input.cursor}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "owner_id": {
+            "type": "integer",
+            "description": "Activities owned by this Pipedrive user id."
+          },
+          "deal_id": {
+            "type": "integer",
+            "description": "Activities linked to this deal."
+          },
+          "person_id": {
+            "type": "integer",
+            "description": "Activities whose primary participant is this person."
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "Activities linked to this organization."
+          },
+          "done": {
+            "type": "boolean",
+            "description": "true for done activities, false for open ones."
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "id",
+              "update_time",
+              "add_time",
+              "due_date"
+            ],
+            "description": "Sort field. Pipedrive's default is id."
+          },
+          "sort_direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Sort direction. Pipedrive's default is asc."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "additional_data.next_cursor from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-activity",
+      "kind": "read",
+      "description": "Get one activity: subject, type, due date and time, duration, done, note, and the deal, person and organization it is linked to.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/activities/{{input.activity_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "activity_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "activity_id": {
+            "type": "integer",
+            "description": "The activity's id, from list-activities."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-pipelines",
+      "kind": "read",
+      "description": "List the company's pipelines, 50 a page: id, name and order. When additional_data.next_cursor is present, pass it as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/pipelines?limit=50&cursor={{input.cursor}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "additional_data.next_cursor from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-stages",
+      "kind": "read",
+      "description": "List stages, 50 a page, of one pipeline or of all: id, name, order in the pipeline and pipeline_id. A deal's stage_id is one of these. When additional_data.next_cursor is present, pass it as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/stages?pipeline_id={{input.pipeline_id}}&limit=50&cursor={{input.cursor}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "pipeline_id": {
+            "type": "integer",
+            "description": "Stages of this pipeline (an id from list-pipelines)."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "additional_data.next_cursor from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-notes",
+      "kind": "read",
+      "description": "List notes, 10 a page, on one deal, person or organization, or all of them. Each has its id, content (HTML), author and the deal, person and organization it is on. Pages with start: when additional_data.pagination.more_items_in_collection is true, pass additional_data.pagination.next_start as start. A long note can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/v1/notes?deal_id={{input.deal_id}}&person_id={{input.person_id}}&org_id={{input.org_id}}&limit=10&start={{input.start}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "description": "Notes on this deal."
+          },
+          "person_id": {
+            "type": "integer",
+            "description": "Notes on this person."
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "Notes on this organization."
+          },
+          "start": {
+            "type": "integer",
+            "description": "additional_data.pagination.next_start from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-note",
+      "kind": "read",
+      "description": "Get one note: its content (HTML), author, dates and the deal, person and organization it is on.",
+      "method": "GET",
+      "urlTemplate": "https://api.pipedrive.com/v1/notes/{{input.note_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "note_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "note_id": {
+            "type": "integer",
+            "description": "The note's id, from list-notes."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-person",
+      "kind": "write",
+      "description": "Create one person with a name and a work email, and optionally phones, an organization and an owner. Read back by person id; the name and the email must match. Limitation: Pipedrive accepts two people with the same email, so a retry after an unknown outcome can create a second one. Search with search-persons before you create one.",
+      "method": "POST",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/persons",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "emails": [
+          {
+            "value": "{{input.email}}",
+            "primary": true,
+            "label": "work"
+          }
+        ],
+        "phones": "{{input.phones}}",
+        "org_id": "{{input.org_id}}",
+        "owner_id": "{{input.owner_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "name",
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The person's full name."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "The person's work email address."
+          },
+          "phones": {
+            "type": "array",
+            "description": "The phone numbers, each { value, primary, label }. Mark one primary.",
+            "items": {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "pattern": "^[0-9+()./ -]{3,40}$",
+                  "description": "The phone number."
+                },
+                "primary": {
+                  "type": "boolean",
+                  "description": "Whether this is the primary one."
+                },
+                "label": {
+                  "type": "string",
+                  "enum": [
+                    "work",
+                    "home",
+                    "mobile",
+                    "other"
+                  ],
+                  "description": "Pipedrive's label for it."
+                }
+              }
+            }
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "The organization they work at (an id from search-organizations)."
+          },
+          "owner_id": {
+            "type": "integer",
+            "description": "The Pipedrive user id who owns the person. Leave out for the key's own user."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/persons/{{response.data.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.name",
+            "equals": "{{input.name}}"
+          },
+          {
+            "path": "data.emails.*.value",
+            "equals": "{{input.email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-person",
+      "kind": "write",
+      "description": "Update one person's name, emails, phones, organization or owner. Only the fields you pass change; emails and phones are sent as the full list you give. Read back by person id; the name, organization and owner must equal what Pipedrive returned for the update. Limitation: emails and phones are not part of the read-back.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/persons/{{input.person_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "emails": "{{input.emails}}",
+        "phones": "{{input.phones}}",
+        "org_id": "{{input.org_id}}",
+        "owner_id": "{{input.owner_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "description": "The person's id, from search-persons."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The person's full name."
+          },
+          "emails": {
+            "type": "array",
+            "description": "The email addresses, each { value, primary, label }. Mark one primary.",
+            "items": {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+                  "description": "The email address."
+                },
+                "primary": {
+                  "type": "boolean",
+                  "description": "Whether this is the primary one."
+                },
+                "label": {
+                  "type": "string",
+                  "enum": [
+                    "work",
+                    "home",
+                    "mobile",
+                    "other"
+                  ],
+                  "description": "Pipedrive's label for it."
+                }
+              }
+            }
+          },
+          "phones": {
+            "type": "array",
+            "description": "The phone numbers, each { value, primary, label }. Mark one primary.",
+            "items": {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "value": {
+                  "type": "string",
+                  "pattern": "^[0-9+()./ -]{3,40}$",
+                  "description": "The phone number."
+                },
+                "primary": {
+                  "type": "boolean",
+                  "description": "Whether this is the primary one."
+                },
+                "label": {
+                  "type": "string",
+                  "enum": [
+                    "work",
+                    "home",
+                    "mobile",
+                    "other"
+                  ],
+                  "description": "Pipedrive's label for it."
+                }
+              }
+            }
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "The organization they work at."
+          },
+          "owner_id": {
+            "type": "integer",
+            "description": "The Pipedrive user id who owns the person."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/persons/{{input.person_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.id",
+            "equals": "{{input.person_id}}"
+          },
+          {
+            "path": "data.name",
+            "equals": "{{response.data.name}}"
+          },
+          {
+            "path": "data.org_id",
+            "equals": "{{response.data.org_id}}"
+          },
+          {
+            "path": "data.owner_id",
+            "equals": "{{response.data.owner_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-person",
+      "kind": "write",
+      "description": "Delete one person. Pipedrive marks the person deleted and removes them for good after 30 days. No read-back: Pipedrive does not document how a read shows a person in those 30 days, so the receipt is acknowledged. Check with get-person.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/persons/{{input.person_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "person_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "person_id": {
+            "type": "integer",
+            "description": "The person's id, from search-persons."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "create-organization",
+      "kind": "write",
+      "description": "Create one organization with a name and optionally an owner. Read back by organization id; the name must match. Limitation: Pipedrive accepts two organizations with the same name, so a retry after an unknown outcome can create a second one. Search with search-organizations before you create one.",
+      "method": "POST",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/organizations",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "owner_id": "{{input.owner_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The organization's name."
+          },
+          "owner_id": {
+            "type": "integer",
+            "description": "The Pipedrive user id who owns it. Leave out for the key's own user."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/organizations/{{response.data.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-deal",
+      "kind": "write",
+      "description": "Create one open deal with a title, and optionally a person, an organization, a pipeline and stage, a value and currency, an owner and an expected close date. Pipedrive chooses the pipeline and stage when they are left out. The value records what the deal is worth; no money moves. Read back by deal id; the title must match. Limitation: no idempotency, so a retry after an unknown outcome can create a second deal.",
+      "method": "POST",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/deals",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "title": "{{input.title}}",
+        "person_id": "{{input.person_id}}",
+        "org_id": "{{input.org_id}}",
+        "pipeline_id": "{{input.pipeline_id}}",
+        "stage_id": "{{input.stage_id}}",
+        "value": "{{input.value}}",
+        "currency": "{{input.currency}}",
+        "owner_id": "{{input.owner_id}}",
+        "expected_close_date": "{{input.expected_close_date}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The deal's title."
+          },
+          "person_id": {
+            "type": "integer",
+            "description": "The person on the deal (an id from search-persons)."
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "The organization on the deal (an id from search-organizations)."
+          },
+          "pipeline_id": {
+            "type": "integer",
+            "description": "The pipeline (an id from list-pipelines)."
+          },
+          "stage_id": {
+            "type": "integer",
+            "description": "The stage (an id from list-stages)."
+          },
+          "value": {
+            "type": "number",
+            "description": "What the deal is worth, in currency units (not cents)."
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217 code, e.g. USD. Pipedrive uses the company's default when left out."
+          },
+          "owner_id": {
+            "type": "integer",
+            "description": "The Pipedrive user id who owns the deal. Leave out for the key's own user."
+          },
+          "expected_close_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Expected close date, YYYY-MM-DD."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/deals/{{response.data.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.title",
+            "equals": "{{input.title}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-deal",
+      "kind": "write",
+      "description": "Update one deal's title, value, currency, owner, expected close date, person or organization. Only the fields you pass change. Use move-deal-stage for the stage and set-deal-status for won or lost. Read back by deal id; the title, value, currency and owner must equal what Pipedrive returned for the update. Limitation: the close date, person and organization are not part of the read-back.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/deals/{{input.deal_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "title": "{{input.title}}",
+        "value": "{{input.value}}",
+        "currency": "{{input.currency}}",
+        "owner_id": "{{input.owner_id}}",
+        "expected_close_date": "{{input.expected_close_date}}",
+        "person_id": "{{input.person_id}}",
+        "org_id": "{{input.org_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "deal_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "description": "The deal's id, from search-deals or list-deals."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The new title."
+          },
+          "value": {
+            "type": "number",
+            "description": "What the deal is worth, in currency units (not cents)."
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$",
+            "description": "ISO 4217 code, e.g. USD."
+          },
+          "owner_id": {
+            "type": "integer",
+            "description": "The Pipedrive user id who owns the deal."
+          },
+          "expected_close_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Expected close date, YYYY-MM-DD."
+          },
+          "person_id": {
+            "type": "integer",
+            "description": "The person on the deal."
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "The organization on the deal."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/deals/{{input.deal_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.id",
+            "equals": "{{input.deal_id}}"
+          },
+          {
+            "path": "data.title",
+            "equals": "{{response.data.title}}"
+          },
+          {
+            "path": "data.value",
+            "equals": "{{response.data.value}}"
+          },
+          {
+            "path": "data.currency",
+            "equals": "{{response.data.currency}}"
+          },
+          {
+            "path": "data.owner_id",
+            "equals": "{{response.data.owner_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "move-deal-stage",
+      "kind": "write",
+      "description": "Move one deal to another stage. Stage ids come from list-stages. Read back by deal id; the deal's stage must be the one given.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/deals/{{input.deal_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "stage_id": "{{input.stage_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "deal_id",
+          "stage_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "description": "The deal's id, from search-deals or list-deals."
+          },
+          "stage_id": {
+            "type": "integer",
+            "description": "The stage to move it to (an id from list-stages)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/deals/{{input.deal_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.stage_id",
+            "equals": "{{input.stage_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-deal-status",
+      "kind": "write",
+      "description": "Mark one deal won or lost, or reopen it. A lost reason can be given with lost only (Pipedrive's rule). Read back by deal id; the status must be the one given.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/deals/{{input.deal_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "{{input.status}}",
+        "lost_reason": "{{input.lost_reason}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "deal_id",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "description": "The deal's id, from search-deals or list-deals."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "won",
+              "lost"
+            ],
+            "description": "won, lost, or open to reopen it."
+          },
+          "lost_reason": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "Why it was lost. Only with status lost."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/deals/{{input.deal_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.status",
+            "equals": "{{input.status}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-deal",
+      "kind": "write",
+      "description": "Delete one deal. Pipedrive marks it deleted and removes it for good after 30 days; until then it can be restored in Pipedrive. Read back from the deals deleted in the last 30 days; this deal must be among them.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/deals/{{input.deal_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "deal_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "deal_id": {
+            "type": "integer",
+            "description": "The deal's id, from search-deals or list-deals."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/deals?ids={{input.deal_id}}&status=deleted",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.*.id",
+            "equals": "{{input.deal_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-activity",
+      "kind": "write",
+      "description": "Create one activity (a call, meeting, task or another type the company has) with a subject and a type, linked to a deal or an organization, optionally due at a date and time, with a note. Read back by activity id; the subject and type must match. Limitations: a person is linked through the deal, not directly; and there is no idempotency, so a retry after an unknown outcome can create a second activity.",
+      "method": "POST",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/activities",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "subject": "{{input.subject}}",
+        "type": "{{input.type}}",
+        "deal_id": "{{input.deal_id}}",
+        "org_id": "{{input.org_id}}",
+        "owner_id": "{{input.owner_id}}",
+        "due_date": "{{input.due_date}}",
+        "due_time": "{{input.due_time}}",
+        "duration": "{{input.duration}}",
+        "note": "{{input.note}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "subject",
+          "type"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "subject": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "What the activity is, e.g. Call about the renewal."
+          },
+          "type": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,40}$",
+            "description": "The activity type's key: call, meeting, task, deadline, email, lunch, or a type the company added."
+          },
+          "deal_id": {
+            "type": "integer",
+            "description": "The deal it is for (an id from search-deals)."
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "The organization it is for."
+          },
+          "owner_id": {
+            "type": "integer",
+            "description": "The Pipedrive user id it is assigned to. Leave out for the key's own user."
+          },
+          "due_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Due date, YYYY-MM-DD."
+          },
+          "due_time": {
+            "type": "string",
+            "pattern": "^[0-2][0-9]:[0-5][0-9]$",
+            "description": "Due time, HH:MM in UTC."
+          },
+          "duration": {
+            "type": "string",
+            "pattern": "^[0-9]{2}:[0-5][0-9]$",
+            "description": "Duration, HH:MM."
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "A note on the activity (HTML)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/activities/{{response.data.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.subject",
+            "equals": "{{input.subject}}"
+          },
+          {
+            "path": "data.type",
+            "equals": "{{input.type}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "complete-activity",
+      "kind": "write",
+      "description": "Mark one activity done. Read back by activity id; done must be true.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.pipedrive.com/api/v2/activities/{{input.activity_id}}",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "done": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "activity_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "activity_id": {
+            "type": "integer",
+            "description": "The activity's id, from list-activities."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/api/v2/activities/{{input.activity_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.id",
+            "equals": "{{input.activity_id}}"
+          },
+          {
+            "path": "data.done",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-note",
+      "kind": "write",
+      "description": "Add one note to a deal, a person or an organization. Give at least one of deal_id, person_id and org_id, or Pipedrive refuses it. The content is HTML, which Pipedrive sanitizes. Read back by note id; the stored content must equal what Pipedrive returned. Limitation: no idempotency, so a retry after an unknown outcome can add a second note.",
+      "method": "POST",
+      "urlTemplate": "https://api.pipedrive.com/v1/notes",
+      "headers": {
+        "x-api-token": "{{connection:pipedrive}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "content": "{{input.content}}",
+        "deal_id": "{{input.deal_id}}",
+        "person_id": "{{input.person_id}}",
+        "org_id": "{{input.org_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The note, as plain text or HTML."
+          },
+          "deal_id": {
+            "type": "integer",
+            "description": "The deal to put it on."
+          },
+          "person_id": {
+            "type": "integer",
+            "description": "The person to put it on."
+          },
+          "org_id": {
+            "type": "integer",
+            "description": "The organization to put it on."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pipedrive.com/v1/notes/{{response.data.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.content",
+            "equals": "{{response.data.content}}"
+          },
+          {
+            "path": "data.active_flag",
+            "equals": true
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "pipedrive: approve deleting a deal",
+      "matchKind": "action",
+      "matchActionName": "delete-deal",
+      "effect": "require_approval"
+    },
+    {
+      "name": "pipedrive: approve deleting a person",
+      "matchKind": "action",
+      "matchActionName": "delete-person",
+      "effect": "require_approval"
+    },
+    {
+      "name": "pipedrive: approve marking a deal won or lost",
+      "matchKind": "action",
+      "matchActionName": "set-deal-status",
+      "condition": "input.status != 'open'",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "pipedrive: people created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-person"
+    },
+    {
+      "name": "pipedrive: people updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-person"
+    },
+    {
+      "name": "pipedrive: people deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-person"
+    },
+    {
+      "name": "pipedrive: organizations created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-organization"
+    },
+    {
+      "name": "pipedrive: deals created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-deal"
+    },
+    {
+      "name": "pipedrive: deals updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-deal"
+    },
+    {
+      "name": "pipedrive: deal stage moves per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "move-deal-stage"
+    },
+    {
+      "name": "pipedrive: deals marked won or lost per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "set-deal-status"
+    },
+    {
+      "name": "pipedrive: deals deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-deal"
+    },
+    {
+      "name": "pipedrive: activities created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "create-activity"
+    },
+    {
+      "name": "pipedrive: activities completed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "complete-activity"
+    },
+    {
+      "name": "pipedrive: notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-note"
+    }
+  ]
+}

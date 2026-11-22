@@ -1,0 +1,38 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/associations/associate-records/update-association).",
+  "params": {},
+  "input": {
+    "fromObjectType": "contacts",
+    "fromObjectId": "151",
+    "toObjectType": "companies",
+    "toObjectId": "9001"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v4/objects/contacts/151/associations/default/companies/9001",
+  "response": {
+    "status": "COMPLETE",
+    "results": [
+      {
+        "associationSpec": {
+          "associationCategory": "HUBSPOT_DEFINED",
+          "associationTypeId": 279
+        },
+        "fromObjectTypeId": "0-1",
+        "fromObjectId": 151,
+        "toObjectTypeId": "0-2",
+        "toObjectId": 9001
+      },
+      {
+        "associationSpec": {
+          "associationCategory": "HUBSPOT_DEFINED",
+          "associationTypeId": 280
+        },
+        "fromObjectTypeId": "0-2",
+        "fromObjectId": 9001,
+        "toObjectTypeId": "0-1",
+        "toObjectId": 151
+      }
+    ],
+    "startedAt": "2026-10-15T09:06:00.101Z",
+    "completedAt": "2026-10-15T09:06:00.164Z"
+  }
+}

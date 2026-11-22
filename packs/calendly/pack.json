@@ -1,0 +1,781 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/calendly",
+  "version": "0.1.0",
+  "description": "Calendly tools an agent can be given: read the user, event types, open and busy times, availability, scheduled meetings, invitees and no-shows; book a meeting, create a single-use scheduling link, cancel a meeting, and mark or unmark a no-show, each write governed and read back where Calendly allows.",
+  "secrets": [
+    {
+      "name": "CALENDLY",
+      "kind": "connection",
+      "integrationId": "calendly",
+      "hosts": [
+        "api.calendly.com"
+      ],
+      "description": "The connected Calendly personal access token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "get-current-user",
+      "kind": "read",
+      "description": "Get the Calendly user the token belongs to: name, email, timezone, scheduling_url, and the uri and current_organization uri. The other actions take this user's uri (resource.uri) as user. The last part of any Calendly uri is the uuid the get actions take.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/users/me",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-event-types",
+      "kind": "read",
+      "description": "List one user's event types (the kinds of meeting people can book), 10 per page, by name: name, duration, active, kind, pooling_type, scheduling_url, locations, custom_questions and uri. Pass active=true to leave out inactive ones. Calendly returns pagination.next_page_token when there are more; pass it as page_token.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/event_types?user={{input.user}}&active={{input.active}}&sort=name:asc&count=10&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "user"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "user": {
+            "type": "string",
+            "pattern": "^https://api\\.calendly\\.com/users/[A-Za-z0-9-]{1,64}$",
+            "description": "The user's uri, as get-current-user returns it in resource.uri (https://api.calendly.com/users/<uuid>)."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "true for active event types, false for inactive ones. Leave out for both."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/.-]{1,1024}$",
+            "description": "pagination.next_page_token from the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-event-type",
+      "kind": "read",
+      "description": "Get one event type: name, duration and duration options, active, kind, pooling_type, scheduling_url, locations, custom_questions (the questions a booking must answer), description and owner profile.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/event_types/{{input.event_type_uuid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_type_uuid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_type_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The event type's uuid: the last part of its uri (https://api.calendly.com/event_types/<uuid>), from list-event-types."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-available-times",
+      "kind": "read",
+      "description": "List the open start times of one event type between start_time and end_time, each with status, invitees_remaining and a scheduling_url that books it. Calendly requires start_time not in the past and a range of at most 31 days. Not paged: every slot in the range comes back, so keep the range to a week or less to stay under the 64 KB response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/event_type_available_times?event_type={{input.event_type}}&start_time={{input.start_time}}&end_time={{input.end_time}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_type",
+          "start_time",
+          "end_time"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "pattern": "^https://api\\.calendly\\.com/event_types/[A-Za-z0-9-]{1,64}$",
+            "description": "The event type's uri, from list-event-types (https://api.calendly.com/event_types/<uuid>)."
+          },
+          "start_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$",
+            "description": "Start of the range, UTC ISO 8601 (2026-11-02T09:00:00Z). Not in the past."
+          },
+          "end_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$",
+            "description": "End of the range, UTC ISO 8601. After start_time, and at most 31 days after it."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-busy-times",
+      "kind": "read",
+      "description": "List a user's busy times between start_time and end_time, in order: Calendly meetings, reserved times and events on connected calendars, each with start, end and buffered times. Calendly allows a range of at most 7 days, not in the past. External calendar events come from calendars with \"Check for conflicts\" turned on. Not paged.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/user_busy_times?user={{input.user}}&start_time={{input.start_time}}&end_time={{input.end_time}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "user",
+          "start_time",
+          "end_time"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "user": {
+            "type": "string",
+            "pattern": "^https://api\\.calendly\\.com/users/[A-Za-z0-9-]{1,64}$",
+            "description": "The user's uri, as get-current-user returns it in resource.uri (https://api.calendly.com/users/<uuid>)."
+          },
+          "start_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$",
+            "description": "Start of the range, UTC ISO 8601 (2026-11-02T09:00:00Z). Not in the past."
+          },
+          "end_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$",
+            "description": "End of the range, UTC ISO 8601. After start_time, and at most 7 days after it."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-availability-schedules",
+      "kind": "read",
+      "description": "List a user's availability schedules (their working hours): name, timezone, whether it is the default, and its rules by weekday and by date. Not paged.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/user_availability_schedules?user={{input.user}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "user"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "user": {
+            "type": "string",
+            "pattern": "^https://api\\.calendly\\.com/users/[A-Za-z0-9-]{1,64}$",
+            "description": "The user's uri, as get-current-user returns it in resource.uri (https://api.calendly.com/users/<uuid>)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-scheduled-events",
+      "kind": "read",
+      "description": "List the user's scheduled meetings, 20 per page: name, status, start and end time, event_type, location, invitee counts, hosts and cancellation. Filter by status, by an invitee's email, and by start time (min_start_time and max_start_time, UTC). Sort by start time with sort. The user must be the token's own user. Calendly returns pagination.next_page_token when there are more; pass it as page_token.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/scheduled_events?user={{input.user}}&status={{input.status}}&invitee_email={{input.invitee_email}}&min_start_time={{input.min_start_time}}&max_start_time={{input.max_start_time}}&sort={{input.sort}}&count=20&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "user"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "user": {
+            "type": "string",
+            "pattern": "^https://api\\.calendly\\.com/users/[A-Za-z0-9-]{1,64}$",
+            "description": "The user's uri, as get-current-user returns it in resource.uri (https://api.calendly.com/users/<uuid>)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "canceled"
+            ],
+            "description": "active or canceled. Leave out for both."
+          },
+          "invitee_email": {
+            "type": "string",
+            "pattern": "^[^\\s@]{1,64}@[^\\s@]{1,255}$",
+            "description": "Only meetings with an invitee who has this email address."
+          },
+          "min_start_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$",
+            "description": "Only meetings that start after this time, UTC ISO 8601."
+          },
+          "max_start_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$",
+            "description": "Only meetings that start before this time, UTC ISO 8601."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "start_time:asc",
+              "start_time:desc"
+            ],
+            "description": "start_time:asc for soonest first, start_time:desc for latest first."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/.-]{1,1024}$",
+            "description": "pagination.next_page_token from the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-scheduled-event",
+      "kind": "read",
+      "description": "Get one scheduled meeting: name, status, start and end time, event_type, location (with the join URL for a video call), invitee counts, hosts, guests, and the cancellation when it was canceled.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/scheduled_events/{{input.event_uuid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_uuid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The scheduled event's uuid: the last part of its uri (https://api.calendly.com/scheduled_events/<uuid>), from list-scheduled-events."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-event-invitees",
+      "kind": "read",
+      "description": "List the invitees of one scheduled meeting, 20 per page, oldest booking first: name, email, status, timezone, answers to the booking questions, no_show, and the cancel and reschedule URLs. Filter by status or email. Calendly returns pagination.next_page_token when there are more; pass it as page_token.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/scheduled_events/{{input.event_uuid}}/invitees?status={{input.status}}&email={{input.email}}&count=20&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_uuid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The scheduled event's uuid: the last part of its uri (https://api.calendly.com/scheduled_events/<uuid>), from list-scheduled-events."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "canceled"
+            ],
+            "description": "active or canceled. Leave out for both."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^\\s@]{1,64}@[^\\s@]{1,255}$",
+            "description": "Only the invitee with this email address."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/.-]{1,1024}$",
+            "description": "pagination.next_page_token from the previous page. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-invitee",
+      "kind": "read",
+      "description": "Get one invitee of a scheduled meeting: name, email, status, timezone, answers to the booking questions, rescheduled state, cancellation, payment, the cancel and reschedule URLs, and no_show (its uri when the invitee is marked as a no-show, otherwise null).",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/scheduled_events/{{input.event_uuid}}/invitees/{{input.invitee_uuid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_uuid",
+          "invitee_uuid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The scheduled event's uuid: the last part of its uri (https://api.calendly.com/scheduled_events/<uuid>), from list-scheduled-events."
+          },
+          "invitee_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The invitee's uuid: the last part of its uri (.../scheduled_events/<event uuid>/invitees/<uuid>), from list-event-invitees."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-no-show",
+      "kind": "read",
+      "description": "Get one no-show mark: its uri, the invitee it is on and when it was made. get-invitee returns the mark's uri in no_show.uri.",
+      "method": "GET",
+      "urlTemplate": "https://api.calendly.com/invitee_no_shows/{{input.no_show_uuid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "no_show_uuid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "no_show_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The no-show mark's uuid: the last part of no_show.uri from get-invitee (https://api.calendly.com/invitee_no_shows/<uuid>)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "book-meeting",
+      "kind": "write",
+      "description": "Book a meeting on an event type for one invitee, at a start time from list-available-times. Calendly sends its usual confirmation and calendar invite to the invitee and any guests, and runs the event type's workflows, as for a booking made on the booking page. Answer every required custom question of the event type (get-event-type) in answers, and give a location of a kind the event type offers. Read back from the user's active meetings with this invitee's email, latest first; the booked meeting must be among them. Limitation: Calendly's Scheduling API, which this uses, needs a paid plan (Standard or above); a Free plan answers 403. Limitation: the read-back looks among the token user's own meetings (user), so a booking on an event type the token user does not host reads back as a mismatch. Limitation: no provider idempotency, so a retry after an unknown outcome can book a second meeting.",
+      "method": "POST",
+      "urlTemplate": "https://api.calendly.com/invitees",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "event_type": "{{input.event_type}}",
+        "start_time": "{{input.start_time}}",
+        "invitee": {
+          "name": "{{input.invitee_name}}",
+          "email": "{{input.invitee_email}}",
+          "timezone": "{{input.invitee_timezone}}"
+        },
+        "location": "{{input.location}}",
+        "questions_and_answers": "{{input.answers}}",
+        "event_guests": "{{input.guest_emails}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_type",
+          "start_time",
+          "invitee_name",
+          "invitee_email",
+          "invitee_timezone",
+          "user"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "pattern": "^https://api\\.calendly\\.com/event_types/[A-Za-z0-9-]{1,64}$",
+            "description": "The event type's uri, from list-event-types (https://api.calendly.com/event_types/<uuid>)."
+          },
+          "start_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?Z$",
+            "description": "The meeting's start, UTC ISO 8601, as list-available-times returns it in start_time."
+          },
+          "invitee_name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "The invitee's full name."
+          },
+          "invitee_email": {
+            "type": "string",
+            "pattern": "^[^\\s@]{1,64}@[^\\s@]{1,255}$",
+            "description": "The invitee's email address. Calendly sends the confirmation here."
+          },
+          "invitee_timezone": {
+            "type": "string",
+            "pattern": "^[A-Za-z_]{1,32}(/[A-Za-z0-9_+-]{1,32}){0,2}$",
+            "description": "The invitee's IANA time zone, for example America/New_York or Europe/London."
+          },
+          "user": {
+            "type": "string",
+            "pattern": "^https://api\\.calendly\\.com/users/[A-Za-z0-9-]{1,64}$",
+            "description": "The token user's uri (get-current-user, resource.uri), used to read the booking back. It must host this event type."
+          },
+          "location": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind"
+            ],
+            "description": "Where the meeting happens. Leave out to let Calendly use the event type's own location. It must be a kind the event type offers, and is not allowed for a round-robin event type.",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "physical",
+                  "inbound_call",
+                  "outbound_call",
+                  "zoom_conference",
+                  "google_conference",
+                  "gotomeeting_conference",
+                  "microsoft_teams_conference",
+                  "webex_conference",
+                  "ask_invitee",
+                  "custom"
+                ],
+                "description": "The location kind, one of those the event type offers."
+              },
+              "location": {
+                "type": "string",
+                "pattern": "^[^\\n]{1,500}$",
+                "description": "The address for physical, the phone number for outbound_call, or the text for ask_invitee and custom. Leave out for the other kinds."
+              }
+            }
+          },
+          "answers": {
+            "type": "array",
+            "description": "Answers to the event type's custom questions. Each question must match the question text exactly.",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "question",
+                "answer",
+                "position"
+              ],
+              "properties": {
+                "question": {
+                  "type": "string",
+                  "pattern": "^[^\\n]{1,500}$",
+                  "description": "The question, exactly as get-event-type returns it in custom_questions."
+                },
+                "answer": {
+                  "type": "string",
+                  "pattern": "^[\\s\\S]{1,1000}$",
+                  "description": "The invitee's answer."
+                },
+                "position": {
+                  "type": "integer",
+                  "description": "The question's position, from custom_questions."
+                }
+              }
+            }
+          },
+          "guest_emails": {
+            "type": "array",
+            "description": "Email addresses of guests to invite as well, at most 10 (Calendly's limit). Each guest gets the invite.",
+            "items": {
+              "type": "string",
+              "pattern": "^[^\\s@]{1,64}@[^\\s@]{1,255}$",
+              "description": "A guest's email address."
+            }
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.calendly.com/scheduled_events?user={{input.user}}&invitee_email={{input.invitee_email}}&status=active&sort=start_time:desc&count=20",
+        "status": 200,
+        "match": [
+          {
+            "path": "collection.*.uri",
+            "equals": "{{response.resource.event}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-scheduling-link",
+      "kind": "write",
+      "description": "Create a single-use scheduling link for one event type and return its booking_url. One meeting can be booked with it, then it stops working. Creating it tells nobody; the link reaches a person when it is sent. No read-back: Calendly has no call that reads a scheduling link.",
+      "method": "POST",
+      "urlTemplate": "https://api.calendly.com/scheduling_links",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "max_event_count": 1,
+        "owner": "{{input.event_type}}",
+        "owner_type": "EventType"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_type"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_type": {
+            "type": "string",
+            "pattern": "^https://api\\.calendly\\.com/event_types/[A-Za-z0-9-]{1,64}$",
+            "description": "The event type's uri, from list-event-types (https://api.calendly.com/event_types/<uuid>)."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "cancel-event",
+      "kind": "write",
+      "description": "Cancel one scheduled meeting, with a reason. Calendly notifies the invitees. Read back from the meeting; its status must be canceled and its cancellation reason this one. Limitation: Calendly has no call that undoes a cancellation; the invitee has to book again. Limitation: a meeting that was already canceled with the same reason reads back as a match.",
+      "method": "POST",
+      "urlTemplate": "https://api.calendly.com/scheduled_events/{{input.event_uuid}}/cancellation",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "reason": "{{input.reason}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_uuid",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The scheduled event's uuid: the last part of its uri (https://api.calendly.com/scheduled_events/<uuid>), from list-scheduled-events."
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,1000}$",
+            "description": "Why the meeting is canceled. Calendly stores it on the meeting's cancellation."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.calendly.com/scheduled_events/{{input.event_uuid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "resource.status",
+            "equals": "canceled"
+          },
+          {
+            "path": "resource.cancellation.reason",
+            "equals": "{{input.reason}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "mark-no-show",
+      "kind": "write",
+      "description": "Mark one invitee of a meeting as a no-show. Read back from the invitee; its no_show must be the mark this call made. Limitation: an invitee already marked is refused by Calendly.",
+      "method": "POST",
+      "urlTemplate": "https://api.calendly.com/invitee_no_shows",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "invitee": "https://api.calendly.com/scheduled_events/{{input.event_uuid}}/invitees/{{input.invitee_uuid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_uuid",
+          "invitee_uuid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The scheduled event's uuid: the last part of its uri (https://api.calendly.com/scheduled_events/<uuid>), from list-scheduled-events."
+          },
+          "invitee_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The invitee's uuid: the last part of its uri (.../scheduled_events/<event uuid>/invitees/<uuid>), from list-event-invitees."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.calendly.com/scheduled_events/{{input.event_uuid}}/invitees/{{input.invitee_uuid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "resource.no_show.uri",
+            "equals": "{{response.resource.uri}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "unmark-no-show",
+      "kind": "write",
+      "description": "Remove a no-show mark from an invitee. Give the mark's uuid and the invitee it is on (get-no-show returns the invitee's uri). Read back from the invitee; its no_show must be empty. mark-no-show undoes it.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.calendly.com/invitee_no_shows/{{input.no_show_uuid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calendly}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "no_show_uuid",
+          "event_uuid",
+          "invitee_uuid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "no_show_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The no-show mark's uuid: the last part of no_show.uri from get-invitee."
+          },
+          "event_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The uuid of the meeting the invitee belongs to, for the read-back."
+          },
+          "invitee_uuid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The uuid of the invitee the mark is on, for the read-back."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.calendly.com/scheduled_events/{{input.event_uuid}}/invitees/{{input.invitee_uuid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "resource.no_show",
+            "equals": null
+          }
+        ]
+      },
+      "requiresApproval": false
+    }
+  ],
+  "policies": [
+    {
+      "name": "calendly: approve booking a meeting",
+      "matchKind": "action",
+      "matchActionName": "book-meeting",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calendly: approve cancelling a meeting",
+      "matchKind": "action",
+      "matchActionName": "cancel-event",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calendly: approve removing a no-show mark",
+      "matchKind": "action",
+      "matchActionName": "unmark-no-show",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "calendly: meetings booked per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "book-meeting"
+    },
+    {
+      "name": "calendly: scheduling links per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-scheduling-link"
+    },
+    {
+      "name": "calendly: meetings cancelled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "cancel-event"
+    },
+    {
+      "name": "calendly: no-shows marked per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "mark-no-show"
+    },
+    {
+      "name": "calendly: no-show marks removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "unmark-no-show"
+    }
+  ]
+}

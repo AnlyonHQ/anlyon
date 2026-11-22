@@ -1,0 +1,38 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/messages-api).",
+  "params": {},
+  "input": {
+    "message_id": "cc5727a0-ea30-4e79-baea-aa43c9628ac4"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/messages/inbound/cc5727a0-ea30-4e79-baea-aa43c9628ac4/details",
+  "response": {
+    "From": "grace@example.com",
+    "FromName": "Grace",
+    "FromFull": {
+      "Email": "grace@example.com",
+      "Name": "Grace"
+    },
+    "To": "ad8a4d0842c486355a33a7f019caab51@inbound.postmarkapp.com",
+    "ToFull": [],
+    "CcFull": [],
+    "Cc": "",
+    "ReplyTo": "",
+    "OriginalRecipient": "ad8a4d0842c486355a33a7f019caab51@inbound.postmarkapp.com",
+    "Subject": "Where is my order?",
+    "Date": "Fri, 24 Oct 2026 09:48:22 -0400",
+    "MailboxHash": "",
+    "TextBody": "Order 5454 has not arrived.",
+    "HtmlBody": "",
+    "Tag": "",
+    "Headers": [
+      {
+        "Name": "X-Spam-Status",
+        "Value": "No"
+      }
+    ],
+    "Attachments": [],
+    "MessageID": "cc5727a0-ea30-4e79-baea-aa43c9628ac4",
+    "BlockedReason": "",
+    "Status": "Processed"
+  }
+}

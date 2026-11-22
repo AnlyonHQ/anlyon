@@ -1,0 +1,25 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/deals/update-deal).",
+  "params": {},
+  "input": {
+    "dealId": "7701",
+    "amount": "15000.00",
+    "closedate": "2026-12-31T00:00:00Z",
+    "hs_priority": "high"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/deals/7701",
+  "response": {
+    "id": "7701",
+    "properties": {
+      "amount": "15000.00",
+      "closedate": "2026-12-31T00:00:00Z",
+      "createdate": "2026-10-01T12:00:00.000Z",
+      "hs_lastmodifieddate": "2026-10-15T09:05:12.774Z",
+      "hs_object_id": "7701",
+      "hs_priority": "high"
+    },
+    "createdAt": "2026-10-01T12:00:00.000Z",
+    "updatedAt": "2026-10-15T09:05:12.774Z",
+    "archived": false
+  }
+}

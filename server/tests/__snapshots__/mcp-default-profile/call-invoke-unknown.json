@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Error: Action not found: does-not-exist"
+    }
+  ],
+  "isError": true
+}

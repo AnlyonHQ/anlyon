@@ -1,0 +1,61 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/merge_request_approvals/).",
+  "params": {},
+  "input": {
+    "project": "acme/web",
+    "merge_request_iid": "7",
+    "sha": "8f3a1c2d4e5f60718293a4b5c6d7e8f901234567"
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/merge_requests/7/approve",
+  "response": {
+    "id": 310000007,
+    "iid": 7,
+    "project_id": 5000001,
+    "title": "Fix Safari checkout",
+    "state": "opened",
+    "approved": true,
+    "user_has_approved": true,
+    "user_can_approve": false,
+    "approved_by": [
+      {
+        "user": {
+          "id": 1002,
+          "username": "reviewer",
+          "name": "Rae Viewer"
+        },
+        "approved_at": "2026-10-22T11:00:00.000Z"
+      }
+    ]
+  },
+  "expectedReadBackUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/merge_requests/7/approvals",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 310000007,
+      "iid": 7,
+      "approved": true,
+      "user_has_approved": true,
+      "user_can_approve": false,
+      "approved_by": [
+        {
+          "user": {
+            "id": 1002,
+            "username": "reviewer"
+          },
+          "approved_at": "2026-10-22T11:00:00.000Z"
+        }
+      ]
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 310000007,
+      "iid": 7,
+      "approved": false,
+      "user_has_approved": false,
+      "user_can_approve": true,
+      "approved_by": []
+    }
+  }
+}

@@ -1,0 +1,1070 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/front",
+  "version": "0.1.0",
+  "description": "Front for an agent: search and read conversations, messages, comments and contacts; reply, draft a reply, comment, assign, archive, reopen and tag conversations, and create, update and note contacts, with every write governed.",
+  "secrets": [
+    {
+      "name": "FRONT",
+      "kind": "connection",
+      "integrationId": "front",
+      "hosts": [
+        "api2.frontapp.com"
+      ],
+      "description": "The connected Front API token, with Read, Write and Send"
+    }
+  ],
+  "actions": [
+    {
+      "name": "search-conversations",
+      "kind": "read",
+      "description": "Search conversations with Front's search syntax, newest activity first: for example `is:open inbox:inb_123`, `from:pam@example.com` or `tag:tag_123 refund`. Returns _total and up to 10 conversations a page, each with its status, assignee, recipient and tags. When _pagination.next is set, pass its page_token value as page_token. Front limits this endpoint to a share of the company's rate limit.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/conversations/search/{{input.query}}?limit=10&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "A Front search query, e.g. is:open inbox:inb_123."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,512}$",
+            "description": "The page_token from the previous page's _pagination.next URL. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-conversation",
+      "kind": "read",
+      "description": "Get one conversation: subject, status (assigned, unassigned, archived), assignee, recipient, tags, links and custom fields. A merged conversation answers with a redirect to the one it was merged into.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-conversation-messages",
+      "kind": "read",
+      "description": "List the messages in a conversation, newest first: sender and recipients, subject, HTML body and text, whether it was inbound, and attachment names. 5 a page, because bodies are long; a very long body can still be cut at the response limit. When _pagination.next is set, pass its page_token value as page_token.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/messages?limit=5&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,512}$",
+            "description": "The page_token from the previous page's _pagination.next URL. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-message",
+      "kind": "read",
+      "description": "Get one message by id: sender and recipients, subject, HTML body, text, whether it was inbound, and attachment names. Attachments themselves are not downloaded.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/messages/{{input.message_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "message_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "message_id": {
+            "type": "string",
+            "pattern": "^msg_[A-Za-z0-9]{1,32}$",
+            "description": "The message's Front id (msg_...), from list-conversation-messages."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-conversation-comments",
+      "kind": "read",
+      "description": "List the internal comments on a conversation, newest first: author, body and when it was posted. Customers never see comments. Front returns them all in one response, so a very long discussion can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/comments",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-inboxes",
+      "kind": "read",
+      "description": "List the inboxes the token can see, with id and name. Use an id in a search (`inbox:inb_123`). Front returns them all in one response.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/inboxes",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-channels",
+      "kind": "read",
+      "description": "List the channels the token can see (email addresses, chat and SMS channels), with id, type, address and inbox. A draft reply needs a channel id. Front returns them all in one response.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/channels",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-teammates",
+      "kind": "read",
+      "description": "List the company's teammates: id, email, username, name, and whether they are available. Use an id to assign a conversation or to write as a teammate. Front returns them all in one response, so a very large company's list can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/teammates",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-tags",
+      "kind": "read",
+      "description": "List the tags the token can see (company, team and teammate tags): id, name and description. 50 a page. When _pagination.next is set, pass its page_token value as page_token.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/tags?limit=50&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,512}$",
+            "description": "The page_token from the previous page's _pagination.next URL. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-contact",
+      "kind": "read",
+      "description": "Get one contact by id: name, description, handles (email, phone and other addresses), the contact lists it is in, links and custom fields.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^crd_[A-Za-z0-9]{1,32}$",
+            "description": "The contact's Front id (crd_...), from get-contact or find-contact-by-email."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "find-contact-by-email",
+      "kind": "read",
+      "description": "Get the contact that has this email address as a handle, the same fields as get-contact. Front answers 404 when no contact has it.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/contacts/alt:email:{{input.email}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+            "description": "An email address."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-contact-conversations",
+      "kind": "read",
+      "description": "List one contact's conversations, newest first, with status, assignee and tags. 10 a page. When _pagination.next is set, pass its page_token value as page_token.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/contacts/{{input.contact_id}}/conversations?limit=10&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^crd_[A-Za-z0-9]{1,32}$",
+            "description": "The contact's Front id (crd_...), from get-contact or find-contact-by-email."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,512}$",
+            "description": "The page_token from the previous page's _pagination.next URL. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-contact-notes",
+      "kind": "read",
+      "description": "List the notes teammates added to a contact: author, body and when it was added. Front returns them all in one response.",
+      "method": "GET",
+      "urlTemplate": "https://api2.frontapp.com/contacts/{{input.contact_id}}/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^crd_[A-Za-z0-9]{1,32}$",
+            "description": "The contact's Front id (crd_...), from get-contact or find-contact-by-email."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "reply-to-conversation",
+      "kind": "write",
+      "description": "Send a reply in one conversation, to its current recipients, from the conversation's channel. The customer receives it. Optionally sent as a teammate (author_id). The conversation is not archived. Front accepts the reply and creates the message a moment later. Read back by the message uid Front returns; the message must exist and be outbound. Until Front has created it the receipt stays unconfirmed and the read-back is repeated. Limitation: no provider idempotency, so a retry after an unknown outcome can send a second reply. Recipients, subject and attachments cannot be set here.",
+      "method": "POST",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/messages",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "author_id": "{{input.author_id}}",
+        "body": "{{input.body}}",
+        "options": {
+          "archive": false
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The reply. HTML or plain text."
+          },
+          "author_id": {
+            "type": "string",
+            "pattern": "^tea_[A-Za-z0-9]{1,32}$",
+            "description": "The teammate the reply is sent as (tea_...), from list-teammates. Leave it out to send as the token."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/messages/alt:uid:{{response.message_uid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "message_uid",
+            "equals": "{{response.message_uid}}"
+          },
+          {
+            "path": "is_inbound",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-draft-reply",
+      "kind": "write",
+      "description": "Create a draft reply to the last message in a conversation, from one channel, shared with the team. Nothing is sent: a teammate reviews and sends it in Front. Read back from the conversation's drafts; the draft's id must be among them. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second draft.",
+      "method": "POST",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/drafts",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "channel_id": "{{input.channel_id}}",
+        "author_id": "{{input.author_id}}",
+        "body": "{{input.body}}",
+        "mode": "shared"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "channel_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          },
+          "channel_id": {
+            "type": "string",
+            "pattern": "^cha_[A-Za-z0-9]{1,32}$",
+            "description": "The channel's Front id (cha_...), from list-channels. The draft is sent from it."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The draft's body. HTML or plain text."
+          },
+          "author_id": {
+            "type": "string",
+            "pattern": "^tea_[A-Za-z0-9]{1,32}$",
+            "description": "The teammate the draft is written as (tea_...), from list-teammates. Leave it out to write as the token."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/drafts",
+        "status": 200,
+        "match": [
+          {
+            "path": "_results.*.id",
+            "equals": "{{response.id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-comment",
+      "kind": "write",
+      "description": "Add an internal comment to a conversation, optionally as a teammate. Teammates see it; the customer never does. Markdown works. Read back by comment id; the body must match. Limitation: no provider idempotency, so a retry after an unknown outcome can add a second comment.",
+      "method": "POST",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/comments",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "author_id": "{{input.author_id}}",
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The comment. Markdown works."
+          },
+          "author_id": {
+            "type": "string",
+            "pattern": "^tea_[A-Za-z0-9]{1,32}$",
+            "description": "The teammate the comment is written as (tea_...), from list-teammates. Leave it out to write as the token."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/comments/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "assign-conversation",
+      "kind": "write",
+      "description": "Assign a conversation to one teammate, replacing the current assignee. Read back from the conversation; its assignee must be that teammate.",
+      "method": "PUT",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/assignee",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "assignee_id": "{{input.assignee_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "assignee_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          },
+          "assignee_id": {
+            "type": "string",
+            "pattern": "^tea_[A-Za-z0-9]{1,32}$",
+            "description": "The teammate to assign (tea_...), from list-teammates."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "assignee.id",
+            "equals": "{{input.assignee_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unassign-conversation",
+      "kind": "write",
+      "description": "Remove the assignee from a conversation. Pass the teammate it is assigned to now (assignee.id from get-conversation). Read back from the conversation; that teammate must no longer be its assignee.",
+      "method": "PUT",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/assignee",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "assignee_id": null
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "assignee_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          },
+          "assignee_id": {
+            "type": "string",
+            "pattern": "^tea_[A-Za-z0-9]{1,32}$",
+            "description": "The teammate the conversation is assigned to now (tea_...)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "assignee.id",
+            "equals": "{{input.assignee_id}}",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-conversation",
+      "kind": "write",
+      "description": "Archive a conversation. It leaves the open view and comes back when the customer writes again. Read back from the conversation; its status must be archived.",
+      "method": "PATCH",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "archived"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "archived"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reopen-conversation",
+      "kind": "write",
+      "description": "Reopen an archived conversation. Read back from the conversation; its status must no longer be archived (Front shows it as assigned or unassigned).",
+      "method": "PATCH",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "open"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "archived",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "tag-conversation",
+      "kind": "write",
+      "description": "Add one existing tag to a conversation. The other tags stay. Read back from the conversation; the tag must be among its tags. Limitation: removing a tag is not offered (see the pack README).",
+      "method": "POST",
+      "urlTemplate": "https://api2.frontapp.com/conversations/{{input.conversation_id}}/tags",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "tag_ids": [
+          "{{input.tag_id}}"
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "tag_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^cnv_[A-Za-z0-9]{1,32}$",
+            "description": "The conversation's Front id (cnv_...), from search-conversations."
+          },
+          "tag_id": {
+            "type": "string",
+            "pattern": "^tag_[A-Za-z0-9]{1,32}$",
+            "description": "The tag's Front id (tag_...), from list-tags."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "tags.*.id",
+            "equals": "{{input.tag_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-contact",
+      "kind": "write",
+      "description": "Create a company contact with a name and one email address, optionally a description. Read back by contact id; the name and the email handle must match. Limitation: Front refuses a contact whose email another contact already has, which also makes a blind retry safe.",
+      "method": "POST",
+      "urlTemplate": "https://api2.frontapp.com/contacts",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "description": "{{input.description}}",
+        "handles": [
+          {
+            "handle": "{{input.email}}",
+            "source": "email"
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "name",
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "The contact's name."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+            "description": "An email address."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "A short description of the contact."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/contacts/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          },
+          {
+            "path": "handles.*.handle",
+            "equals": "{{input.email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rename-contact",
+      "kind": "write",
+      "description": "Replace a contact's name. Read back from the contact; the name must match.",
+      "method": "PATCH",
+      "urlTemplate": "https://api2.frontapp.com/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^crd_[A-Za-z0-9]{1,32}$",
+            "description": "The contact's Front id (crd_...), from get-contact or find-contact-by-email."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "The new name."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/contacts/{{input.contact_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-contact-description",
+      "kind": "write",
+      "description": "Replace a contact's description. Read back from the contact; the description must match.",
+      "method": "PATCH",
+      "urlTemplate": "https://api2.frontapp.com/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "description": "{{input.description}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "description"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^crd_[A-Za-z0-9]{1,32}$",
+            "description": "The contact's Front id (crd_...), from get-contact or find-contact-by-email."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The new description."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api2.frontapp.com/contacts/{{input.contact_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "description",
+            "equals": "{{input.description}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-contact-note",
+      "kind": "write",
+      "description": "Add a note to a contact, written as one teammate. Teammates see it in the contact's details. No read-back: Front returns the note without an id, so it cannot be told apart from an earlier note with the same text. Check with list-contact-notes. Limitation: no provider idempotency, so a retry after an unknown outcome can add a second note.",
+      "method": "POST",
+      "urlTemplate": "https://api2.frontapp.com/contacts/{{input.contact_id}}/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:front}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "author_id": "{{input.author_id}}",
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "author_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^crd_[A-Za-z0-9]{1,32}$",
+            "description": "The contact's Front id (crd_...), from get-contact or find-contact-by-email."
+          },
+          "author_id": {
+            "type": "string",
+            "pattern": "^tea_[A-Za-z0-9]{1,32}$",
+            "description": "The teammate the note is written as (tea_...), from list-teammates. Front requires one."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The note."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "front: approve replying to a customer",
+      "matchKind": "action",
+      "matchActionName": "reply-to-conversation",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "front: replies sent per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "reply-to-conversation"
+    },
+    {
+      "name": "front: draft replies per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "create-draft-reply"
+    },
+    {
+      "name": "front: comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-comment"
+    },
+    {
+      "name": "front: conversations assigned per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "assign-conversation"
+    },
+    {
+      "name": "front: conversations unassigned per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "unassign-conversation"
+    },
+    {
+      "name": "front: conversations archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "archive-conversation"
+    },
+    {
+      "name": "front: conversations reopened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "reopen-conversation"
+    },
+    {
+      "name": "front: conversation tags added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "tag-conversation"
+    },
+    {
+      "name": "front: contacts created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-contact"
+    },
+    {
+      "name": "front: contacts renamed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "rename-contact"
+    },
+    {
+      "name": "front: contact descriptions set per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "set-contact-description"
+    },
+    {
+      "name": "front: contact notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-contact-note"
+    }
+  ]
+}

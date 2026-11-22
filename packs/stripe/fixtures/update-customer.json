@@ -1,0 +1,108 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/customers/update).",
+  "params": {},
+  "input": {
+    "customer_id": "cus_lEzmGSVXJKpHQR",
+    "email": "jenny.park@example.com",
+    "name": "Jenny Rosen-Park",
+    "metadata": {
+      "crm_id": "42"
+    }
+  },
+  "expectedUrl": "https://api.stripe.com/v1/customers/cus_lEzmGSVXJKpHQR",
+  "response": {
+    "id": "cus_lEzmGSVXJKpHQR",
+    "object": "customer",
+    "address": null,
+    "balance": 0,
+    "created": 1680893993,
+    "currency": null,
+    "default_source": null,
+    "delinquent": false,
+    "description": null,
+    "email": "jenny.park@example.com",
+    "invoice_prefix": "HCVXJZAF",
+    "invoice_settings": {
+      "custom_fields": null,
+      "default_payment_method": null,
+      "footer": null,
+      "rendering_options": null
+    },
+    "livemode": false,
+    "metadata": {
+      "crm_id": "42"
+    },
+    "name": "Jenny Rosen-Park",
+    "next_invoice_sequence": 1,
+    "phone": null,
+    "preferred_locales": [],
+    "shipping": null,
+    "tax_exempt": "none",
+    "test_clock": null
+  },
+  "expectedReadBackUrl": "https://api.stripe.com/v1/customers/cus_lEzmGSVXJKpHQR",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "cus_lEzmGSVXJKpHQR",
+      "object": "customer",
+      "address": null,
+      "balance": 0,
+      "created": 1680893993,
+      "currency": null,
+      "default_source": null,
+      "delinquent": false,
+      "description": null,
+      "email": "jenny.park@example.com",
+      "invoice_prefix": "HCVXJZAF",
+      "invoice_settings": {
+        "custom_fields": null,
+        "default_payment_method": null,
+        "footer": null,
+        "rendering_options": null
+      },
+      "livemode": false,
+      "metadata": {
+        "crm_id": "42"
+      },
+      "name": "Jenny Rosen-Park",
+      "next_invoice_sequence": 1,
+      "phone": null,
+      "preferred_locales": [],
+      "shipping": null,
+      "tax_exempt": "none",
+      "test_clock": null
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "cus_lEzmGSVXJKpHQR",
+      "object": "customer",
+      "address": null,
+      "balance": 0,
+      "created": 1680893993,
+      "currency": null,
+      "default_source": null,
+      "delinquent": false,
+      "description": null,
+      "email": "jennyrosen@example.com",
+      "invoice_prefix": "HCVXJZAF",
+      "invoice_settings": {
+        "custom_fields": null,
+        "default_payment_method": null,
+        "footer": null,
+        "rendering_options": null
+      },
+      "livemode": false,
+      "metadata": {},
+      "name": "Jenny Rosen",
+      "next_invoice_sequence": 1,
+      "phone": null,
+      "preferred_locales": [],
+      "shipping": null,
+      "tax_exempt": "none",
+      "test_clock": null
+    }
+  }
+}

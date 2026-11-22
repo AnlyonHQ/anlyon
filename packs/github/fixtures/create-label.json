@@ -1,0 +1,40 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/labels#create-a-label).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "name": "needs triage",
+    "color": "fbca04",
+    "description": "Not yet looked at"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/labels",
+  "response": {
+    "id": 208045951,
+    "name": "needs triage",
+    "color": "fbca04",
+    "default": false,
+    "description": "Not yet looked at"
+  },
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/labels/needs%20triage",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 208045951,
+      "name": "needs triage",
+      "color": "fbca04",
+      "default": false,
+      "description": "Not yet looked at"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 100000001,
+      "name": "needs triage",
+      "color": "fbca04",
+      "default": false,
+      "description": "An older label"
+    }
+  }
+}

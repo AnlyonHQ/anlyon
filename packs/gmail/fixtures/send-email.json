@@ -1,0 +1,18 @@
+{
+  "_source": "Shaped after Google's documented users.messages.send response (https://developers.google.com/workspace/gmail/api/reference/rest/v1/users.messages/send). No read-back: gmail.send cannot read a message.",
+  "params": {},
+  "input": {
+    "raw": "VG86IGRhbmFAZXhhbXBsZS5jb20NClN1YmplY3Q6IFlvdXIgaW50cm8gY2FsbA0KQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyBjaGFyc2V0PVVURi04DQoNCkhpIERhbmEsIG91ciBjYWxsIGlzIG9uIFR1ZXNkYXkgYXQgMTU6MDAgVVRDLg0K"
+  },
+  "expectedUrl": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+  "expectedBody": {
+    "raw": "VG86IGRhbmFAZXhhbXBsZS5jb20NClN1YmplY3Q6IFlvdXIgaW50cm8gY2FsbA0KQ29udGVudC1UeXBlOiB0ZXh0L3BsYWluOyBjaGFyc2V0PVVURi04DQoNCkhpIERhbmEsIG91ciBjYWxsIGlzIG9uIFR1ZXNkYXkgYXQgMTU6MDAgVVRDLg0K"
+  },
+  "response": {
+    "id": "19a4c2e1f0b3d5a7",
+    "threadId": "19a4c2e1f0b3d5a7",
+    "labelIds": [
+      "SENT"
+    ]
+  }
+}

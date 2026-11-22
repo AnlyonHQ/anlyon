@@ -1,0 +1,55 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/get-base-schema).",
+  "params": {},
+  "input": {
+    "base_id": "appLkNDICXNqxSDhG"
+  },
+  "expectedUrl": "https://api.airtable.com/v0/meta/bases/appLkNDICXNqxSDhG/tables",
+  "response": {
+    "tables": [
+      {
+        "id": "tblIhd7aUd4H6h2rS",
+        "name": "Accounts",
+        "primaryFieldId": "fld0XtO2ByXdqKS0L",
+        "fields": [
+          {
+            "id": "fld0XtO2ByXdqKS0L",
+            "name": "Name",
+            "type": "singleLineText"
+          },
+          {
+            "id": "fldoaIqdn5szURHpw",
+            "name": "Email",
+            "type": "email"
+          },
+          {
+            "id": "fldumZe00w09RYTW6",
+            "name": "Status",
+            "type": "singleSelect",
+            "options": {
+              "choices": [
+                {
+                  "id": "selq0fKe5Gb7U3WZb",
+                  "name": "Open",
+                  "color": "blueLight2"
+                },
+                {
+                  "id": "selbY8pdzkCfjQ1qo",
+                  "name": "Won",
+                  "color": "greenLight2"
+                }
+              ]
+            }
+          }
+        ],
+        "views": [
+          {
+            "id": "viwQpsuEDqHFqegkp",
+            "name": "Grid view",
+            "type": "grid"
+          }
+        ]
+      }
+    ]
+  }
+}

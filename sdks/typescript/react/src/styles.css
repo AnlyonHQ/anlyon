@@ -1,0 +1,1078 @@
+:where(.anlyon) {
+  --_d-bg: #ffffff;
+  --_d-fg: #0a0a0a;
+  --_d-muted: #f5f5f5;
+  --_d-muted-fg: #6b6b6b;
+  --_d-accent: #f5f5f5;
+  --_d-border: #e5e5e5;
+  --_d-primary: #171717;
+  --_d-primary-fg: #fafafa;
+  --_d-destructive: #dc2626;
+  --_d-ring: #a3a3a3;
+  --_d-success: #15803d;
+  --_d-warning: #b45309;
+
+  --_bg: var(--anlyon-bg, var(--background, var(--_d-bg)));
+  --_fg: var(--anlyon-fg, var(--foreground, var(--_d-fg)));
+  --_muted: var(--anlyon-muted, var(--muted, var(--_d-muted)));
+  --_muted-fg: var(--anlyon-muted-fg, var(--muted-foreground, var(--_d-muted-fg)));
+  --_accent: var(--anlyon-accent, var(--accent, var(--_d-accent)));
+  --_border: var(--anlyon-border, var(--border, var(--_d-border)));
+  --_primary: var(--anlyon-primary, var(--primary, var(--_d-primary)));
+  --_primary-fg: var(--anlyon-primary-fg, var(--primary-foreground, var(--_d-primary-fg)));
+  --_destructive: var(--anlyon-destructive, var(--destructive, var(--_d-destructive)));
+  --_destructive-fg: var(--anlyon-destructive-fg, #ffffff);
+  --_ring: var(--anlyon-ring, var(--ring, var(--_d-ring)));
+  --_success: var(--anlyon-success, var(--_d-success));
+  --_warning: var(--anlyon-warning, var(--_d-warning));
+  --_radius: var(--anlyon-radius, var(--radius, 0.5rem));
+  --_radius-sm: calc(var(--_radius) - 2px);
+  --_mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+
+  color: var(--_fg);
+  font-family: inherit;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-align: start;
+}
+
+@media (prefers-color-scheme: dark) {
+  :where(.anlyon):not(:where(.light, [data-theme="light"]) *, .light) {
+    --_d-bg: #0a0a0a;
+    --_d-fg: #fafafa;
+    --_d-muted: #171717;
+    --_d-muted-fg: #a1a1a1;
+    --_d-accent: #1f1f1f;
+    --_d-border: #262626;
+    --_d-primary: #fafafa;
+    --_d-primary-fg: #171717;
+    --_d-destructive: #ef4444;
+    --_d-ring: #525252;
+    --_d-success: #4ade80;
+    --_d-warning: #fbbf24;
+  }
+}
+
+:where(.dark, [data-theme="dark"]) :where(.anlyon),
+:where(.anlyon.dark) {
+  --_d-bg: #0a0a0a;
+  --_d-fg: #fafafa;
+  --_d-muted: #171717;
+  --_d-muted-fg: #a1a1a1;
+  --_d-accent: #1f1f1f;
+  --_d-border: #262626;
+  --_d-primary: #fafafa;
+  --_d-primary-fg: #171717;
+  --_d-destructive: #ef4444;
+  --_d-ring: #525252;
+  --_d-success: #4ade80;
+  --_d-warning: #fbbf24;
+}
+
+:where(.anlyon-shadcn-hsl) :where(.anlyon),
+:where(.anlyon.anlyon-shadcn-hsl) {
+  --_bg: var(--anlyon-bg, hsl(var(--background)));
+  --_fg: var(--anlyon-fg, hsl(var(--foreground)));
+  --_muted: var(--anlyon-muted, hsl(var(--muted)));
+  --_muted-fg: var(--anlyon-muted-fg, hsl(var(--muted-foreground)));
+  --_accent: var(--anlyon-accent, hsl(var(--accent)));
+  --_border: var(--anlyon-border, hsl(var(--border)));
+  --_primary: var(--anlyon-primary, hsl(var(--primary)));
+  --_primary-fg: var(--anlyon-primary-fg, hsl(var(--primary-foreground)));
+  --_destructive: var(--anlyon-destructive, hsl(var(--destructive)));
+  --_ring: var(--anlyon-ring, hsl(var(--ring)));
+}
+
+:where(.anlyon) *,
+:where(.anlyon) *::before,
+:where(.anlyon) *::after {
+  box-sizing: border-box;
+}
+
+:where(.anlyon) :where(p, h2, h3, h4, dl, dd, ul, pre) {
+  margin: 0;
+}
+
+:where(.anlyon) :where(ul) {
+  padding: 0;
+  list-style: none;
+}
+
+:where(.anlyon) .anlyon-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+:where(.anlyon) .anlyon-icon {
+  flex-shrink: 0;
+  width: 1em;
+  height: 1em;
+}
+
+:where(.anlyon) .anlyon-muted {
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+}
+
+:where(.anlyon).anlyon-inbox,
+:where(.anlyon).anlyon-connections,
+:where(.anlyon).anlyon-approval-prompt {
+  container-type: inline-size;
+  background: var(--_bg);
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius);
+  overflow: hidden;
+}
+
+:where(.anlyon) .anlyon-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--_border);
+}
+
+:where(.anlyon) .anlyon-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+:where(.anlyon) .anlyon-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: var(--_muted);
+  color: var(--_fg);
+  font-size: 0.75rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(.anlyon) .anlyon-stale {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: var(--_muted-fg);
+  font-size: 0.75rem;
+}
+
+:where(.anlyon) .anlyon-list > li + li {
+  border-top: 1px solid var(--_border);
+}
+
+:where(.anlyon) .anlyon-empty {
+  padding: 32px 16px;
+  text-align: center;
+}
+
+:where(.anlyon) .anlyon-empty-title {
+  margin-bottom: 2px;
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+:where(.anlyon) .anlyon-message > .anlyon-icon {
+  margin-top: 2px;
+  color: var(--_destructive);
+}
+
+:where(.anlyon) .anlyon-message > div {
+  flex: 1;
+  min-width: 0;
+}
+
+:where(.anlyon) .anlyon-message-title {
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: var(--_radius-sm);
+  background: var(--_primary);
+  color: var(--_primary-fg);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 120ms ease, opacity 120ms ease, border-color 120ms ease;
+}
+
+:where(.anlyon) .anlyon-button:hover {
+  opacity: 0.9;
+}
+
+:where(.anlyon) .anlyon-button[data-size="sm"] {
+  height: 28px;
+  padding: 0 10px;
+}
+
+:where(.anlyon) .anlyon-button[data-variant="secondary"] {
+  border-color: var(--_border);
+  background: var(--_bg);
+  color: var(--_fg);
+}
+
+:where(.anlyon) .anlyon-button[data-variant="ghost"] {
+  background: transparent;
+  color: var(--_muted-fg);
+}
+
+:where(.anlyon) .anlyon-button:is([data-variant="secondary"], [data-variant="ghost"]):hover {
+  opacity: 1;
+  background: var(--_accent);
+  color: var(--_fg);
+}
+
+:where(.anlyon) .anlyon-button[data-variant="destructive"] {
+  background: var(--_destructive);
+  color: var(--_destructive-fg);
+}
+
+:where(.anlyon) .anlyon-button:is(:disabled, [aria-disabled="true"]) {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+:where(.anlyon) .anlyon-button[aria-busy="true"] {
+  opacity: 0.75;
+  cursor: progress;
+}
+
+:where(.anlyon) .anlyon-link {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--_muted-fg);
+  font: inherit;
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  text-decoration-color: var(--_border);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+:where(.anlyon) .anlyon-link:hover {
+  color: var(--_fg);
+  text-decoration-color: currentColor;
+}
+
+:where(.anlyon) .anlyon-link:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+:where(.anlyon) :is(.anlyon-button, .anlyon-link, .anlyon-approval-row, .anlyon-raw-summary, .anlyon-textarea, .anlyon-prompt-title):focus-visible {
+  outline: 2px solid var(--_ring);
+  outline-offset: 2px;
+}
+
+:where(.anlyon) .anlyon-approval-row:focus-visible {
+  outline-offset: -2px;
+}
+
+:where(.anlyon) .anlyon-prompt-title:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:where(.anlyon) .anlyon-textarea {
+  display: block;
+  width: 100%;
+  min-height: 56px;
+  padding: 8px 10px;
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius-sm);
+  background: var(--_bg);
+  color: var(--_fg);
+  font: inherit;
+  font-size: 0.8125rem;
+  resize: vertical;
+}
+
+:where(.anlyon) .anlyon-textarea::placeholder {
+  color: var(--_muted-fg);
+}
+
+:where(.anlyon) .anlyon-spinner {
+  flex-shrink: 0;
+  animation: anlyon-spin 0.8s linear infinite;
+}
+
+@keyframes anlyon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+:where(.anlyon) .anlyon-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 20px;
+  padding: 0 8px;
+  border: 1px solid var(--_border);
+  border-radius: 999px;
+  color: var(--_muted-fg);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+:where(.anlyon) .anlyon-badge[data-state="pending"] {
+  border-color: color-mix(in oklab, var(--_warning) 35%, transparent);
+  background: color-mix(in oklab, var(--_warning) 8%, transparent);
+  color: var(--_warning);
+}
+
+:where(.anlyon) .anlyon-badge[data-state="approved"] {
+  border-color: color-mix(in oklab, var(--_success) 35%, transparent);
+  background: color-mix(in oklab, var(--_success) 8%, transparent);
+  color: var(--_success);
+}
+
+:where(.anlyon) .anlyon-badge[data-state="failed"] {
+  border-color: color-mix(in oklab, var(--_destructive) 35%, transparent);
+  color: var(--_destructive);
+}
+
+:where(.anlyon) .anlyon-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--_destructive);
+  font-size: 0.8125rem;
+}
+
+:where(.anlyon) .anlyon-error > .anlyon-icon {
+  margin-top: 2px;
+}
+
+:where(.anlyon) .anlyon-hint {
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+}
+
+:where(.anlyon) .anlyon-warning-text {
+  color: var(--_warning);
+}
+
+:where(.anlyon) .anlyon-skeleton-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+:where(.anlyon) .anlyon-skeleton-lines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+}
+
+:where(.anlyon) .anlyon-skeleton {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--_muted);
+  animation: anlyon-pulse 1.4s ease-in-out infinite;
+}
+
+:where(.anlyon) .anlyon-skeleton[data-size="avatar"] {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--_radius-sm);
+}
+
+:where(.anlyon) .anlyon-skeleton[data-size="title"] {
+  width: 42%;
+  height: 10px;
+}
+
+:where(.anlyon) .anlyon-skeleton[data-size="line"] {
+  width: 68%;
+}
+
+@keyframes anlyon-pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+:where(.anlyon) .anlyon-approval-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 16px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+:where(.anlyon) .anlyon-approval-row:hover {
+  background: color-mix(in oklab, var(--_accent) 70%, transparent);
+}
+
+:where(.anlyon) .anlyon-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--_muted-fg);
+}
+
+:where(.anlyon) .anlyon-dot:is([data-state="pending"], [data-state="failed"]) {
+  background: var(--_warning);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--_warning) 18%, transparent);
+}
+
+:where(.anlyon) .anlyon-dot[data-state="deciding"] {
+  background: var(--_fg);
+  animation: anlyon-pulse 1s ease-in-out infinite;
+}
+
+:where(.anlyon) .anlyon-dot[data-state="approved"] {
+  background: var(--_success);
+}
+
+:where(.anlyon) .anlyon-dot:is([data-state="declined"], [data-state="expired"]) {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--_muted-fg);
+}
+
+:where(.anlyon) .anlyon-approval-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:where(.anlyon) .anlyon-approval-headline {
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:where(.anlyon) .anlyon-approval-summary {
+  overflow: hidden;
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:where(.anlyon) .anlyon-approval-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+}
+
+:where(.anlyon) .anlyon-approval[data-state="expired"] .anlyon-approval-headline,
+:where(.anlyon) .anlyon-approval[data-state="declined"] .anlyon-approval-headline {
+  color: var(--_muted-fg);
+}
+
+:where(.anlyon) .anlyon-chevron {
+  color: var(--_muted-fg);
+  transition: transform 150ms ease;
+}
+
+:where(.anlyon) .anlyon-approval-row[aria-expanded="true"] .anlyon-chevron {
+  transform: rotate(90deg);
+}
+
+:where(.anlyon) .anlyon-approval-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 2px 16px 16px 36px;
+}
+
+:where(.anlyon) .anlyon-approval-body[hidden] {
+  display: none;
+}
+
+:where(.anlyon) .anlyon-expiry {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+:where(.anlyon) .anlyon-expiry[data-soon] {
+  color: var(--_warning);
+}
+
+:where(.anlyon) .anlyon-what {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+:where(.anlyon) .anlyon-description {
+  color: var(--_fg);
+}
+
+:where(.anlyon) .anlyon-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+:where(.anlyon) .anlyon-section-title {
+  color: var(--_muted-fg);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-fields {
+  display: grid;
+  grid-template-columns: minmax(88px, 30%) minmax(0, 1fr);
+  gap: 6px 16px;
+}
+
+:where(.anlyon) .anlyon-field {
+  display: contents;
+}
+
+:where(.anlyon) .anlyon-field-label {
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+}
+
+:where(.anlyon) .anlyon-field-value {
+  min-width: 0;
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+:where(.anlyon) .anlyon-value-empty {
+  color: var(--_muted-fg);
+}
+
+:where(.anlyon) .anlyon-code,
+:where(.anlyon) .anlyon-diff {
+  max-height: 320px;
+  overflow: auto;
+  padding: 8px 10px;
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius-sm);
+  background: color-mix(in oklab, var(--_muted) 60%, transparent);
+  font-family: var(--_mono);
+  font-size: 0.75rem;
+  line-height: 1.55;
+  white-space: pre;
+}
+
+:where(.anlyon) .anlyon-diff {
+  padding: 6px 0;
+}
+
+:where(.anlyon) .anlyon-diff-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+:where(.anlyon) .anlyon-diff-path {
+  overflow: hidden;
+  font-family: var(--_mono);
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:where(.anlyon) .anlyon-diff-line {
+  display: block;
+  min-width: max-content;
+  padding: 0 10px;
+}
+
+:where(.anlyon) .anlyon-diff-sign {
+  display: inline-block;
+  width: 1.25em;
+  color: var(--_muted-fg);
+  user-select: none;
+}
+
+:where(.anlyon) .anlyon-diff-line[data-kind="add"] {
+  background: color-mix(in oklab, var(--_success) 12%, transparent);
+}
+
+:where(.anlyon) .anlyon-diff-line[data-kind="add"] .anlyon-diff-sign {
+  color: var(--_success);
+}
+
+:where(.anlyon) .anlyon-diff-line[data-kind="del"] {
+  background: color-mix(in oklab, var(--_destructive) 12%, transparent);
+}
+
+:where(.anlyon) .anlyon-diff-line[data-kind="del"] .anlyon-diff-sign {
+  color: var(--_destructive);
+}
+
+:where(.anlyon) .anlyon-diff-line[data-kind="gap"] {
+  color: var(--_muted-fg);
+  font-family: inherit;
+  font-size: 0.75rem;
+}
+
+:where(.anlyon) .anlyon-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+:where(.anlyon) .anlyon-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 24px;
+  padding: 0 9px;
+  border: 1px solid var(--_border);
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(.anlyon) .anlyon-limitations {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.8125rem;
+}
+
+:where(.anlyon) .anlyon-limitation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+}
+
+:where(.anlyon) .anlyon-limitation-kind {
+  color: var(--_muted-fg);
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-limitation[data-kind="irreversible"] .anlyon-limitation-kind {
+  color: var(--_warning);
+}
+
+:where(.anlyon) .anlyon-raw {
+  font-size: 0.8125rem;
+}
+
+:where(.anlyon) .anlyon-undo {
+  font-size: 0.8125rem;
+  color: var(--_muted-fg);
+}
+
+:where(.anlyon) .anlyon-undo[data-reversible="false"] {
+  color: var(--_warning);
+}
+
+:where(.anlyon) .anlyon-raw-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--_muted-fg);
+  cursor: pointer;
+  list-style: none;
+  border-radius: 4px;
+}
+
+:where(.anlyon) .anlyon-raw-summary::-webkit-details-marker {
+  display: none;
+}
+
+:where(.anlyon) .anlyon-raw-summary::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 150ms ease;
+}
+
+:where(.anlyon) .anlyon-raw[open] > .anlyon-raw-summary::before {
+  transform: rotate(45deg);
+}
+
+:where(.anlyon) .anlyon-raw-summary:hover {
+  color: var(--_fg);
+}
+
+:where(.anlyon) .anlyon-raw > .anlyon-fields {
+  margin-top: 8px;
+}
+
+:where(.anlyon) .anlyon-decision {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+:where(.anlyon) .anlyon-decision-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+:where(.anlyon) .anlyon-decision-row > .anlyon-expiry {
+  margin-right: auto;
+}
+
+:where(.anlyon) .anlyon-decision-buttons {
+  display: inline-flex;
+  gap: 8px;
+}
+
+:where(.anlyon) .anlyon-outcome {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+:where(.anlyon) .anlyon-outcome-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+:where(.anlyon) .anlyon-outcome-label {
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-outcome[data-state="approved"] .anlyon-outcome-line > .anlyon-icon {
+  color: var(--_success);
+}
+
+:where(.anlyon) .anlyon-outcome:is([data-state="declined"], [data-state="expired"]) .anlyon-outcome-line > .anlyon-icon {
+  color: var(--_muted-fg);
+}
+
+:where(.anlyon) .anlyon-note {
+  padding-left: 10px;
+  border-left: 2px solid var(--_border);
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+}
+
+:where(.anlyon) .anlyon-prompt-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 10px;
+}
+
+:where(.anlyon) .anlyon-prompt-heading {
+  min-width: 0;
+}
+
+:where(.anlyon) .anlyon-prompt-title {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  border-radius: 4px;
+}
+
+:where(.anlyon) .anlyon-prompt-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 16px 14px;
+}
+
+:where(.anlyon) .anlyon-prompt-foot {
+  padding: 12px 16px;
+  border-top: 1px solid var(--_border);
+  background: color-mix(in oklab, var(--_muted) 45%, var(--_bg));
+}
+
+:where(.anlyon) .anlyon-connection {
+  padding: 12px 16px;
+}
+
+:where(.anlyon) .anlyon-connection-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+:where(.anlyon) .anlyon-monogram {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius-sm);
+  background: var(--_muted);
+  color: var(--_fg);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+:where(.anlyon) .anlyon-connection-text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+:where(.anlyon) .anlyon-connection-name {
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-connection-meta {
+  overflow: hidden;
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:where(.anlyon) .anlyon-connection[data-status="not_connected"] .anlyon-monogram {
+  background: transparent;
+  color: var(--_muted-fg);
+  border-style: dashed;
+}
+
+:where(.anlyon) .anlyon-connection[data-status="needs_reconnect"] .anlyon-monogram {
+  border-color: color-mix(in oklab, var(--_warning) 50%, var(--_border));
+}
+
+:where(.anlyon) .anlyon-connection-actions {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+}
+
+:where(.anlyon) .anlyon-confirm {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+:where(.anlyon) .anlyon-confirm-text {
+  margin-right: 4px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-connection-note,
+:where(.anlyon) .anlyon-connection > .anlyon-error {
+  margin-top: 8px;
+  padding-left: 44px;
+}
+
+:where(.anlyon) .anlyon-connection-note {
+  color: var(--_muted-fg);
+  font-size: 0.8125rem;
+}
+
+:where(.anlyon).anlyon-connect {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+:where(.anlyon) .anlyon-connect-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+:where(.anlyon) .anlyon-connected {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-connected > .anlyon-icon {
+  color: var(--_success);
+}
+
+:where(.anlyon).anlyon-connect-prompt {
+  container-type: inline-size;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--_border);
+  border-radius: var(--_radius);
+  background: var(--_bg);
+}
+
+:where(.anlyon) .anlyon-connect-prompt-text {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+:where(.anlyon) .anlyon-connect-prompt-title {
+  font-weight: 500;
+}
+
+:where(.anlyon) .anlyon-connect-prompt-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+@container (max-width: 440px) {
+  :where(.anlyon) .anlyon-approval-row {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    row-gap: 4px;
+  }
+
+  :where(.anlyon) .anlyon-dot {
+    margin-top: 6px;
+  }
+
+  :where(.anlyon) .anlyon-approval-meta {
+    grid-column: 2;
+  }
+
+  :where(.anlyon) .anlyon-chevron {
+    display: none;
+  }
+
+  :where(.anlyon) .anlyon-approval-body {
+    padding-left: 16px;
+  }
+
+  :where(.anlyon) .anlyon-fields {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  :where(.anlyon) .anlyon-field-label {
+    margin-top: 6px;
+  }
+
+  :where(.anlyon) .anlyon-field:first-child .anlyon-field-label {
+    margin-top: 0;
+  }
+
+  :where(.anlyon) .anlyon-decision-row > .anlyon-expiry {
+    flex-basis: 100%;
+  }
+
+  :where(.anlyon) .anlyon-decision-buttons {
+    flex: 1;
+  }
+
+  :where(.anlyon) .anlyon-decision-buttons > .anlyon-button {
+    flex: 1;
+  }
+
+  :where(.anlyon) .anlyon-connection-main {
+    flex-wrap: wrap;
+  }
+
+  :where(.anlyon) .anlyon-connection-actions {
+    width: 100%;
+    padding-left: 44px;
+  }
+
+  :where(.anlyon) .anlyon-connection-actions:empty {
+    display: none;
+  }
+
+  :where(.anlyon) .anlyon-connection-actions > .anlyon-button[data-variant="ghost"]:first-child {
+    margin-left: -10px;
+  }
+
+  :where(.anlyon) .anlyon-connection-meta {
+    white-space: normal;
+  }
+
+  :where(.anlyon) .anlyon-confirm {
+    flex-wrap: wrap;
+  }
+
+  :where(.anlyon) .anlyon-confirm-text {
+    flex-basis: 100%;
+  }
+
+  :where(.anlyon) .anlyon-confirm-text + .anlyon-button[data-variant="ghost"] {
+    margin-left: -10px;
+  }
+
+  :where(.anlyon) .anlyon-connect-prompt-action {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  :where(.anlyon) .anlyon-connect-prompt-action .anlyon-connect-row {
+    display: flex;
+    width: 100%;
+  }
+
+  :where(.anlyon) .anlyon-connect-prompt-action .anlyon-button {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.anlyon) *,
+  :where(.anlyon) *::before,
+  :where(.anlyon) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,24 @@
+# Normalise text to LF in the repository. Windows checkouts still get CRLF
+# where core.autocrlf says so; these rules only pin what is stored.
+* text=auto
+
+# Files that are read by Linux inside a container or by a POSIX shell MUST be
+# LF on checkout too. A CRLF wait-for-db.sh fails at container start with
+# `\r: not found`, which is a very expensive error to debug on launch day.
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+Dockerfile.*    text eol=lf
+Caddyfile       text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+
+# Binary — never touch.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

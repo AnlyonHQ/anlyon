@@ -1,0 +1,470 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://anlyon.com/schemas/anlyon-pack.v1.json",
+  "title": "Anlyon Action Pack manifest, v1",
+  "description": "An integration's tools, or a governed workflow: secrets, actions (reads, and writes with a declared impact and usually a read-back), approval policies (installed disabled) and suggested impact limits. Installing maps one to one onto existing Anlyon API calls. A connected account is sent as {{connection:<integrationId>}}, declared by the one secret of kind connection for that integration: each call then uses its end user's own account, or the environment's connected account (packs/README.md, Credentials). The installer (@anlyonhq/sdk packs.install) also enforces the cross-field rules in packs/README.md that a schema cannot express.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "format",
+    "pack",
+    "version",
+    "description",
+    "secrets",
+    "actions"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "format": {
+      "const": "anlyon-pack/v1"
+    },
+    "pack": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9-]{0,39}$",
+      "description": "<publisher>/<short-name>. Action names are prefixed with the short name on install."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "description"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          },
+          "description": {
+            "type": "string"
+          },
+          "default": {
+            "type": "string"
+          },
+          "enum": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pattern": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "secrets": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "kind",
+          "hosts"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[A-Z0-9_]+$",
+            "description": "Referenced as {{secret:NAME}}. For a connection sent as {{connection:<integrationId>}}, the workspace secret it binds to when installed with credential: secret."
+          },
+          "kind": {
+            "enum": [
+              "connection",
+              "static"
+            ]
+          },
+          "integrationId": {
+            "type": "string",
+            "pattern": "^[a-z0-9-]+$",
+            "description": "Required when kind is connection. Actions may send this account as {{connection:<integrationId>}}; at most one connection secret per integration then."
+          },
+          "hosts": {
+            "type": "array",
+            "minItems": 0,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
+            },
+            "description": "The hosts the secret may be sent to. Empty for a connected account with accountHost."
+          },
+          "description": {
+            "type": "string"
+          },
+          "accountHost": {
+            "type": "string",
+            "pattern": "^\\{[a-z][a-zA-Z0-9]{0,31}\\}(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?){2,}$",
+            "description": "For a connected account whose host differs per account: the catalogue's host template, e.g. {subdomain}.zendesk.com. Actions using it address https://{{connection.host}}/…, filled per call with the account's own host."
+          }
+        }
+      }
+    },
+    "actions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "description",
+              "method",
+              "urlTemplate",
+              "inputSchema",
+              "impact"
+            ],
+            "properties": {
+              "name": {
+                "$ref": "#/$defs/actionName"
+              },
+              "kind": {
+                "const": "write",
+                "description": "The default when omitted."
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "method": {
+                "enum": [
+                  "GET",
+                  "POST",
+                  "PUT",
+                  "PATCH",
+                  "DELETE"
+                ]
+              },
+              "urlTemplate": {
+                "type": "string",
+                "pattern": "^https://([a-z0-9.-]+|\\{\\{connection\\.host\\}\\})(/|\\?|$)",
+                "description": "A fixed https host, or {{connection.host}} for the calling account's own host on a per-account integration."
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Credentials go here and nowhere else: {{connection:<integrationId>}} for a connected account, {{secret:NAME}} for a static secret."
+              },
+              "bodyTemplate": {
+                "type": "object"
+              },
+              "inputSchema": {
+                "type": "object"
+              },
+              "requiresApproval": {
+                "type": "boolean"
+              },
+              "impact": {
+                "type": "object",
+                "required": [
+                  "dimension",
+                  "amount",
+                  "bound"
+                ],
+                "properties": {
+                  "dimension": {
+                    "type": "string"
+                  },
+                  "unit": {
+                    "type": "string"
+                  },
+                  "amount": {
+                    "type": "string"
+                  },
+                  "bound": {
+                    "enum": [
+                      "exact",
+                      "upper_bound"
+                    ]
+                  }
+                }
+              },
+              "verify": {
+                "type": "object",
+                "required": [
+                  "url",
+                  "status"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                  "url": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "integer"
+                  },
+                  "match": {
+                    "type": "array",
+                    "maxItems": 10,
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "path",
+                        "equals"
+                      ],
+                      "properties": {
+                        "path": {
+                          "type": "string"
+                        },
+                        "equals": {}
+                      }
+                    }
+                  },
+                  "graphql": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "query"
+                    ],
+                    "properties": {
+                      "query": {
+                        "type": "string",
+                        "description": "A fixed, read-only GraphQL query: no placeholder, no mutation or subscription."
+                      },
+                      "variables": {
+                        "type": "object",
+                        "description": "Each a literal or exactly one {{input.field}} or {{response.field}}."
+                      }
+                    },
+                    "description": "A GraphQL read-back: POST this query to url instead of a GET."
+                  }
+                }
+              },
+              "graphql": {
+                "const": true,
+                "description": "A GraphQL operation: a POST whose body is { query, variables }, the query fixed text and only the variables from the input. A read's query must be read-only (no mutation or subscription)."
+              }
+            },
+            "description": "A write: governed. It declares its impact, counted against limits, and, where the provider has a GET that shows the change, a read-back (verify). Without one its receipt is graded acknowledged, and its description says why there is none."
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "kind",
+              "description",
+              "method",
+              "urlTemplate",
+              "inputSchema"
+            ],
+            "properties": {
+              "name": {
+                "$ref": "#/$defs/actionName"
+              },
+              "kind": {
+                "const": "read"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "method": {
+                "enum": [
+                  "GET",
+                  "POST"
+                ],
+                "description": "POST only for a search or query endpoint that changes nothing."
+              },
+              "urlTemplate": {
+                "type": "string",
+                "pattern": "^https://([a-z0-9.-]+|\\{\\{connection\\.host\\}\\})(/|\\?|$)",
+                "description": "A fixed https host, or {{connection.host}} for the calling account's own host on a per-account integration."
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "description": "Credentials go here and nowhere else: {{connection:<integrationId>}} for a connected account, {{secret:NAME}} for a static secret."
+              },
+              "bodyTemplate": {
+                "type": "object"
+              },
+              "inputSchema": {
+                "type": "object"
+              },
+              "requiresApproval": {
+                "type": "boolean"
+              },
+              "graphql": {
+                "const": true,
+                "description": "A GraphQL operation: a POST whose body is { query, variables }, the query fixed text and only the variables from the input. A read's query must be read-only (no mutation or subscription)."
+              }
+            },
+            "description": "A read: the provider's response goes back to the caller. It changes nothing, so it declares no impact and no read-back; it is logged, and approval policies can still match it."
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "description",
+              "adapter"
+            ],
+            "properties": {
+              "name": {
+                "$ref": "#/$defs/actionName"
+              },
+              "kind": {
+                "const": "write"
+              },
+              "description": {
+                "type": "string",
+                "minLength": 1
+              },
+              "requiresApproval": {
+                "type": "boolean"
+              },
+              "adapter": {
+                "type": "object",
+                "required": [
+                  "type",
+                  "config",
+                  "credentialSecret"
+                ],
+                "properties": {
+                  "type": {
+                    "enum": [
+                      "stripe.refund",
+                      "github.file_update",
+                      "resend.email_send"
+                    ]
+                  },
+                  "config": {
+                    "type": "object"
+                  },
+                  "credentialSecret": {
+                    "type": "string",
+                    "pattern": "^[A-Z0-9_]+$"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "name",
+              "ref"
+            ],
+            "description": "An action reused from another pack: \"<publisher>/<pack>#<action>\". The installer expands it before any check; it keeps the referenced definition and takes this name.",
+            "properties": {
+              "name": {
+                "$ref": "#/$defs/actionName"
+              },
+              "ref": {
+                "type": "string",
+                "pattern": "^[a-z0-9][a-z0-9-]*/[a-z0-9][a-z0-9-]{0,39}#[a-z0-9][a-z0-9-]{0,59}$"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "policies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "matchKind",
+          "matchActionName",
+          "effect"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "matchKind": {
+            "const": "action"
+          },
+          "matchActionName": {
+            "$ref": "#/$defs/actionName"
+          },
+          "condition": {
+            "type": "string",
+            "description": "CEL, checked against the action's input schema."
+          },
+          "effect": {
+            "enum": [
+              "require_approval",
+              "auto_deny"
+            ],
+            "description": "auto_approve is refused."
+          },
+          "requiredApprovals": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "enabled": {
+            "type": "boolean",
+            "description": "Ignored: pack policies always install disabled."
+          }
+        }
+      }
+    },
+    "limits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "dimension",
+          "period",
+          "amount"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "dimension": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[a-z]{3}$"
+          },
+          "period": {
+            "enum": [
+              "day",
+              "month",
+              "total"
+            ]
+          },
+          "amount": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "actionName": {
+            "$ref": "#/$defs/actionName"
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "actionName": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{0,59}$"
+    }
+  }
+}

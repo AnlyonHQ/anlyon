@@ -1,0 +1,43 @@
+# The allow-list for anlyon/gitlab. Written by hand from the GitLab REST API v4 reference
+# (docs.gitlab.com/api/, checked 2026-10-24). The official openapi_v2.yaml is Swagger 2, which the
+# draft does not read, and it does not describe notes, labels or the current user. Its paths for the
+# other operations were checked against the reference.
+#
+# Jobs: find a project and read it; find, read, open, edit, close, reopen and comment on issues;
+# find and read merge requests with their diffs and comments, open, edit, comment on, approve and
+# merge them; see pipelines and retry or cancel one; read a file, branches and commits.
+#
+# action                    operation                                                          kind
+list-projects               GET /projects                                                      read
+get-project                 GET /projects/{id}                                                 read
+search-issues               GET /issues                                                        read
+list-issues                 GET /projects/{id}/issues                                          read
+get-issue                   GET /projects/{id}/issues/{issue_iid}                              read
+list-issue-notes            GET /projects/{id}/issues/{issue_iid}/notes                        read
+list-labels                 GET /projects/{id}/labels                                          read
+list-merge-requests         GET /projects/{id}/merge_requests                                  read
+get-merge-request           GET /projects/{id}/merge_requests/{merge_request_iid}              read
+list-merge-request-diffs    GET /projects/{id}/merge_requests/{merge_request_iid}/diffs        read
+list-merge-request-notes    GET /projects/{id}/merge_requests/{merge_request_iid}/notes        read
+list-pipelines              GET /projects/{id}/pipelines                                       read
+get-pipeline                GET /projects/{id}/pipelines/{pipeline_id}                         read
+get-file                    GET /projects/{id}/repository/files/{file_path}                    read
+list-branches               GET /projects/{id}/repository/branches                             read
+list-commits                GET /projects/{id}/repository/commits                              read
+create-issue                POST /projects/{id}/issues
+update-issue                PUT /projects/{id}/issues/{issue_iid}
+# close-issue and reopen-issue send state_event close or reopen.
+close-issue                 PUT /projects/{id}/issues/{issue_iid}
+reopen-issue                PUT /projects/{id}/issues/{issue_iid}
+comment-on-issue            POST /projects/{id}/issues/{issue_iid}/notes
+create-merge-request        POST /projects/{id}/merge_requests
+update-merge-request        PUT /projects/{id}/merge_requests/{merge_request_iid}
+comment-on-merge-request    POST /projects/{id}/merge_requests/{merge_request_iid}/notes
+approve-merge-request       POST /projects/{id}/merge_requests/{merge_request_iid}/approve
+merge-merge-request         PUT /projects/{id}/merge_requests/{merge_request_iid}/merge
+retry-pipeline              POST /projects/{id}/pipelines/{pipeline_id}/retry
+cancel-pipeline             POST /projects/{id}/pipelines/{pipeline_id}/cancel
+#
+# Left out: deleting issues, notes, branches or projects; creating a pipeline (it can deploy) and
+# auto-merge; members, access tokens, deploy keys, webhooks, CI/CD variables (secrets), runners,
+# registries, uploads, and project or group settings.

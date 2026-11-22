@@ -1,0 +1,34 @@
+{
+  "needs": {
+    "workspace_gid": "The workspace the test project is in: the gid from list-workspaces, or from the URL of the workspace's home page",
+    "project_gid": "A test project the token's user can edit, with at least one section of its own: the first number in the project's URL (app.asana.com/0/<project_gid>/...)",
+    "tag_gid": "A tag in that workspace that may be put on and taken off a test task: open the tag in Asana; its gid is the number in the URL (or take one from list-tags)"
+  },
+  "steps": [
+    { "action": "list-workspaces", "input": {} },
+    { "action": "list-projects", "input": { "workspace_gid": "{{needs.workspace_gid}}", "archived": false } },
+    { "action": "get-project", "input": { "project_gid": "{{needs.project_gid}}" } },
+    { "action": "list-sections", "input": { "project_gid": "{{needs.project_gid}}" } },
+    { "action": "list-tags", "input": { "workspace_gid": "{{needs.workspace_gid}}" } },
+    { "action": "create-task", "input": { "project_gid": "{{needs.project_gid}}", "name": "Anlyon exercise {{run}}", "notes": "Created by an Anlyon pack exercise run; it deletes this task at the end." }, "save": { "task_gid": "data.gid" } },
+    { "action": "get-task", "input": { "task_gid": "{{saved.task_gid}}" } },
+    { "action": "list-project-tasks", "input": { "project_gid": "{{needs.project_gid}}", "completed_since": "now" } },
+    { "action": "update-task", "input": { "task_gid": "{{saved.task_gid}}", "name": "Anlyon exercise {{run}} (updated)", "notes": "Updated by the exercise run.", "due_on": "2026-12-31", "assignee": "me" } },
+    { "action": "comment-on-task", "input": { "task_gid": "{{saved.task_gid}}", "text": "Exercise comment {{run}}" } },
+    { "action": "list-task-stories", "input": { "task_gid": "{{saved.task_gid}}", "resource_subtype": "comment_added" } },
+    { "action": "create-subtask", "input": { "task_gid": "{{saved.task_gid}}", "name": "Anlyon exercise subtask {{run}}" }, "save": { "subtask_gid": "data.gid" } },
+    { "action": "list-subtasks", "input": { "task_gid": "{{saved.task_gid}}" } },
+    { "action": "create-section", "input": { "project_gid": "{{needs.project_gid}}", "name": "Anlyon exercise {{run}}" }, "save": { "section_gid": "data.gid" } },
+    { "action": "add-task-to-section", "input": { "section_gid": "{{saved.section_gid}}", "task_gid": "{{saved.task_gid}}" } },
+    { "action": "list-section-tasks", "input": { "section_gid": "{{saved.section_gid}}" } },
+    { "action": "remove-follower", "input": { "task_gid": "{{saved.task_gid}}", "follower": "me" } },
+    { "action": "add-follower", "input": { "task_gid": "{{saved.task_gid}}", "follower": "me" } },
+    { "action": "add-tag", "input": { "task_gid": "{{saved.task_gid}}", "tag_gid": "{{needs.tag_gid}}" } },
+    { "action": "remove-tag", "input": { "task_gid": "{{saved.task_gid}}", "tag_gid": "{{needs.tag_gid}}" } },
+    { "action": "complete-task", "input": { "task_gid": "{{saved.task_gid}}" } },
+    { "action": "reopen-task", "input": { "task_gid": "{{saved.task_gid}}" } },
+    { "action": "delete-task", "input": { "task_gid": "{{saved.subtask_gid}}" } },
+    { "action": "delete-task", "input": { "task_gid": "{{saved.task_gid}}" } },
+    { "action": "delete-section", "input": { "section_gid": "{{saved.section_gid}}" } }
+  ]
+}

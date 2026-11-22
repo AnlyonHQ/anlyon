@@ -1,0 +1,173 @@
+{
+  "needs": {
+    "conversation_id": "An open conversation that is safe to reply to: one you sent from your own address to a shared inbox (cnv_...)",
+    "teammate_id": "Your own teammate id (list-teammates shows it, tea_...)",
+    "channel_id": "The id of the channel that conversation came in on (list-channels shows it, cha_...)",
+    "tag_id": "A tag that is safe to put on that conversation (list-tags shows it, tag_...)"
+  },
+  "steps": [
+    {
+      "action": "list-inboxes",
+      "input": {}
+    },
+    {
+      "action": "list-channels",
+      "input": {}
+    },
+    {
+      "action": "list-teammates",
+      "input": {}
+    },
+    {
+      "action": "list-tags",
+      "input": {}
+    },
+    {
+      "action": "get-conversation",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}"
+      }
+    },
+    {
+      "action": "search-conversations",
+      "input": {
+        "query": "is:open"
+      }
+    },
+    {
+      "action": "list-conversation-messages",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}"
+      },
+      "save": {
+        "message_id": "_results.0.id"
+      }
+    },
+    {
+      "action": "get-message",
+      "input": {
+        "message_id": "{{saved.message_id}}"
+      }
+    },
+    {
+      "action": "add-comment",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}",
+        "body": "Anlyon exercise {{run}}",
+        "author_id": "{{needs.teammate_id}}"
+      }
+    },
+    {
+      "action": "list-conversation-comments",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}"
+      }
+    },
+    {
+      "action": "assign-conversation",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}",
+        "assignee_id": "{{needs.teammate_id}}"
+      }
+    },
+    {
+      "action": "unassign-conversation",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}",
+        "assignee_id": "{{needs.teammate_id}}"
+      }
+    },
+    {
+      "action": "tag-conversation",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}",
+        "tag_id": "{{needs.tag_id}}"
+      }
+    },
+    {
+      "action": "create-draft-reply",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}",
+        "channel_id": "{{needs.channel_id}}",
+        "body": "Anlyon exercise {{run}}: a draft, not sent.",
+        "author_id": "{{needs.teammate_id}}"
+      }
+    },
+    {
+      "action": "reply-to-conversation",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}",
+        "body": "Anlyon exercise {{run}}: a test reply.",
+        "author_id": "{{needs.teammate_id}}"
+      }
+    },
+    {
+      "action": "archive-conversation",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}"
+      }
+    },
+    {
+      "action": "reopen-conversation",
+      "input": {
+        "conversation_id": "{{needs.conversation_id}}"
+      }
+    },
+    {
+      "action": "create-contact",
+      "input": {
+        "name": "Anlyon exercise {{run}}",
+        "email": "anlyon-exercise-{{run}}@example.com"
+      },
+      "save": {
+        "contact_id": "id"
+      }
+    },
+    {
+      "action": "get-contact",
+      "input": {
+        "contact_id": "{{saved.contact_id}}"
+      }
+    },
+    {
+      "action": "find-contact-by-email",
+      "input": {
+        "email": "anlyon-exercise-{{run}}@example.com"
+      }
+    },
+    {
+      "action": "rename-contact",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "name": "Anlyon exercise {{run}} renamed"
+      }
+    },
+    {
+      "action": "set-contact-description",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "description": "Created by an Anlyon exercise run."
+      }
+    },
+    {
+      "action": "add-contact-note",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "author_id": "{{needs.teammate_id}}",
+        "body": "Anlyon exercise {{run}}"
+      }
+    },
+    {
+      "action": "list-contact-notes",
+      "input": {
+        "contact_id": "{{saved.contact_id}}"
+      }
+    },
+    {
+      "action": "list-contact-conversations",
+      "input": {
+        "contact_id": "{{saved.contact_id}}"
+      }
+    }
+  ]
+}

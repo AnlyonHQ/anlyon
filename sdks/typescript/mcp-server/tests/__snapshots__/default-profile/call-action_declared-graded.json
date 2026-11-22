@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"id\": \"inv_fixture\",\n  \"actionName\": \"send-welcome-email\",\n  \"status\": \"succeeded\",\n  \"responseStatus\": 200,\n  \"body\": \"{\\\"ok\\\":true}\",\n  \"error\": null,\n  \"durationMs\": 41,\n  \"approvalId\": null,\n  \"decision\": null,\n  \"retryOf\": null,\n  \"createdAt\": \"2026-09-30T00:00:00.000Z\",\n  \"completedAt\": \"2026-09-30T00:00:01.000Z\",\n  \"effectId\": \"eff_fixture\",\n  \"grade\": \"acknowledged\",\n  \"pendingApproval\": false\n}"
+    }
+  ]
+}

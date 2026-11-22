@@ -1,0 +1,27 @@
+{
+  "params": {},
+  "accountHost": "us21.api.mailchimp.com",
+  "_source": "Shaped after the response documented in Mailchimp's official OpenAPI spec (https://api.mailchimp.com/schema/openapi/OpenAPI.json, getListsIdMembersIdNotes).",
+  "input": {
+    "list_id": "4ca5becb8d",
+    "member_id": "3e3417d7ef77d5932a6734b916515ed5"
+  },
+  "expectedUrl": "https://us21.api.mailchimp.com/3.0/lists/4ca5becb8d/members/3e3417d7ef77d5932a6734b916515ed5/notes?count=10&sort_field=created_at&sort_dir=DESC&exclude_fields=_links,notes._links",
+  "response": {
+    "notes": [
+      {
+        "id": 51,
+        "created_at": "2026-10-20T09:30:00+00:00",
+        "created_by": "Acme Support",
+        "updated_at": "2026-10-20T09:30:00+00:00",
+        "note": "Asked about the annual plan.",
+        "list_id": "4ca5becb8d",
+        "email_id": "3e3417d7ef77d5932a6734b916515ed5",
+        "contact_id": "a8b5c9e1f0d2"
+      }
+    ],
+    "list_id": "4ca5becb8d",
+    "email_id": "3e3417d7ef77d5932a6734b916515ed5",
+    "total_items": 1
+  }
+}

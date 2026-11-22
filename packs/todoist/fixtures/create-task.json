@@ -1,0 +1,135 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.todoist.com/api/v1/).",
+  "params": {},
+  "input": {
+    "content": "Call Dana about the pilot",
+    "project_id": "6XGgm6PHrGgMpCFX",
+    "labels": [
+      "calls"
+    ],
+    "priority": 4,
+    "due_string": "tomorrow"
+  },
+  "expectedUrl": "https://api.todoist.com/api/v1/tasks",
+  "response": {
+    "user_id": "1234567",
+    "id": "6XGgmFVcrG5RRk01",
+    "project_id": "6XGgm6PHrGgMpCFX",
+    "section_id": null,
+    "parent_id": null,
+    "added_by_uid": "1234567",
+    "assigned_by_uid": null,
+    "responsible_uid": null,
+    "labels": [
+      "calls"
+    ],
+    "deadline": null,
+    "duration": null,
+    "is_collapsed": false,
+    "checked": false,
+    "is_deleted": false,
+    "added_at": "2026-10-20T10:30:00Z",
+    "completed_at": null,
+    "completed_by_uid": null,
+    "updated_at": "2026-10-20T10:30:00Z",
+    "due": {
+      "date": "2026-10-25",
+      "is_recurring": false,
+      "lang": "en",
+      "string": "tomorrow",
+      "timezone": null
+    },
+    "priority": 4,
+    "child_order": 1,
+    "order_key": "a0",
+    "content": "Call Dana about the pilot",
+    "description": "",
+    "note_count": 0,
+    "day_order": -1,
+    "completed_count": 0,
+    "postponed_count": 0
+  },
+  "expectedReadBackUrl": "https://api.todoist.com/api/v1/tasks/6XGgmFVcrG5RRk01",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "user_id": "1234567",
+      "id": "6XGgmFVcrG5RRk01",
+      "project_id": "6XGgm6PHrGgMpCFX",
+      "section_id": null,
+      "parent_id": null,
+      "added_by_uid": "1234567",
+      "assigned_by_uid": null,
+      "responsible_uid": null,
+      "labels": [
+        "calls"
+      ],
+      "deadline": null,
+      "duration": null,
+      "is_collapsed": false,
+      "checked": false,
+      "is_deleted": false,
+      "added_at": "2026-10-20T10:30:00Z",
+      "completed_at": null,
+      "completed_by_uid": null,
+      "updated_at": "2026-10-20T10:30:00Z",
+      "due": {
+        "date": "2026-10-25",
+        "is_recurring": false,
+        "lang": "en",
+        "string": "tomorrow",
+        "timezone": null
+      },
+      "priority": 4,
+      "child_order": 1,
+      "order_key": "a0",
+      "content": "Call Dana about the pilot",
+      "description": "",
+      "note_count": 0,
+      "day_order": -1,
+      "completed_count": 0,
+      "postponed_count": 0
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "user_id": "1234567",
+      "id": "6XGgmFVcrG5RRk01",
+      "project_id": "6XGgm6PHrGgMpCFX",
+      "section_id": null,
+      "parent_id": null,
+      "added_by_uid": "1234567",
+      "assigned_by_uid": null,
+      "responsible_uid": null,
+      "labels": [
+        "calls"
+      ],
+      "deadline": null,
+      "duration": null,
+      "is_collapsed": false,
+      "checked": false,
+      "is_deleted": false,
+      "added_at": "2026-10-20T10:30:00Z",
+      "completed_at": null,
+      "completed_by_uid": null,
+      "updated_at": "2026-10-20T10:30:00Z",
+      "due": {
+        "date": "2026-10-25",
+        "is_recurring": false,
+        "lang": "en",
+        "string": "tomorrow",
+        "timezone": null
+      },
+      "priority": 4,
+      "child_order": 1,
+      "order_key": "a0",
+      "content": "Another task",
+      "description": "",
+      "note_count": 0,
+      "day_order": -1,
+      "completed_count": 0,
+      "postponed_count": 0
+    }
+  }
+}

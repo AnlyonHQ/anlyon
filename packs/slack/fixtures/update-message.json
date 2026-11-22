@@ -1,0 +1,43 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "channel": "C0123456789",
+    "ts": "1791797400.000200",
+    "text": "Deploy finished (v2)."
+  },
+  "expectedUrl": "https://slack.com/api/chat.update",
+  "response": {
+    "ok": true,
+    "channel": "C0123456789",
+    "ts": "1791797400.000200",
+    "text": "Deploy finished (v2)."
+  },
+  "expectedReadBackUrl": "https://slack.com/api/conversations.history?channel=C0123456789&latest=1791797400.000200&inclusive=true&limit=1",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "ok": true,
+      "messages": [
+        {
+          "type": "message",
+          "text": "Deploy finished (v2).",
+          "ts": "1791797400.000200"
+        }
+      ]
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "ok": true,
+      "messages": [
+        {
+          "type": "message",
+          "text": "Deploy finished.",
+          "ts": "1791797400.000200"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/segments/get-segment).",
+  "params": {},
+  "input": {
+    "segment_id": "78261eea-8f8b-4381-83c6-79fa7120f1cf"
+  },
+  "expectedUrl": "https://api.resend.com/segments/78261eea-8f8b-4381-83c6-79fa7120f1cf",
+  "response": {
+    "object": "segment",
+    "id": "78261eea-8f8b-4381-83c6-79fa7120f1cf",
+    "name": "Registered Users",
+    "created_at": "2026-10-06 22:59:55.977+00"
+  }
+}

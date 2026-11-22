@@ -1,0 +1,14 @@
+{
+  "_source": "Input for the resend.email_send adapter (https://resend.com/docs/api-reference/emails/send-email).",
+  "params": {
+    "sending_domain": "mail.example.com"
+  },
+  "input": {
+    "from": "Acme Support <support@mail.example.com>",
+    "to": [
+      "jane@example.org"
+    ],
+    "subject": "Your refund is on its way",
+    "text": "Hi Jane, we refunded order 1042 today."
+  }
+}

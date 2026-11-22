@@ -1,0 +1,68 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-id-delete).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {
+    "issue_key": "OPS-142",
+    "comment_id": "10204"
+  },
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142/comment/10204",
+  "response": {},
+  "expectedReadBackUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142/comment/10204",
+  "readBack": {
+    "status": 404,
+    "json": {
+      "errorMessages": [
+        "Can not find a comment for the id: 10204."
+      ],
+      "errors": {}
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "self": "https://acme.atlassian.net/rest/api/3/issue/10142/comment/10204",
+      "id": "10204",
+      "author": {
+        "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+        "accountId": "5b10a2844c20165700ede21g",
+        "avatarUrls": {
+          "48x48": "https://avatar-management.example/mia-48.png"
+        },
+        "displayName": "Mia Krystof",
+        "active": true,
+        "timeZone": "Europe/Berlin",
+        "accountType": "atlassian"
+      },
+      "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "Renewed in staging. Production goes out tonight."
+              }
+            ]
+          }
+        ]
+      },
+      "updateAuthor": {
+        "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+        "accountId": "5b10a2844c20165700ede21g",
+        "avatarUrls": {
+          "48x48": "https://avatar-management.example/mia-48.png"
+        },
+        "displayName": "Mia Krystof",
+        "active": true,
+        "timeZone": "Europe/Berlin",
+        "accountType": "atlassian"
+      },
+      "created": "2026-10-24T08:30:00.000+0000",
+      "updated": "2026-10-24T08:30:00.000+0000",
+      "jsdPublic": true
+    }
+  }
+}

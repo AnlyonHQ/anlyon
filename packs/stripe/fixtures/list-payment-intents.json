@@ -1,0 +1,39 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/payment_intents/list).",
+  "params": {},
+  "input": {
+    "customer": "cus_lEzmGSVXJKpHQR"
+  },
+  "expectedUrl": "https://api.stripe.com/v1/payment_intents?limit=10&customer=cus_lEzmGSVXJKpHQR",
+  "response": {
+    "object": "list",
+    "url": "/v1/payment_intents",
+    "has_more": false,
+    "data": [
+      {
+        "id": "pi_3YnXmHyKQWWoIcdMaYjSuQoG",
+        "object": "payment_intent",
+        "amount": 2000,
+        "amount_capturable": 0,
+        "amount_received": 2000,
+        "canceled_at": null,
+        "cancellation_reason": null,
+        "capture_method": "automatic",
+        "created": 1680800504,
+        "currency": "usd",
+        "customer": "cus_lEzmGSVXJKpHQR",
+        "description": null,
+        "last_payment_error": null,
+        "latest_charge": "ch_3PLMntMEfrhTi2gaJDvtoyWn",
+        "livemode": false,
+        "metadata": {},
+        "payment_method": "pm_1UcV8bBzikVgetYm7BUGc30P",
+        "payment_method_types": [
+          "card"
+        ],
+        "receipt_email": null,
+        "status": "succeeded"
+      }
+    ]
+  }
+}

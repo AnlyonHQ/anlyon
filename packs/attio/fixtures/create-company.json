@@ -1,0 +1,60 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.attio.com/rest-api/endpoint-reference/records/create-a-record).",
+  "params": {},
+  "input": {
+    "name": "Acme",
+    "domain": "acme.com"
+  },
+  "expectedUrl": "https://api.attio.com/v2/objects/companies/records",
+  "response": {
+    "data": {
+      "id": {
+        "record_id": "891dcbfc-9141-415d-9b2a-2238a6cc012d"
+      },
+      "values": {}
+    }
+  },
+  "expectedReadBackUrl": "https://api.attio.com/v2/objects/companies/records/891dcbfc-9141-415d-9b2a-2238a6cc012d",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "id": {
+          "record_id": "891dcbfc-9141-415d-9b2a-2238a6cc012d"
+        },
+        "values": {
+          "name": [
+            {
+              "attribute_type": "text",
+              "value": "Acme"
+            }
+          ],
+          "domains": [
+            {
+              "attribute_type": "domain",
+              "domain": "acme.com",
+              "root_domain": "acme.com"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "id": {
+          "record_id": "891dcbfc-9141-415d-9b2a-2238a6cc012d"
+        },
+        "values": {
+          "domains": [
+            {
+              "domain": "other.com"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

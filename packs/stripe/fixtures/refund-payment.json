@@ -1,0 +1,14 @@
+{
+  "_source": "Input for the stripe.refund adapter (https://docs.stripe.com/api/refunds/create).",
+  "params": {
+    "stripe_account": "acct_15etRMenZkGE9FP3",
+    "stripe_mode": "test",
+    "currency": "usd"
+  },
+  "input": {
+    "paymentIntent": "pi_3YnXmHyKQWWoIcdMaYjSuQoG",
+    "amount": 100,
+    "currency": "usd",
+    "reason": "requested_by_customer"
+  }
+}

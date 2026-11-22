@@ -1,0 +1,54 @@
+{
+  "_source": "Shaped after the provider's documented response (https://www.twilio.com/docs/voice/api/call-resource, and https://github.com/twilio/twilio-oai/blob/main/spec/json/twilio_api_v2010.json).",
+  "params": {},
+  "input": {
+    "account_sid": "AC0123456789abcdef0123456789abcdef",
+    "status": "completed",
+    "started_on_or_after": "2026-10-01"
+  },
+  "expectedUrl": "https://api.twilio.com/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Calls.json?Status=completed&StartTime%3E=2026-10-01&PageSize=20",
+  "response": {
+    "calls": [
+      {
+        "account_sid": "AC0123456789abcdef0123456789abcdef",
+        "answered_by": null,
+        "api_version": "2010-04-01",
+        "caller_name": null,
+        "date_created": "Wed, 23 Oct 2026 16:00:00 +0000",
+        "date_updated": "Wed, 23 Oct 2026 16:02:05 +0000",
+        "direction": "inbound",
+        "duration": "120",
+        "end_time": "Wed, 23 Oct 2026 16:02:05 +0000",
+        "forwarded_from": null,
+        "from": "+15558675310",
+        "from_formatted": "(555) 867-5310",
+        "group_sid": null,
+        "parent_call_sid": null,
+        "phone_number_sid": "PNabcdef0123456789abcdef0123456789",
+        "price": "-0.01700",
+        "price_unit": "USD",
+        "queue_time": "0",
+        "sid": "CAabcdef0123456789abcdef0123456789",
+        "start_time": "Wed, 23 Oct 2026 16:00:05 +0000",
+        "status": "completed",
+        "subresource_uris": {
+          "notifications": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Calls/CAabcdef0123456789abcdef0123456789/Notifications.json",
+          "recordings": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Calls/CAabcdef0123456789abcdef0123456789/Recordings.json",
+          "events": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Calls/CAabcdef0123456789abcdef0123456789/Events.json"
+        },
+        "to": "+15017122661",
+        "to_formatted": "(501) 712-2661",
+        "trunk_sid": null,
+        "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Calls/CAabcdef0123456789abcdef0123456789.json"
+      }
+    ],
+    "end": 0,
+    "first_page_uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Calls.json?Status=completed&StartTime%3E=2026-10-01&PageSize=20&Page=0",
+    "next_page_uri": null,
+    "page": 0,
+    "page_size": 20,
+    "previous_page_uri": null,
+    "start": 0,
+    "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Calls.json?Status=completed&StartTime%3E=2026-10-01&PageSize=20&Page=0"
+  }
+}

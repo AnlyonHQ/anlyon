@@ -1,0 +1,95 @@
+{
+  "_source": "Shaped after the provider's documented response (https://www.twilio.com/docs/messaging/api/message-resource, and https://github.com/twilio/twilio-oai/blob/main/spec/json/twilio_api_v2010.json).",
+  "params": {},
+  "input": {
+    "account_sid": "AC0123456789abcdef0123456789abcdef",
+    "to": "+15558675310",
+    "from": "+15017122661",
+    "body": "Anlyon exercise a1b2c3: your appointment is confirmed."
+  },
+  "expectedUrl": "https://api.twilio.com/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages.json",
+  "expectedBody": {
+    "To": "+15558675310",
+    "From": "+15017122661",
+    "Body": "Anlyon exercise a1b2c3: your appointment is confirmed."
+  },
+  "response": {
+    "account_sid": "AC0123456789abcdef0123456789abcdef",
+    "api_version": "2010-04-01",
+    "body": "Anlyon exercise a1b2c3: your appointment is confirmed.",
+    "date_created": "Thu, 24 Oct 2026 14:05:12 +0000",
+    "date_sent": null,
+    "date_updated": "Thu, 24 Oct 2026 14:05:12 +0000",
+    "direction": "outbound-api",
+    "error_code": null,
+    "error_message": null,
+    "from": "+15017122661",
+    "messaging_service_sid": null,
+    "num_media": "0",
+    "num_segments": "1",
+    "price": null,
+    "price_unit": "USD",
+    "sid": "SMabcdef0123456789abcdef0123456789",
+    "status": "queued",
+    "subresource_uris": {
+      "media": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SMabcdef0123456789abcdef0123456789/Media.json"
+    },
+    "to": "+15558675310",
+    "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SMabcdef0123456789abcdef0123456789.json"
+  },
+  "expectedReadBackUrl": "https://api.twilio.com/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SMabcdef0123456789abcdef0123456789.json",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "account_sid": "AC0123456789abcdef0123456789abcdef",
+      "api_version": "2010-04-01",
+      "body": "Anlyon exercise a1b2c3: your appointment is confirmed.",
+      "date_created": "Thu, 24 Oct 2026 14:05:12 +0000",
+      "date_sent": "Thu, 24 Oct 2026 14:05:13 +0000",
+      "date_updated": "Thu, 24 Oct 2026 14:05:12 +0000",
+      "direction": "outbound-api",
+      "error_code": null,
+      "error_message": null,
+      "from": "+15017122661",
+      "messaging_service_sid": null,
+      "num_media": "0",
+      "num_segments": "1",
+      "price": null,
+      "price_unit": "USD",
+      "sid": "SMabcdef0123456789abcdef0123456789",
+      "status": "sent",
+      "subresource_uris": {
+        "media": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SMabcdef0123456789abcdef0123456789/Media.json"
+      },
+      "to": "+15558675310",
+      "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SMabcdef0123456789abcdef0123456789.json"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "account_sid": "AC0123456789abcdef0123456789abcdef",
+      "api_version": "2010-04-01",
+      "body": "Anlyon exercise a1b2c3: your appointment is confirmed.",
+      "date_created": "Thu, 24 Oct 2026 14:05:12 +0000",
+      "date_sent": null,
+      "date_updated": "Thu, 24 Oct 2026 14:05:12 +0000",
+      "direction": "outbound-api",
+      "error_code": null,
+      "error_message": null,
+      "from": "+15017122661",
+      "messaging_service_sid": null,
+      "num_media": "0",
+      "num_segments": "1",
+      "price": null,
+      "price_unit": "USD",
+      "sid": "SMabcdef0123456789abcdef0123456789",
+      "status": "sent",
+      "subresource_uris": {
+        "media": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SMabcdef0123456789abcdef0123456789/Media.json"
+      },
+      "to": "+15559990000",
+      "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SMabcdef0123456789abcdef0123456789.json"
+    }
+  }
+}

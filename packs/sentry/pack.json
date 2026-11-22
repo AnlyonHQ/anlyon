@@ -1,0 +1,1042 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/sentry",
+  "version": "0.3.0",
+  "description": "Sentry issue triage for an agent: list projects, teams and releases, search issues, read an issue, its events and its latest event; resolve, resolve in the next release, reopen, archive, assign, unassign, prioritise, bookmark and mark issues seen, each write read back from Sentry.",
+  "secrets": [
+    {
+      "name": "SENTRY",
+      "kind": "connection",
+      "integrationId": "sentry",
+      "hosts": [
+        "sentry.io"
+      ],
+      "description": "The connected Sentry credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-projects",
+      "description": "List the organization's projects, 25 per page: slug, name, platform, teams and environments. For the next page pass cursor 25:1:0, then 25:2:0 and so on (Sentry's Link header with the cursor is not passed back).",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/projects/?per_page=25&query={{input.query}}&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Only projects whose name or slug matches this text."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9]{1,3}:[0-9]{1,6}:[01]$",
+            "description": "Page cursor. Sentry returns it only in a Link header, which is not passed back, but for this list it is <page size>:<page number>:0, so 25:1:0 is the second page and 25:2:0 the third."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-issues",
+      "description": "Search the organization's issues with Sentry's search syntax, 25 per page, without the per-issue event graphs: title, status, level, priority, assignee, counts, first and last seen, project. Without query Sentry shows is:unresolved. Sentry returns the next page's cursor only in a Link header, which is not passed back, so to read further sort by date and repeat with the last issue's lastSeen as a filter (for example query is:unresolved lastSeen:<2026-10-14T10:00:00), or pass a cursor you already have.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/?limit=25&collapse=stats&collapse=lifetime&collapse=filtered&query={{input.query}}&project={{input.project}}&environment={{input.environment}}&statsPeriod={{input.statsPeriod}}&sort={{input.sort}}&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "Sentry issue search, such as is:unresolved level:error assigned:me release:web@2.14.0."
+          },
+          "project": {
+            "type": "string",
+            "pattern": "^(-1|[0-9]{1,20}|[a-z0-9][a-z0-9_-]{0,99})$",
+            "description": "Only this project: its slug or numeric id."
+          },
+          "environment": {
+            "type": "string",
+            "pattern": "^[^\\s/]{1,64}$",
+            "description": "Only this environment, such as production."
+          },
+          "statsPeriod": {
+            "type": "string",
+            "pattern": "^[0-9]{1,3}[smhdw]$",
+            "description": "How far back to look, such as 24h, 14d or 90d."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "date",
+              "new",
+              "freq",
+              "user",
+              "trends",
+              "inbox"
+            ],
+            "description": "date: last seen (default); new: first seen; freq: events; user: users affected."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9.-]{1,30}:[0-9]{1,7}:[01]$",
+            "description": "A Sentry page cursor you already have, such as one from a Sentry URL."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-issue",
+      "description": "Get one issue: title, status and substatus, level, priority, assignee, counts, first and last seen, tags, and its activity, which includes comments, assignments and status changes.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-issue-events",
+      "description": "List one issue's error events, newest first, 20 per page, without stack traces: event id, time, message, user, tags and release. For the next page pass cursor 0:20:0, then 0:40:0 and so on (Sentry's Link header with the cursor is not passed back).",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/events/?per_page=20&query={{input.query}}&environment={{input.environment}}&statsPeriod={{input.statsPeriod}}&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "Sentry event search, such as browser.name:Chrome."
+          },
+          "environment": {
+            "type": "string",
+            "pattern": "^[^\\s/]{1,64}$",
+            "description": "Only this environment, such as production."
+          },
+          "statsPeriod": {
+            "type": "string",
+            "pattern": "^[0-9]{1,3}[smhdw]$",
+            "description": "How far back to look, such as 24h, 14d or 90d."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^0:[0-9]{1,7}:[01]$",
+            "description": "Page cursor. Sentry returns it only in a Link header, which is not passed back, but for this list it is 0:<row offset>:0, so 0:20:0 is the second page and 0:40:0 the third."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-issue-event",
+      "description": "Get one event of an issue in full, including the stack trace, breadcrumbs, request, tags and contexts. event_id is an event's id, or latest, oldest or recommended (the one Sentry shows first). A large event can be cut at 64 KB.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/events/{{input.event_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id",
+          "event_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          },
+          "event_id": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{32}|latest|oldest|recommended)$",
+            "description": "A 32-character event id, or latest, oldest or recommended."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-releases",
+      "description": "List the organization's releases, most recent first, 20 per page: version, dates, new issue count, commit and deploy counts and projects. Needs the project:read scope. For the next page pass cursor 20:1:0, then 20:2:0 and so on (Sentry's Link header with the cursor is not passed back).",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/releases/?per_page=20&query={{input.query}}&project={{input.project}}&environment={{input.environment}}&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "Only releases whose version contains this text."
+          },
+          "project": {
+            "type": "string",
+            "pattern": "^(-1|[0-9]{1,20}|[a-z0-9][a-z0-9_-]{0,99})$",
+            "description": "Only this project: its slug or numeric id."
+          },
+          "environment": {
+            "type": "string",
+            "pattern": "^[^\\s/]{1,64}$",
+            "description": "Only this environment, such as production."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9]{1,3}:[0-9]{1,6}:[01]$",
+            "description": "Page cursor. Sentry returns it only in a Link header, which is not passed back, but for this list it is <page size>:<page number>:0, so 20:1:0 is the second page and 20:2:0 the third."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-teams",
+      "description": "List the organization's teams, 25 per page, without their projects: id, slug, name and member count. Use the id to assign an issue to a team. For the next page pass cursor 25:1:0, then 25:2:0 and so on (Sentry's Link header with the cursor is not passed back).",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/teams/?detailed=0&per_page=25&query={{input.query}}&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Only teams whose name or slug matches this text."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9]{1,3}:[0-9]{1,6}:[01]$",
+            "description": "Page cursor. Sentry returns it only in a Link header, which is not passed back, but for this list it is <page size>:<page number>:0, so 25:1:0 is the second page and 25:2:0 the third."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "resolve-issue",
+      "description": "Resolve one issue. Read back from the issue; its status must be resolved. Limitation: the read-back can match an issue that was already resolved.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "resolved"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$"
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "resolved"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reopen-issue",
+      "description": "Reopen one resolved or archived issue. Read back from the issue; its status must be unresolved. Limitation: the read-back can match an issue that was already unresolved.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "unresolved"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$"
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "unresolved"
+          }
+        ]
+      }
+    },
+    {
+      "name": "assign-issue",
+      "description": "Assign one issue to a member of the organization, by their primary email address. Read back from the issue; the assignee's email must match. Limitation: the read-back can match an issue that member already held.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "assignedTo": "{{input.assignee_email}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id",
+          "assignee_email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$"
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "assignee_email": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "assignedTo.email",
+            "equals": "{{input.assignee_email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unassign-issue",
+      "description": "Remove the assignee from one issue, so nobody owns it. Read back from the issue; it must have no assignee. Limitation: the read-back can match an issue that was already unassigned.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "assignedTo": ""
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "assignedTo",
+            "equals": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "assign-issue-to-team",
+      "description": "Assign one issue to a team, by the team's id (see list-teams). Read back from the issue; the assignee must be that team. Limitation: the read-back can match an issue that team already held.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "assignedTo": "team:{{input.team_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id",
+          "team_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          },
+          "team_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The team's numeric id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "assignedTo.type",
+            "equals": "team"
+          },
+          {
+            "path": "assignedTo.id",
+            "equals": "{{input.team_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resolve-issue-in-next-release",
+      "description": "Resolve one issue in the next release: Sentry treats it as fixed from the next release of its project on and reopens it as a regression if it happens again after that. The project needs release tracking. Read back from the issue; it must be resolved with inNextRelease set. Limitation: the read-back can match an issue that was already resolved this way.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "resolved",
+        "statusDetails": {
+          "inNextRelease": true
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "resolved"
+          },
+          {
+            "path": "statusDetails.inNextRelease",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-issue",
+      "description": "Archive one issue, which hides it from the unresolved list and stops its alerts: until_escalating brings it back if it starts happening much more often, forever keeps it archived. Read back from the issue; its status must be ignored with that substatus. Limitation: the read-back can match an issue that was already archived this way.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "ignored",
+        "substatus": "{{input.substatus}}",
+        "statusDetails": {}
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id",
+          "substatus"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          },
+          "substatus": {
+            "type": "string",
+            "enum": [
+              "archived_until_escalating",
+              "archived_forever"
+            ],
+            "description": "archived_until_escalating (Sentry's default) or archived_forever."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "ignored"
+          },
+          {
+            "path": "substatus",
+            "equals": "{{input.substatus}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-issue-for-duration",
+      "description": "Archive one issue for a fixed time, after which it returns to unresolved: 30 minutes, 2 hours, 6 hours, 1 day or 1 week. Read back from the issue; its status must be ignored, archived until a condition is met. Limitation: the read-back proves the issue is archived with a condition, not the length.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "ignored",
+        "substatus": "archived_until_condition_met",
+        "statusDetails": {
+          "ignoreDuration": "{{input.ignore_duration}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id",
+          "ignore_duration"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          },
+          "ignore_duration": {
+            "type": "integer",
+            "enum": [
+              30,
+              120,
+              360,
+              1440,
+              10080
+            ],
+            "description": "Minutes to archive for: 30, 120, 360, 1440 (1 day) or 10080 (1 week)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "ignored"
+          },
+          {
+            "path": "substatus",
+            "equals": "archived_until_condition_met"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-issue-priority",
+      "description": "Set one issue's priority to high, medium or low; Sentry then stops changing it automatically. Read back from the issue; its priority must match. Limitation: the read-back can match an issue that already had that priority.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "priority": "{{input.priority}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id",
+          "priority"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ],
+            "description": "The new priority."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "priority",
+            "equals": "{{input.priority}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "bookmark-issue",
+      "description": "Bookmark one issue for the token's user, or remove the bookmark with bookmarked false. Read back from the issue; isBookmarked must match. Limitation: the bookmark belongs to the user who made the token, and the read-back can match an issue already in that state.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "isBookmarked": "{{input.bookmarked}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id",
+          "bookmarked"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          },
+          "bookmarked": {
+            "type": "boolean",
+            "description": "true to bookmark, false to remove the bookmark."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "isBookmarked",
+            "equals": "{{input.bookmarked}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "mark-issue-seen",
+      "description": "Mark one issue as seen by the token's user, or as unseen with seen false. Read back from the issue; hasSeen must match. Limitation: seen is per user, for the user who made the token, and the read-back can match an issue already in that state.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+      "headers": {
+        "Authorization": "Bearer {{connection:sentry}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "hasSeen": "{{input.seen}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "organization",
+          "issue_id",
+          "seen"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "organization": {
+            "type": "string",
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,99}$",
+            "description": "The organization's slug, as in sentry.io/organizations/<slug>/."
+          },
+          "issue_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The issue's numeric id, the number in its URL (not the short id such as WEB-4F)."
+          },
+          "seen": {
+            "type": "boolean",
+            "description": "true marks the issue seen, false unseen."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://sentry.io/api/0/organizations/{{input.organization}}/issues/{{input.issue_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "hasSeen",
+            "equals": "{{input.seen}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "sentry: approve resolving an issue",
+      "matchKind": "action",
+      "matchActionName": "resolve-issue",
+      "effect": "require_approval"
+    },
+    {
+      "name": "sentry: approve resolving an issue in the next release",
+      "matchKind": "action",
+      "matchActionName": "resolve-issue-in-next-release",
+      "effect": "require_approval"
+    },
+    {
+      "name": "sentry: approve archiving an issue",
+      "matchKind": "action",
+      "matchActionName": "archive-issue",
+      "effect": "require_approval"
+    },
+    {
+      "name": "sentry: approve archiving an issue for a time",
+      "matchKind": "action",
+      "matchActionName": "archive-issue-for-duration",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "sentry: issues resolved per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "resolve-issue"
+    },
+    {
+      "name": "sentry: issues reopened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "reopen-issue"
+    },
+    {
+      "name": "sentry: issues assigned per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "assign-issue"
+    },
+    {
+      "name": "sentry: issues unassigned per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "unassign-issue"
+    },
+    {
+      "name": "sentry: issues assigned to a team per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "assign-issue-to-team"
+    },
+    {
+      "name": "sentry: issues resolved in the next release per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "resolve-issue-in-next-release"
+    },
+    {
+      "name": "sentry: issues archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "archive-issue"
+    },
+    {
+      "name": "sentry: issues archived for a time per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "archive-issue-for-duration"
+    },
+    {
+      "name": "sentry: priorities set per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "set-issue-priority"
+    },
+    {
+      "name": "sentry: bookmarks changed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "bookmark-issue"
+    },
+    {
+      "name": "sentry: issues marked seen per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "mark-issue-seen"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+# action               operation                                   kind
+# Trello REST API (https://developer.atlassian.com/cloud/trello/rest/), written by hand from the reference
+list-boards            GET /1/members/me/boards
+get-board              GET /1/boards/{id}
+list-lists             GET /1/boards/{id}/lists
+list-labels            GET /1/boards/{id}/labels
+list-board-cards       GET /1/boards/{id}/cards
+list-list-cards        GET /1/lists/{id}/cards
+search-cards           GET /1/search
+get-card               GET /1/cards/{id}
+list-card-comments     GET /1/cards/{id}/actions
+create-card            POST /1/cards
+update-card            PUT /1/cards/{id}
+move-card              PUT /1/cards/{id}
+archive-card           PUT /1/cards/{id}
+restore-card           PUT /1/cards/{id}
+add-comment            POST /1/cards/{id}/actions/comments
+add-label              POST /1/cards/{id}/idLabels
+remove-label           DELETE /1/cards/{id}/idLabels/{idLabel}
+delete-card            DELETE /1/cards/{id}

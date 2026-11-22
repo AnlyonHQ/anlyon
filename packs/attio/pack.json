@@ -1,0 +1,1359 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/attio",
+  "version": "0.3.0",
+  "description": "The Attio toolset an agent needs for people, companies, notes, lists and tasks: query and read them freely, and create, update and delete them as governed writes, each read back from Attio where Attio can show the change.",
+  "secrets": [
+    {
+      "name": "ATTIO",
+      "kind": "connection",
+      "integrationId": "attio",
+      "hosts": [
+        "api.attio.com"
+      ],
+      "description": "The connected Attio credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "query-people",
+      "kind": "read",
+      "description": "Find person records with an Attio filter and optional sorts. Changes nothing. Returns up to 10 records with all their attribute values; when 10 come back, pass offset 10, 20 and so on for the next page (fewer than 10 means the last page).",
+      "method": "POST",
+      "urlTemplate": "https://api.attio.com/v2/objects/people/records/query",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "filter": "{{input.filter}}",
+        "sorts": "{{input.sorts}}",
+        "limit": 10,
+        "offset": "{{input.offset}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "filter": {
+            "type": "object",
+            "description": "An Attio filter object, e.g. {\"email_addresses\": \"sam@example.com\"} or {\"job_title\": {\"$contains\": \"operations\"}}, or several joined with {\"$and\": [...]} or {\"$or\": [...]}. Leave out to match everything."
+          },
+          "sorts": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Attio sorts, e.g. [{\"attribute\": \"created_at\", \"direction\": \"desc\"}]."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. Leave out for the first page; add the page size for each next page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "query-companies",
+      "kind": "read",
+      "description": "Find company records with an Attio filter and optional sorts. Changes nothing. Returns up to 10 records with all their attribute values; when 10 come back, pass offset 10, 20 and so on for the next page (fewer than 10 means the last page).",
+      "method": "POST",
+      "urlTemplate": "https://api.attio.com/v2/objects/companies/records/query",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "filter": "{{input.filter}}",
+        "sorts": "{{input.sorts}}",
+        "limit": 10,
+        "offset": "{{input.offset}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "filter": {
+            "type": "object",
+            "description": "An Attio filter object, e.g. {\"domains\": \"acme.com\"} or {\"name\": {\"$contains\": \"Acme\"}}, or several joined with {\"$and\": [...]} or {\"$or\": [...]}. Leave out to match everything."
+          },
+          "sorts": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Attio sorts, e.g. [{\"attribute\": \"created_at\", \"direction\": \"desc\"}]."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. Leave out for the first page; add the page size for each next page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-record",
+      "kind": "read",
+      "description": "Get one person or company by record id, with all its attribute values and its web_url in Attio.",
+      "method": "GET",
+      "urlTemplate": "https://api.attio.com/v2/objects/{{input.object}}/records/{{input.record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "object",
+          "record_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "people",
+              "companies"
+            ],
+            "description": "The object: people or companies."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The record id (data.id.record_id)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-attributes",
+      "kind": "read",
+      "description": "List the attributes of an object (people, companies) or a list: slug, title, type, and whether each is multiselect or unique. Use it to find the slugs a filter, sort or list entry update needs. Returns 25 at a time; pass offset 25, 50 and so on for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.attio.com/v2/{{input.target}}/{{input.identifier}}/attributes?limit=25&offset={{input.offset}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "target",
+          "identifier"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "target": {
+            "type": "string",
+            "enum": [
+              "objects",
+              "lists"
+            ],
+            "description": "objects for an object's attributes, lists for a list's own attributes."
+          },
+          "identifier": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The object or list slug (people, companies, a list's api_slug) or its id."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. Leave out for the first page; add the page size for each next page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-notes",
+      "kind": "read",
+      "description": "List notes, optionally only those on one record (give parent_object and parent_record_id together). Returns 10 notes with title and full content; pass offset 10, 20 and so on for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.attio.com/v2/notes?limit=10&offset={{input.offset}}&parent_object={{input.parent_object}}&parent_record_id={{input.parent_record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "parent_object": {
+            "type": "string",
+            "enum": [
+              "people",
+              "companies"
+            ],
+            "description": "The object: people or companies."
+          },
+          "parent_record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The record the notes are on."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. Leave out for the first page; add the page size for each next page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-note",
+      "kind": "read",
+      "description": "Get one note by id: its parent record, title, and content as plain text and markdown.",
+      "method": "GET",
+      "urlTemplate": "https://api.attio.com/v2/notes/{{input.note_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "note_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The note id (data.id.note_id)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-lists",
+      "kind": "read",
+      "description": "List every list the key can see, with its id, api_slug, name and parent object, in sidebar order. Attio returns all lists in one response; it has no paging for this endpoint.",
+      "method": "GET",
+      "urlTemplate": "https://api.attio.com/v2/lists",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-entries",
+      "kind": "read",
+      "description": "Find entries in one list with an optional Attio filter and sorts on the list's attributes. Changes nothing. Returns up to 20 entries with their parent record id and entry values; when 20 come back, pass offset 20, 40 and so on for the next page.",
+      "method": "POST",
+      "urlTemplate": "https://api.attio.com/v2/lists/{{input.list}}/entries/query",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "filter": "{{input.filter}}",
+        "sorts": "{{input.sorts}}",
+        "limit": 20,
+        "offset": "{{input.offset}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The list's api_slug or id (from list-lists)."
+          },
+          "filter": {
+            "type": "object",
+            "description": "An Attio filter on the list's attributes, e.g. {\"stage\": \"Qualified\"}. Leave out to match every entry."
+          },
+          "sorts": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Attio sorts, e.g. [{\"attribute\": \"created_at\", \"direction\": \"desc\"}]."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. Leave out for the first page; add the page size for each next page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-entry",
+      "kind": "read",
+      "description": "Get one list entry by id: its parent record and its values for the list's attributes.",
+      "method": "GET",
+      "urlTemplate": "https://api.attio.com/v2/lists/{{input.list}}/entries/{{input.entry_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list",
+          "entry_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The list's api_slug or id."
+          },
+          "entry_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The entry id (data.id.entry_id)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-tasks",
+      "kind": "read",
+      "description": "List tasks, optionally only those linked to one record, assigned to one workspace member, or open or completed, oldest first unless sort says otherwise. Returns 25 tasks; pass offset 25, 50 and so on for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.attio.com/v2/tasks?limit=25&offset={{input.offset}}&sort={{input.sort}}&linked_object={{input.linked_object}}&linked_record_id={{input.linked_record_id}}&assignee={{input.assignee}}&is_completed={{input.is_completed}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "linked_object": {
+            "type": "string",
+            "enum": [
+              "people",
+              "companies"
+            ],
+            "description": "The object: people or companies."
+          },
+          "linked_record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "Only tasks linked to this record. Give linked_object too."
+          },
+          "assignee": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "Only tasks assigned to the workspace member with this email address."
+          },
+          "is_completed": {
+            "type": "boolean",
+            "description": "true for completed tasks only, false for open tasks only."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "created_at:asc",
+              "created_at:desc",
+              "completed_at:asc",
+              "completed_at:desc"
+            ]
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many results to skip. Leave out for the first page; add the page size for each next page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-task",
+      "kind": "read",
+      "description": "Get one task by id: its content, deadline, whether it is completed, linked records and assignees.",
+      "method": "GET",
+      "urlTemplate": "https://api.attio.com/v2/tasks/{{input.task_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The task id (data.id.task_id)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "kind": "write",
+      "name": "create-person",
+      "description": "Create one person with an email address and a name. Read back by record id; the email address must match. Limitation: Attio refuses a second person with the same email address, so a retry after an unknown outcome fails and creates nothing.",
+      "method": "POST",
+      "urlTemplate": "https://api.attio.com/v2/objects/people/records",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "values": {
+            "email_addresses": [
+              {
+                "email_address": "{{input.email}}"
+              }
+            ],
+            "name": [
+              {
+                "first_name": "{{input.first_name}}",
+                "last_name": "{{input.last_name}}",
+                "full_name": "{{input.first_name}} {{input.last_name}}"
+              }
+            ]
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email",
+          "first_name",
+          "last_name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+          },
+          "first_name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$"
+          },
+          "last_name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/objects/people/records/{{response.data.id.record_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.values.email_addresses.0.email_address",
+            "equals": "{{input.email}}"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "write",
+      "name": "create-company",
+      "description": "Create one company with a name and a domain. Read back by record id; the domain must match. Limitation: Attio refuses a second company with the same domain, so a retry after an unknown outcome fails and creates nothing.",
+      "method": "POST",
+      "urlTemplate": "https://api.attio.com/v2/objects/companies/records",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "values": {
+            "name": [
+              {
+                "value": "{{input.name}}"
+              }
+            ],
+            "domains": [
+              {
+                "domain": "{{input.domain}}"
+              }
+            ]
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "name",
+          "domain"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          },
+          "domain": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/objects/companies/records/{{response.data.id.record_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.values.domains.0.domain",
+            "equals": "{{input.domain}}"
+          }
+        ]
+      }
+    },
+    {
+      "kind": "write",
+      "name": "add-note",
+      "description": "Add one plain-text note to a person. Read back by note id; the title must match. Limitation: no provider idempotency, so a retry after an unknown outcome can add the note twice.",
+      "method": "POST",
+      "urlTemplate": "https://api.attio.com/v2/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "parent_object": "people",
+          "parent_record_id": "{{input.record_id}}",
+          "title": "{{input.title}}",
+          "format": "plaintext",
+          "content": "{{input.content}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "record_id",
+          "title",
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F-]{32,36}$"
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          },
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,5000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/notes/{{response.data.id.note_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.title",
+            "equals": "{{input.title}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-person-job-title",
+      "kind": "write",
+      "description": "Set one person's job title, replacing the current one. Read back by record id; the job title must match.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.attio.com/v2/objects/people/records/{{input.record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "values": {
+            "job_title": "{{input.job_title}}"
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "record_id",
+          "job_title"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The person's record id."
+          },
+          "job_title": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/objects/people/records/{{input.record_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.values.job_title.0.value",
+            "equals": "{{input.job_title}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-person-company",
+      "kind": "write",
+      "description": "Set the company a person works at, replacing the current one (the company's team list in Attio changes with it). Read back by record id; the company's record id must match.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.attio.com/v2/objects/people/records/{{input.record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "values": {
+            "company": [
+              {
+                "target_object": "companies",
+                "target_record_id": "{{input.company_record_id}}"
+              }
+            ]
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "record_id",
+          "company_record_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The person's record id."
+          },
+          "company_record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The company's record id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/objects/people/records/{{input.record_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.values.company.0.target_record_id",
+            "equals": "{{input.company_record_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-company-description",
+      "kind": "write",
+      "description": "Set one company's description, replacing the current one. Read back by record id; the description must match.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.attio.com/v2/objects/companies/records/{{input.record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "values": {
+            "description": "{{input.description}}"
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "record_id",
+          "description"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The company's record id."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/objects/companies/records/{{input.record_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.values.description.0.value",
+            "equals": "{{input.description}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-record",
+      "kind": "write",
+      "description": "Delete one person or company record. Read back: getting the record must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.attio.com/v2/objects/{{input.object}}/records/{{input.record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "object",
+          "record_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "object": {
+            "type": "string",
+            "enum": [
+              "people",
+              "companies"
+            ],
+            "description": "The object: people or companies."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The record id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/objects/{{input.object}}/records/{{input.record_id}}",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "delete-note",
+      "kind": "write",
+      "description": "Delete one note. Read back: getting the note must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.attio.com/v2/notes/{{input.note_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "note_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The note id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/notes/{{input.note_id}}",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "add-to-list",
+      "kind": "write",
+      "description": "Add a person or company to a list as a new entry with no entry values (set them with update-entry). Read back by entry id; the parent record id must match. Limitation: Attio allows several entries for the same record and has no idempotency, so a retry after an unknown outcome can add the record twice.",
+      "method": "POST",
+      "urlTemplate": "https://api.attio.com/v2/lists/{{input.list}}/entries",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "parent_object": "{{input.object}}",
+          "parent_record_id": "{{input.record_id}}",
+          "entry_values": {}
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list",
+          "object",
+          "record_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The list's api_slug or id (from list-lists). Its parent object must be the record's object."
+          },
+          "object": {
+            "type": "string",
+            "enum": [
+              "people",
+              "companies"
+            ],
+            "description": "The object: people or companies."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The record to add."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/lists/{{input.list}}/entries/{{response.data.id.entry_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.parent_record_id",
+            "equals": "{{input.record_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-entry",
+      "kind": "write",
+      "description": "Set values on one list entry, e.g. {\"stage\": \"Qualified\"} (attribute slugs from list-attributes with target lists). Single-value attributes are replaced; values for multiselect attributes are added to the existing ones. No read-back: the attributes it sets are chosen per call and a read-back must name fixed fields, so check the result with get-entry.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.attio.com/v2/lists/{{input.list}}/entries/{{input.entry_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "entry_values": "{{input.entry_values}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list",
+          "entry_id",
+          "entry_values"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The list's api_slug or id."
+          },
+          "entry_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The entry id."
+          },
+          "entry_values": {
+            "type": "object",
+            "description": "Attribute slug or id to value, in Attio's value format."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "remove-entry",
+      "kind": "write",
+      "description": "Remove one entry from a list, with its entry values. The record itself stays. Read back: getting the entry must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.attio.com/v2/lists/{{input.list}}/entries/{{input.entry_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list",
+          "entry_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The list's api_slug or id."
+          },
+          "entry_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The entry id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/lists/{{input.list}}/entries/{{input.entry_id}}",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "create-task",
+      "kind": "write",
+      "description": "Create one open plain-text task with a deadline, linked to a person or company, optionally assigned to a workspace member by email address. Read back by task id; the content and the linked record must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second task.",
+      "method": "POST",
+      "urlTemplate": "https://api.attio.com/v2/tasks",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "content": "{{input.content}}",
+          "format": "plaintext",
+          "deadline_at": "{{input.deadline_at}}",
+          "is_completed": false,
+          "linked_records": [
+            {
+              "target_object": "{{input.linked_object}}",
+              "target_record_id": "{{input.linked_record_id}}"
+            }
+          ],
+          "assignees": [
+            "{{input.assignee}}"
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "content",
+          "deadline_at",
+          "linked_object",
+          "linked_record_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          },
+          "deadline_at": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,9})?)?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "ISO 8601 timestamp, e.g. 2026-10-20T17:00:00Z."
+          },
+          "linked_object": {
+            "type": "string",
+            "enum": [
+              "people",
+              "companies"
+            ],
+            "description": "The object: people or companies."
+          },
+          "linked_record_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The record the task is about."
+          },
+          "assignee": {
+            "type": "object",
+            "required": [
+              "workspace_member_email_address"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "workspace_member_email_address": {
+                "type": "string",
+                "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+              }
+            }
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/tasks/{{response.data.id.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.content_plaintext",
+            "equals": "{{input.content}}"
+          },
+          {
+            "path": "data.linked_records.0.target_record_id",
+            "equals": "{{input.linked_record_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-task-deadline",
+      "kind": "write",
+      "description": "Move one task's deadline. Read back by task id; the stored deadline must equal the one Attio answered the update with.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.attio.com/v2/tasks/{{input.task_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "deadline_at": "{{input.deadline_at}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "deadline_at"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The task id."
+          },
+          "deadline_at": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,9})?)?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "ISO 8601 timestamp, e.g. 2026-10-20T17:00:00Z."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/tasks/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.id.task_id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "data.deadline_at",
+            "equals": "{{response.data.deadline_at}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "complete-task",
+      "kind": "write",
+      "description": "Mark one task completed. Read back by task id; is_completed must be true.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.attio.com/v2/tasks/{{input.task_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "is_completed": true
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The task id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/tasks/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.is_completed",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-task",
+      "kind": "write",
+      "description": "Delete one task. Read back: getting the task must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.attio.com/v2/tasks/{{input.task_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:attio}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The task id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.attio.com/v2/tasks/{{input.task_id}}",
+        "status": 404,
+        "match": []
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "attio: approve creating a company",
+      "matchKind": "action",
+      "matchActionName": "create-company",
+      "effect": "require_approval"
+    },
+    {
+      "name": "attio: approve deleting a record",
+      "matchKind": "action",
+      "matchActionName": "delete-record",
+      "effect": "require_approval"
+    },
+    {
+      "name": "attio: approve deleting a note",
+      "matchKind": "action",
+      "matchActionName": "delete-note",
+      "effect": "require_approval"
+    },
+    {
+      "name": "attio: approve removing a list entry",
+      "matchKind": "action",
+      "matchActionName": "remove-entry",
+      "effect": "require_approval"
+    },
+    {
+      "name": "attio: approve deleting a task",
+      "matchKind": "action",
+      "matchActionName": "delete-task",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "attio: people created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-person"
+    },
+    {
+      "name": "attio: companies created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-company"
+    },
+    {
+      "name": "attio: notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "add-note"
+    },
+    {
+      "name": "attio: job titles updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-person-job-title"
+    },
+    {
+      "name": "attio: person companies set per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "set-person-company"
+    },
+    {
+      "name": "attio: company descriptions updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-company-description"
+    },
+    {
+      "name": "attio: records deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-record"
+    },
+    {
+      "name": "attio: notes deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "delete-note"
+    },
+    {
+      "name": "attio: list entries added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-to-list"
+    },
+    {
+      "name": "attio: list entries updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "update-entry"
+    },
+    {
+      "name": "attio: list entries removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "remove-entry"
+    },
+    {
+      "name": "attio: tasks created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "create-task"
+    },
+    {
+      "name": "attio: task deadlines moved per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-task-deadline"
+    },
+    {
+      "name": "attio: tasks completed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "complete-task"
+    },
+    {
+      "name": "attio: tasks deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "delete-task"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/templates-api).",
+  "params": {},
+  "input": {
+    "offset": 0,
+    "type": "Standard"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/templates?Count=20&Offset=0&TemplateType=Standard",
+  "response": {
+    "TotalCount": 1,
+    "Templates": [
+      {
+        "Active": true,
+        "TemplateId": 1234,
+        "Name": "Order shipped",
+        "Alias": "order-shipped",
+        "TemplateType": "Standard",
+        "LayoutTemplate": null
+      }
+    ]
+  }
+}

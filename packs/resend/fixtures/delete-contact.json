@@ -1,0 +1,13 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/contacts/delete-contact).",
+  "params": {},
+  "input": {
+    "contact_id": "479e3145-dd38-476b-932c-529ceb705947"
+  },
+  "expectedUrl": "https://api.resend.com/contacts/479e3145-dd38-476b-932c-529ceb705947",
+  "response": {
+    "object": "contact",
+    "contact": "479e3145-dd38-476b-932c-529ceb705947",
+    "deleted": true
+  }
+}

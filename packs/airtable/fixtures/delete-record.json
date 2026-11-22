@@ -1,0 +1,31 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/delete-record). The 404 read-back follows https://airtable.com/developers/web/api/errors.",
+  "params": {},
+  "input": {
+    "base_id": "appLkNDICXNqxSDhG",
+    "table": "tblIhd7aUd4H6h2rS",
+    "record_id": "rec560UJdUtocSouk"
+  },
+  "expectedUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS/rec560UJdUtocSouk",
+  "response": {
+    "deleted": true,
+    "id": "rec560UJdUtocSouk"
+  },
+  "expectedReadBackUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS/rec560UJdUtocSouk",
+  "readBack": {
+    "status": 404,
+    "json": {
+      "error": "NOT_FOUND"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "rec560UJdUtocSouk",
+      "createdTime": "2022-09-12T21:03:48.000Z",
+      "fields": {
+        "Name": "Union Square"
+      }
+    }
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/items).",
+  "params": {},
+  "input": {
+    "item_id": "9120000001",
+    "group_id": "group_mkx2b7q1"
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "mutation ($item_id: ID!, $group_id: String!) { move_item_to_group(item_id: $item_id, group_id: $group_id) { id group { id } } }",
+    "variables": {
+      "item_id": "9120000001",
+      "group_id": "group_mkx2b7q1"
+    }
+  },
+  "response": {
+    "data": {
+      "move_item_to_group": {
+        "id": "9120000001",
+        "group": {
+          "id": "group_mkx2b7q1"
+        }
+      }
+    },
+    "extensions": {
+      "request_id": "req_move_item_1"
+    }
+  },
+  "expectedReadBackUrl": "https://api.monday.com/v2",
+  "expectedReadBackBody": {
+    "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id group { id title } } }",
+    "variables": {
+      "item_id": "9120000001"
+    }
+  },
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000001",
+            "group": {
+              "id": "group_mkx2b7q1",
+              "title": "Next week"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000001",
+            "group": {
+              "id": "topics",
+              "title": "This week"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

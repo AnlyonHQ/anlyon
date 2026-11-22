@@ -1,0 +1,30 @@
+# Mailchimp Marketing API: the jobs an agent acting for a user needs.
+# Jobs: find a contact in an audience; read their profile, tags, notes and activity; add or update
+# them without changing their consent; change consent on request; tag them; note a conversation;
+# put them in or take them out of a static segment; read campaigns, send a test, schedule or
+# unschedule one. Left out: sending a campaign now, permanent delete, account admin.
+# action               operation                                                            kind
+list-audiences         GET /3.0/lists
+get-audience           GET /3.0/lists/{list_id}
+search-members         GET /3.0/search-members
+list-members           GET /3.0/lists/{list_id}/members
+get-member             GET /3.0/lists/{list_id}/members/{subscriber_hash}
+list-member-tags       GET /3.0/lists/{list_id}/members/{subscriber_hash}/tags
+list-member-notes      GET /3.0/lists/{list_id}/members/{subscriber_hash}/notes
+get-member-activity    GET /3.0/lists/{list_id}/members/{subscriber_hash}/activity-feed
+list-segments          GET /3.0/lists/{list_id}/segments
+list-segment-members   GET /3.0/lists/{list_id}/segments/{segment_id}/members
+list-campaigns         GET /3.0/campaigns
+get-campaign           GET /3.0/campaigns/{campaign_id}
+upsert-member          PUT /3.0/lists/{list_id}/members/{subscriber_hash}
+update-member-name     PATCH /3.0/lists/{list_id}/members/{subscriber_hash}
+set-member-status      PATCH /3.0/lists/{list_id}/members/{subscriber_hash}
+add-member-tag         POST /3.0/lists/{list_id}/members/{subscriber_hash}/tags
+remove-member-tag      POST /3.0/lists/{list_id}/members/{subscriber_hash}/tags
+add-member-note        POST /3.0/lists/{list_id}/members/{subscriber_hash}/notes
+archive-member         DELETE /3.0/lists/{list_id}/members/{subscriber_hash}
+add-to-segment         POST /3.0/lists/{list_id}/segments/{segment_id}/members
+remove-from-segment    DELETE /3.0/lists/{list_id}/segments/{segment_id}/members/{subscriber_hash}
+send-test-email        POST /3.0/campaigns/{campaign_id}/actions/test
+schedule-campaign      POST /3.0/campaigns/{campaign_id}/actions/schedule
+unschedule-campaign    POST /3.0/campaigns/{campaign_id}/actions/unschedule

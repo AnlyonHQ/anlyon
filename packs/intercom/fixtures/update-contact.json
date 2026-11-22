@@ -1,0 +1,80 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/updatecontact).",
+  "params": {},
+  "input": {
+    "contact_id": "6762f0cd1bb69f9f2193bb7f",
+    "name": "Sam Rivera-Lopez",
+    "phone": "+14155550123"
+  },
+  "expectedUrl": "https://api.intercom.io/contacts/6762f0cd1bb69f9f2193bb7f",
+  "response": {
+    "type": "contact",
+    "id": "6762f0cd1bb69f9f2193bb7f",
+    "workspace_id": "ecahpwf5",
+    "external_id": null,
+    "role": "lead",
+    "email": "sam@example.com",
+    "phone": "+14155550123",
+    "name": "Sam Rivera-Lopez",
+    "avatar": null,
+    "owner_id": null,
+    "has_hard_bounced": false,
+    "marked_email_as_spam": false,
+    "unsubscribed_from_emails": false,
+    "created_at": 1734537421,
+    "updated_at": 1734537900,
+    "signed_up_at": null,
+    "last_seen_at": null,
+    "browser": null,
+    "os": null,
+    "custom_attributes": {},
+    "tags": {
+      "type": "list",
+      "data": [],
+      "url": "/contacts/6762f0cd1bb69f9f2193bb7f/tags",
+      "total_count": 0,
+      "has_more": false
+    },
+    "notes": {
+      "type": "list",
+      "data": [],
+      "url": "/contacts/6762f0cd1bb69f9f2193bb7f/notes",
+      "total_count": 0,
+      "has_more": false
+    },
+    "companies": {
+      "type": "list",
+      "data": [],
+      "url": "/contacts/6762f0cd1bb69f9f2193bb7f/companies",
+      "total_count": 0,
+      "has_more": false
+    },
+    "location": {
+      "type": "location",
+      "country": null,
+      "region": null,
+      "city": null
+    }
+  },
+  "expectedReadBackUrl": "https://api.intercom.io/contacts/6762f0cd1bb69f9f2193bb7f",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "type": "contact",
+      "id": "6762f0cd1bb69f9f2193bb7f",
+      "email": "sam@example.com",
+      "name": "Sam Rivera-Lopez",
+      "phone": "+14155550123"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "type": "contact",
+      "id": "6762f0cd1bb69f9f2193bb7f",
+      "email": "sam@example.com",
+      "name": "Sam Rivera",
+      "phone": null
+    }
+  }
+}

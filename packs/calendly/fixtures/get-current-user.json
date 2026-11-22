@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (Calendly API v2 OpenAPI document, get-current-user).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.calendly.com/users/me",
+  "response": {
+    "resource": {
+      "uri": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+      "name": "Sam Rivera",
+      "slug": "sam-rivera",
+      "email": "sam@example.com",
+      "scheduling_url": "https://calendly.com/sam-rivera",
+      "timezone": "America/New_York",
+      "time_notation": "12h",
+      "avatar_url": null,
+      "created_at": "2025-03-01T12:00:00.000000Z",
+      "updated_at": "2026-10-01T12:00:00.000000Z",
+      "current_organization": "https://api.calendly.com/organizations/CDEFG2HIJKLMNOPQ",
+      "resource_type": "User",
+      "locale": "en"
+    }
+  }
+}

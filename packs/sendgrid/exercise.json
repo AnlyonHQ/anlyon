@@ -1,0 +1,34 @@
+{
+  "needs": {
+    "from_email": "A verified sender in SendGrid, or an address on a domain you authenticated there",
+    "to_email": "An inbox you own, in lower case. The run sends it two emails",
+    "template_id": "A dynamic template id (d- and 32 hex characters) with an active version; list-templates shows it",
+    "group_id": "The id of an unsubscribe group that is safe for a test address; list-unsubscribe-groups shows it"
+  },
+  "steps": [
+    { "action": "list-lists", "input": {} },
+    { "action": "list-templates", "input": {} },
+    { "action": "get-template", "input": { "template_id": "{{needs.template_id}}" } },
+    { "action": "list-unsubscribe-groups", "input": {} },
+    { "action": "create-list", "input": { "name": "Anlyon exercise {{run}}" }, "save": { "list_id": "id" } },
+    { "action": "upsert-contacts", "input": { "list_ids": ["{{saved.list_id}}"], "contacts": [{ "email": "anlyon-exercise-{{run}}@example.com", "first_name": "Anlyon", "last_name": "Exercise {{run}}" }] }, "save": { "job_id": "job_id" } },
+    { "action": "get-contact-job", "input": { "job_id": "{{saved.job_id}}" } },
+    { "action": "get-list", "input": { "list_id": "{{saved.list_id}}" } },
+    { "action": "rename-list", "input": { "list_id": "{{saved.list_id}}", "name": "Anlyon exercise {{run}} renamed" } },
+    { "action": "send-email", "input": { "to": [{ "email": "{{needs.to_email}}" }], "from": { "email": "{{needs.from_email}}", "name": "Anlyon exercise" }, "subject": "Anlyon exercise {{run}}", "content": [{ "type": "text/plain", "value": "The Anlyon pack exercise sent this email. Nothing to do." }] } },
+    { "action": "send-template-email", "input": { "template_id": "{{needs.template_id}}", "to": [{ "email": "{{needs.to_email}}" }], "from": { "email": "{{needs.from_email}}" }, "dynamic_template_data": { "run": "{{run}}" } } },
+    { "action": "get-bounce", "input": { "email": "{{needs.to_email}}" } },
+    { "action": "add-global-unsubscribe", "input": { "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "get-global-unsubscribe", "input": { "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "remove-global-unsubscribe", "input": { "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "add-to-unsubscribe-group", "input": { "group_id": "{{needs.group_id}}", "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "get-email-unsubscribe-groups", "input": { "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "remove-from-unsubscribe-group", "input": { "group_id": "{{needs.group_id}}", "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "search-contacts", "input": { "query": "email = 'anlyon-exercise-{{run}}@example.com'" }, "save": { "contact_id": "result.0.id" } },
+    { "action": "get-contacts-by-email", "input": { "emails": ["anlyon-exercise-{{run}}@example.com"] } },
+    { "action": "get-contact", "input": { "contact_id": "{{saved.contact_id}}" } },
+    { "action": "remove-contact-from-list", "input": { "list_id": "{{saved.list_id}}", "contact_id": "{{saved.contact_id}}" } },
+    { "action": "delete-contact", "input": { "contact_id": "{{saved.contact_id}}" } },
+    { "action": "delete-list", "input": { "list_id": "{{saved.list_id}}" } }
+  ]
+}

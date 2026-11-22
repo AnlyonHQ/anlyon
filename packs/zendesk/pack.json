@@ -1,0 +1,833 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/zendesk",
+  "version": "0.1.0",
+  "description": "Zendesk Support for an agent: search and read tickets, their comments, users and groups; create tickets, reply to the requester, add internal notes, set status and priority, assign and tag, with every write governed.",
+  "secrets": [
+    {
+      "name": "ZENDESK",
+      "kind": "connection",
+      "integrationId": "zendesk",
+      "hosts": [],
+      "accountHost": "{subdomain}.zendesk.com",
+      "description": "The connected Zendesk account: subdomain, agent email and API token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "search-tickets",
+      "kind": "read",
+      "description": "Search tickets with Zendesk's search syntax, e.g. status<solved requester:dana@example.com tags:billing. Returns up to 10 tickets a page in results, with count and next_page. Sort by updated_at, created_at, priority, status or ticket_type (relevance when left out). Pass page for the next page. Zendesk returns at most 1000 results a query; narrow it with a date such as created>2026-10-01. New or changed tickets can take a few minutes to appear in search.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/api/v2/search.json?query=type%3Aticket%20{{input.query}}&sort_by={{input.sort_by}}&sort_order={{input.sort_order}}&per_page=10&page={{input.page}}",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "The search, in Zendesk's search syntax. type:ticket is added for you."
+          },
+          "sort_by": {
+            "type": "string",
+            "enum": [
+              "updated_at",
+              "created_at",
+              "priority",
+              "status",
+              "ticket_type"
+            ],
+            "description": "What to sort by. Leave out to sort by relevance."
+          },
+          "sort_order": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "asc or desc (Zendesk's default)."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page number, from 1. Leave out for page 1. next_page in the response is null on the last page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-tickets",
+      "kind": "read",
+      "description": "List the account's tickets, 10 a page, in ascending id order unless sort is given. Each ticket has id, subject, status, priority, type, requester_id, assignee_id, group_id, tags and dates. When meta.has_more is true, pass meta.after_cursor as cursor for the next page. Archived tickets (closed for more than 120 days) are left out by Zendesk. Use search-tickets to filter.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets.json?page[size]=10&page[after]={{input.cursor}}&sort={{input.sort}}",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "sort": {
+            "type": "string",
+            "enum": [
+              "updated_at",
+              "-updated_at",
+              "id",
+              "-id",
+              "status",
+              "-status"
+            ],
+            "description": "The order. A leading - sorts descending: -updated_at for the most recently updated."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "meta.after_cursor from the previous page, when meta.has_more is true. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-ticket",
+      "kind": "read",
+      "description": "Get one ticket: subject, description (the opening comment), status, priority, type, requester_id, assignee_id, group_id, organization_id, tags, custom fields and dates. Read its conversation with list-ticket-comments.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ticket_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "type": "integer",
+            "description": "The ticket's id, from search-tickets, list-tickets or list-user-tickets."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-ticket-comments",
+      "kind": "read",
+      "description": "List a ticket's comments, 10 a page, oldest to newest unless sort is -created_at. Each comment has id, author_id, body, html_body, public (false for an internal note), attachments and created_at. When meta.has_more is true, pass meta.after_cursor as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}/comments.json?page[size]=10&page[after]={{input.cursor}}&sort={{input.sort}}",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ticket_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "type": "integer",
+            "description": "The ticket's id, from search-tickets, list-tickets or list-user-tickets."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "created_at",
+              "-created_at"
+            ],
+            "description": "created_at for oldest to newest (the default), -created_at for newest to oldest."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "meta.after_cursor from the previous page, when meta.has_more is true. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-user-tickets",
+      "kind": "read",
+      "description": "List the tickets one user requested, 10 a page, by ticket id. Use it to see a customer's history. When meta.has_more is true, pass meta.after_cursor as cursor for the next page. Archived tickets are included.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/api/v2/users/{{input.user_id}}/tickets/requested.json?page[size]=10&page[after]={{input.cursor}}",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "The user's id, from search-users, or a ticket's requester_id or assignee_id."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "meta.after_cursor from the previous page, when meta.has_more is true. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-users",
+      "kind": "read",
+      "description": "Find users (customers and agents) by name, email or other text, e.g. an email address or role:agent. Returns up to 20 users a page in users, each with id, name, email, role, organization_id and tags, with count and next_page. Pass page for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/api/v2/users/search.json?query={{input.query}}&per_page=20&page={{input.page}}",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "What to search for: a name, an email address, or Zendesk search syntax such as role:agent."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page number, from 1. Leave out for page 1. next_page in the response is null on the last page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-user",
+      "kind": "read",
+      "description": "Get one user: name, email, role (end-user, agent or admin), organization_id, time zone, locale, tags, whether suspended, and custom user fields.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/api/v2/users/{{input.user_id}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "user_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "user_id": {
+            "type": "integer",
+            "description": "The user's id, from search-users, or a ticket's requester_id or assignee_id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-groups",
+      "kind": "read",
+      "description": "List the account's agent groups, 50 a page, each with id, name, description and whether it is the default group. Use a group id with assign-ticket or create-ticket. When meta.has_more is true, pass meta.after_cursor as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/api/v2/groups.json?page[size]=50&page[after]={{input.cursor}}",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "meta.after_cursor from the previous page, when meta.has_more is true. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-ticket",
+      "kind": "write",
+      "description": "Create one ticket with a subject and an opening comment. The requester is the user given by requester_id, or by requester email (Zendesk creates an end user for an email it does not know), or the connected agent when both are left out. A public opening comment can be emailed to the requester by the account's triggers. Read back by ticket id; the subject must match. Limitation: no idempotency, so a retry after an unknown outcome can create a second ticket. Custom fields and attachments are not set here.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "ticket": {
+          "subject": "{{input.subject}}",
+          "comment": {
+            "body": "{{input.body}}",
+            "public": "{{input.public}}"
+          },
+          "requester_id": "{{input.requester_id}}",
+          "requester": "{{input.requester}}",
+          "priority": "{{input.priority}}",
+          "type": "{{input.type}}",
+          "group_id": "{{input.group_id}}",
+          "assignee_id": "{{input.assignee_id}}",
+          "tags": "{{input.tags}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "subject",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "subject": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The ticket's subject."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The opening comment, as plain text."
+          },
+          "public": {
+            "type": "boolean",
+            "description": "false to make the opening comment an internal note. Leave out for public (Zendesk's default)."
+          },
+          "requester_id": {
+            "type": "integer",
+            "description": "The requester's user id, from search-users. Give this or requester, not both."
+          },
+          "requester": {
+            "type": "object",
+            "required": [
+              "email"
+            ],
+            "additionalProperties": false,
+            "description": "The requester by email, with a name for a new end user. Give this or requester_id, not both.",
+            "properties": {
+              "email": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9.-]{1,253}\\.[A-Za-z]{2,63}$",
+                "description": "The requester's email address."
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[^\\n]{1,255}$",
+                "description": "The requester's name, used when Zendesk creates the user."
+              }
+            }
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "normal",
+              "high",
+              "urgent"
+            ],
+            "description": "The priority."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "problem",
+              "incident",
+              "question",
+              "task"
+            ],
+            "description": "The ticket type."
+          },
+          "group_id": {
+            "type": "integer",
+            "description": "The group to put it in, from list-groups."
+          },
+          "assignee_id": {
+            "type": "integer",
+            "description": "The agent to assign it to, a user id from search-users (role:agent)."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9_:/.-]{1,80}$",
+              "description": "One tag: lowercase letters, digits and _ : / . - with no spaces, e.g. vip or billing_issue."
+            },
+            "description": "Tags to put on the ticket."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/api/v2/tickets/{{response.ticket.id}}.json",
+        "status": 200,
+        "match": [
+          {
+            "path": "ticket.id",
+            "equals": "{{response.ticket.id}}"
+          },
+          {
+            "path": "ticket.subject",
+            "equals": "{{input.subject}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reply-to-ticket",
+      "kind": "write",
+      "description": "Send a public reply on one ticket. The requester and the ticket's CCs can be emailed it by the account's triggers. Read back from the ticket's newest comment; it must belong to this update's audit and be public. Limitation: no idempotency, so a retry after an unknown outcome can send a second reply. A closed ticket cannot be replied to. Attachments are not offered.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "ticket": {
+          "comment": {
+            "body": "{{input.body}}",
+            "public": true
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "type": "integer",
+            "description": "The ticket's id, from search-tickets, list-tickets or list-user-tickets."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The reply, as plain text."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}/comments.json?page[size]=1&sort=-created_at",
+        "status": 200,
+        "match": [
+          {
+            "path": "comments.0.audit_id",
+            "equals": "{{response.audit.id}}"
+          },
+          {
+            "path": "comments.0.public",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-internal-note",
+      "kind": "write",
+      "description": "Add an internal note to one ticket. Agents see it; the requester does not. Read back from the ticket's newest comment; it must belong to this update's audit and not be public. Limitation: no idempotency, so a retry after an unknown outcome can add a second note. A closed ticket cannot take a note.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "ticket": {
+          "comment": {
+            "body": "{{input.body}}",
+            "public": false
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "type": "integer",
+            "description": "The ticket's id, from search-tickets, list-tickets or list-user-tickets."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The note, as plain text."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}/comments.json?page[size]=1&sort=-created_at",
+        "status": 200,
+        "match": [
+          {
+            "path": "comments.0.audit_id",
+            "equals": "{{response.audit.id}}"
+          },
+          {
+            "path": "comments.0.public",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-ticket-status",
+      "kind": "write",
+      "description": "Set one ticket's status to open, pending, hold or solved. Solving it can email the requester through the account's triggers, and Zendesk closes a solved ticket later by its own automations. Read back by ticket id; the status must be the one given. Limitation: a closed ticket cannot be changed, and an account trigger can change the status again after the update. Custom ticket statuses are not set here.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "ticket": {
+          "status": "{{input.status}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "type": "integer",
+            "description": "The ticket's id, from search-tickets, list-tickets or list-user-tickets."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "pending",
+              "hold",
+              "solved"
+            ],
+            "description": "open (an agent is working on it), pending (waiting on the requester), hold (waiting on a third party) or solved."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+        "status": 200,
+        "match": [
+          {
+            "path": "ticket.id",
+            "equals": "{{input.ticket_id}}"
+          },
+          {
+            "path": "ticket.status",
+            "equals": "{{input.status}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-ticket-priority",
+      "kind": "write",
+      "description": "Set one ticket's priority to low, normal, high or urgent. Read back by ticket id; the priority must be the one given. Limitation: a closed ticket cannot be changed, and an account trigger can change the priority again after the update.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "ticket": {
+          "priority": "{{input.priority}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "priority"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "type": "integer",
+            "description": "The ticket's id, from search-tickets, list-tickets or list-user-tickets."
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "normal",
+              "high",
+              "urgent"
+            ],
+            "description": "The priority."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+        "status": 200,
+        "match": [
+          {
+            "path": "ticket.id",
+            "equals": "{{input.ticket_id}}"
+          },
+          {
+            "path": "ticket.priority",
+            "equals": "{{input.priority}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "assign-ticket",
+      "kind": "write",
+      "description": "Assign one ticket to an agent, and optionally move it to a group the agent belongs to. The agent must belong to the ticket's group, or to the group given. Read back by ticket id; the assignee must be the one given. Limitation: a closed ticket cannot be changed, and the group is sent but not read back.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "ticket": {
+          "assignee_id": "{{input.assignee_id}}",
+          "group_id": "{{input.group_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "assignee_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "type": "integer",
+            "description": "The ticket's id, from search-tickets, list-tickets or list-user-tickets."
+          },
+          "assignee_id": {
+            "type": "integer",
+            "description": "The agent to assign it to, a user id from search-users (role:agent)."
+          },
+          "group_id": {
+            "type": "integer",
+            "description": "The group to move it to, from list-groups. Leave out to keep its group."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}.json",
+        "status": 200,
+        "match": [
+          {
+            "path": "ticket.id",
+            "equals": "{{input.ticket_id}}"
+          },
+          {
+            "path": "ticket.assignee_id",
+            "equals": "{{input.assignee_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-ticket-tags",
+      "kind": "write",
+      "description": "Add one tag to a ticket. The ticket's other tags stay. Read back from the ticket's tags; the tag must be among them. Limitation: removing a tag is not offered (see the pack README). A closed ticket cannot be changed.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}/tags.json",
+      "headers": {
+        "Authorization": "Basic {{connection:zendesk}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "tags": [
+          "{{input.tag}}"
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "ticket_id",
+          "tag"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "ticket_id": {
+            "type": "integer",
+            "description": "The ticket's id, from search-tickets, list-tickets or list-user-tickets."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[a-z0-9_:/.-]{1,80}$",
+            "description": "One tag: lowercase letters, digits and _ : / . - with no spaces, e.g. vip or billing_issue."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/api/v2/tickets/{{input.ticket_id}}/tags.json",
+        "status": 200,
+        "match": [
+          {
+            "path": "tags.*",
+            "equals": "{{input.tag}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "zendesk: approve replying to a requester",
+      "matchKind": "action",
+      "matchActionName": "reply-to-ticket",
+      "effect": "require_approval"
+    },
+    {
+      "name": "zendesk: approve creating a ticket",
+      "matchKind": "action",
+      "matchActionName": "create-ticket",
+      "effect": "require_approval"
+    },
+    {
+      "name": "zendesk: approve solving a ticket",
+      "matchKind": "action",
+      "matchActionName": "set-ticket-status",
+      "condition": "input.status == 'solved'",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "zendesk: tickets created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-ticket"
+    },
+    {
+      "name": "zendesk: public replies per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "reply-to-ticket"
+    },
+    {
+      "name": "zendesk: internal notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-internal-note"
+    },
+    {
+      "name": "zendesk: status changes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "set-ticket-status"
+    },
+    {
+      "name": "zendesk: priority changes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "set-ticket-priority"
+    },
+    {
+      "name": "zendesk: assignments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "assign-ticket"
+    },
+    {
+      "name": "zendesk: tags added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-ticket-tags"
+    }
+  ]
+}

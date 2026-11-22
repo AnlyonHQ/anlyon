@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"id\": \"apr_<id>\",\n  \"kind\": \"custom\",\n  \"status\": \"pending\",\n  \"title\": \"Send the contract?\",\n  \"description\": null,\n  \"payload\": {},\n  \"decisionNote\": null,\n  \"decidedBy\": null,\n  \"requiredApprovals\": 1,\n  \"approvedCount\": 0,\n  \"matchedPolicyId\": null,\n  \"matchedPolicyVersion\": null,\n  \"policyExplanation\": \"No policy matched; applied the default (require one approval).\",\n  \"decisionOrigin\": null,\n  \"endUserId\": null,\n  \"decider\": \"team\",\n  \"expiresAt\": \"<time>\",\n  \"decidedAt\": null,\n  \"createdAt\": \"<time>\"\n}"
+    }
+  ]
+}

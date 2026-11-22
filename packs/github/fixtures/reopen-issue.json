@@ -1,0 +1,107 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/issues#update-an-issue).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "issue_number": "412"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/issues/412",
+  "response": {
+    "id": 2947001122,
+    "number": 412,
+    "title": "Checkout fails for saved cards",
+    "user": {
+      "login": "octo-dev",
+      "id": 583231,
+      "type": "User",
+      "html_url": "https://github.com/octo-dev"
+    },
+    "labels": [
+      {
+        "id": 208045946,
+        "name": "bug",
+        "color": "d73a4a",
+        "default": false,
+        "description": "Something isn't working"
+      }
+    ],
+    "state": "open",
+    "state_reason": "reopened",
+    "assignees": [],
+    "milestone": null,
+    "comments": 2,
+    "created_at": "2026-10-14T09:12:40Z",
+    "updated_at": "2026-10-15T08:01:12Z",
+    "closed_at": null,
+    "body": "Reported by three customers this morning.",
+    "html_url": "https://github.com/acme/widgets/issues/412"
+  },
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/issues/412",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 2947001122,
+      "number": 412,
+      "title": "Checkout fails for saved cards",
+      "user": {
+        "login": "octo-dev",
+        "id": 583231,
+        "type": "User",
+        "html_url": "https://github.com/octo-dev"
+      },
+      "labels": [
+        {
+          "id": 208045946,
+          "name": "bug",
+          "color": "d73a4a",
+          "default": false,
+          "description": "Something isn't working"
+        }
+      ],
+      "state": "open",
+      "state_reason": "reopened",
+      "assignees": [],
+      "milestone": null,
+      "comments": 2,
+      "created_at": "2026-10-14T09:12:40Z",
+      "updated_at": "2026-10-15T08:01:12Z",
+      "closed_at": null,
+      "body": "Reported by three customers this morning.",
+      "html_url": "https://github.com/acme/widgets/issues/412"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 2947001122,
+      "number": 412,
+      "title": "Checkout fails for saved cards",
+      "user": {
+        "login": "octo-dev",
+        "id": 583231,
+        "type": "User",
+        "html_url": "https://github.com/octo-dev"
+      },
+      "labels": [
+        {
+          "id": 208045946,
+          "name": "bug",
+          "color": "d73a4a",
+          "default": false,
+          "description": "Something isn't working"
+        }
+      ],
+      "state": "closed",
+      "state_reason": "completed",
+      "assignees": [],
+      "milestone": null,
+      "comments": 2,
+      "created_at": "2026-10-14T09:12:40Z",
+      "updated_at": "2026-10-15T08:01:12Z",
+      "closed_at": null,
+      "body": "Reported by three customers this morning.",
+      "html_url": "https://github.com/acme/widgets/issues/412"
+    }
+  }
+}

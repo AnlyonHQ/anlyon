@@ -1,0 +1,24 @@
+{
+  "_source": "Shaped after the provider's documented response (Calendly API v2 OpenAPI document, list-user-busy-times).",
+  "params": {},
+  "input": {
+    "user": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+    "start_time": "2026-11-02T09:00:00Z",
+    "end_time": "2026-11-06T17:00:00Z"
+  },
+  "expectedUrl": "https://api.calendly.com/user_busy_times?user=https%3A%2F%2Fapi.calendly.com%2Fusers%2FBDHFGIJ2KLMNOPQR&start_time=2026-11-02T09%3A00%3A00Z&end_time=2026-11-06T17%3A00%3A00Z",
+  "response": {
+    "collection": [
+      {
+        "type": "calendly",
+        "start_time": "2026-11-03T15:00:00.000000Z",
+        "end_time": "2026-11-03T15:30:00.000000Z",
+        "buffered_start_time": "2026-11-03T15:00:00.000000Z",
+        "buffered_end_time": "2026-11-03T15:30:00.000000Z",
+        "event": {
+          "uri": "https://api.calendly.com/scheduled_events/FGHAB3CDEJKLMNOP"
+        }
+      }
+    ]
+  }
+}

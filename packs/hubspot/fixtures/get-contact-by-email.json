@@ -1,0 +1,41 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/get-contact).",
+  "params": {},
+  "input": {
+    "email": "ada@example.com"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/contacts/ada%40example.com?idProperty=email&properties=email,firstname,lastname,phone,mobilephone,company,jobtitle,lifecyclestage,hs_lead_status,hubspot_owner_id,city,country,createdate,lastmodifieddate&associations=companies,deals",
+  "response": {
+    "id": "151",
+    "properties": {
+      "company": "Acme Inc",
+      "createdate": "2026-09-02T10:14:22.401Z",
+      "email": "ada@example.com",
+      "firstname": "Ada",
+      "hs_lead_status": "CONNECTED",
+      "hs_object_id": "151",
+      "hubspot_owner_id": "84021733",
+      "jobtitle": "Head of Operations",
+      "lastmodifieddate": "2026-10-12T09:31:02.118Z",
+      "lastname": "Lovelace",
+      "lifecyclestage": "opportunity",
+      "phone": "+44 20 7946 0958",
+      "city": "London",
+      "country": "United Kingdom",
+      "mobilephone": null
+    },
+    "createdAt": "2026-09-02T10:14:22.401Z",
+    "updatedAt": "2026-10-12T09:31:02.118Z",
+    "archived": false,
+    "associations": {
+      "companies": {
+        "results": [
+          {
+            "id": "9001",
+            "type": "contact_to_company"
+          }
+        ]
+      }
+    }
+  }
+}

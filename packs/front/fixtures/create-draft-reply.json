@@ -1,0 +1,94 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/reference/create-draft-reply).",
+  "params": {},
+  "input": {
+    "conversation_id": "cnv_yo1kg5q",
+    "channel_id": "cha_14tfp",
+    "body": "Your order ships today."
+  },
+  "expectedUrl": "https://api2.frontapp.com/conversations/cnv_yo1kg5q/drafts",
+  "response": {
+    "_links": {
+      "self": "https://api2.frontapp.com/messages/msg_1q15qmtq",
+      "related": {
+        "conversation": "https://api2.frontapp.com/conversations/cnv_yo1kg5q"
+      }
+    },
+    "id": "msg_1q15qmts",
+    "message_uid": "1eab543f84a0785f7b6b8967cck18f4f",
+    "type": "email",
+    "is_inbound": false,
+    "draft_mode": "shared",
+    "created_at": 1729760100,
+    "subject": "Where is my order?",
+    "blurb": "Hi, my order has not arrived.",
+    "author": null,
+    "recipients": [
+      {
+        "_links": {},
+        "name": "Pam Beesly",
+        "handle": "pam@example.com",
+        "role": "from"
+      }
+    ],
+    "body": "<p>Your order ships today.</p>",
+    "text": "Hi, my order has not arrived.",
+    "attachments": [],
+    "metadata": {}
+  },
+  "expectedReadBackUrl": "https://api2.frontapp.com/conversations/cnv_yo1kg5q/drafts",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "_pagination": {
+        "next": null
+      },
+      "_links": {
+        "self": "https://api2.frontapp.com/x"
+      },
+      "_results": [
+        {
+          "_links": {
+            "self": "https://api2.frontapp.com/messages/msg_1q15qmtq",
+            "related": {
+              "conversation": "https://api2.frontapp.com/conversations/cnv_yo1kg5q"
+            }
+          },
+          "id": "msg_1q15qmts",
+          "message_uid": "1eab543f84a0785f7b6b8967cck18f4d",
+          "type": "email",
+          "is_inbound": false,
+          "draft_mode": "shared",
+          "created_at": 1729760100,
+          "subject": "Where is my order?",
+          "blurb": "Hi, my order has not arrived.",
+          "author": null,
+          "recipients": [
+            {
+              "_links": {},
+              "name": "Pam Beesly",
+              "handle": "pam@example.com",
+              "role": "from"
+            }
+          ],
+          "body": "<p>Hi, my order has not arrived.</p>",
+          "text": "Hi, my order has not arrived.",
+          "attachments": [],
+          "metadata": {}
+        }
+      ]
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "_pagination": {
+        "next": null
+      },
+      "_links": {
+        "self": "https://api2.frontapp.com/x"
+      },
+      "_results": []
+    }
+  }
+}

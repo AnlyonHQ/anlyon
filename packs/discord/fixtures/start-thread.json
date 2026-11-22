@@ -1,0 +1,32 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "channel_id": "1100000000000000001",
+    "message_id": "1290000000000000042",
+    "name": "Deploy follow-up"
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1100000000000000001/messages/1290000000000000042/threads",
+  "response": {
+    "id": "1290000000000000099",
+    "type": 11,
+    "name": "Deploy follow-up"
+  },
+  "expectedReadBackUrl": "https://discord.com/api/v10/channels/1290000000000000099",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000099",
+      "type": 11,
+      "name": "Deploy follow-up",
+      "parent_id": "1100000000000000001"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000099",
+      "name": "Another thread"
+    }
+  }
+}

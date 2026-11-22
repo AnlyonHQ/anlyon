@@ -1,0 +1,80 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/notes/).",
+  "params": {},
+  "input": {
+    "project": "acme/web",
+    "merge_request_iid": "7",
+    "body": "Looks good to me."
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/merge_requests/7/notes",
+  "response": {
+    "id": 2100000002,
+    "body": "Looks good to me.",
+    "author": {
+      "id": 1001,
+      "username": "jdoe",
+      "name": "Jane Doe",
+      "state": "active",
+      "web_url": "https://gitlab.com/jdoe"
+    },
+    "created_at": "2026-10-21T11:00:00.000Z",
+    "updated_at": "2026-10-21T11:00:00.000Z",
+    "system": false,
+    "noteable_id": 310000007,
+    "noteable_type": "MergeRequest",
+    "noteable_iid": 7,
+    "project_id": 5000001,
+    "resolvable": false,
+    "confidential": false,
+    "internal": false
+  },
+  "expectedReadBackUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/merge_requests/7/notes/2100000002",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 2100000002,
+      "body": "Looks good to me.",
+      "author": {
+        "id": 1001,
+        "username": "jdoe",
+        "name": "Jane Doe",
+        "state": "active",
+        "web_url": "https://gitlab.com/jdoe"
+      },
+      "created_at": "2026-10-21T11:00:00.000Z",
+      "updated_at": "2026-10-21T11:00:00.000Z",
+      "system": false,
+      "noteable_id": 151000042,
+      "noteable_type": "MergeRequest",
+      "noteable_iid": 42,
+      "project_id": 5000001,
+      "resolvable": false,
+      "confidential": false,
+      "internal": false
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 2100000002,
+      "body": "Not yet.",
+      "author": {
+        "id": 1001,
+        "username": "jdoe",
+        "name": "Jane Doe",
+        "state": "active",
+        "web_url": "https://gitlab.com/jdoe"
+      },
+      "created_at": "2026-10-21T11:00:00.000Z",
+      "updated_at": "2026-10-21T11:00:00.000Z",
+      "system": false,
+      "noteable_id": 151000042,
+      "noteable_type": "MergeRequest",
+      "noteable_iid": 42,
+      "project_id": 5000001,
+      "resolvable": false,
+      "confidential": false,
+      "internal": false
+    }
+  }
+}

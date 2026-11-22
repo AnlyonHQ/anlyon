@@ -1,0 +1,44 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/customers/search).",
+  "params": {},
+  "input": {
+    "query": "email:'jennyrosen@example.com'"
+  },
+  "expectedUrl": "https://api.stripe.com/v1/customers/search?query=email%3A'jennyrosen%40example.com'&limit=20",
+  "response": {
+    "object": "search_result",
+    "url": "/v1/customers/search",
+    "has_more": false,
+    "next_page": null,
+    "data": [
+      {
+        "id": "cus_lEzmGSVXJKpHQR",
+        "object": "customer",
+        "address": null,
+        "balance": 0,
+        "created": 1680893993,
+        "currency": null,
+        "default_source": null,
+        "delinquent": false,
+        "description": null,
+        "email": "jennyrosen@example.com",
+        "invoice_prefix": "HCVXJZAF",
+        "invoice_settings": {
+          "custom_fields": null,
+          "default_payment_method": null,
+          "footer": null,
+          "rendering_options": null
+        },
+        "livemode": false,
+        "metadata": {},
+        "name": "Jenny Rosen",
+        "next_invoice_sequence": 1,
+        "phone": null,
+        "preferred_locales": [],
+        "shipping": null,
+        "tax_exempt": "none",
+        "test_clock": null
+      }
+    ]
+  }
+}

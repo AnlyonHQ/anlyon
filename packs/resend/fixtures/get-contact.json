@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/contacts/get-contact).",
+  "params": {},
+  "input": {
+    "contact": "e169aa45-1ecf-4183-9955-b1499d5701d3"
+  },
+  "expectedUrl": "https://api.resend.com/contacts/e169aa45-1ecf-4183-9955-b1499d5701d3",
+  "response": {
+    "object": "contact",
+    "id": "e169aa45-1ecf-4183-9955-b1499d5701d3",
+    "email": "steve.wozniak@example.com",
+    "first_name": "Steve",
+    "last_name": "Wozniak",
+    "created_at": "2026-10-06 23:47:56.678+00",
+    "unsubscribed": false,
+    "properties": {
+      "company_name": {
+        "value": "Acme Corp",
+        "type": "string"
+      }
+    }
+  }
+}

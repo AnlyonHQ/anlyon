@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "anlyon": {
+      "url": "https://api.anlyon.com/mcp"
+    }
+  }
+}

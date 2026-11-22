@@ -1,0 +1,75 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi-v2.yaml, POST /organizations).",
+  "params": {},
+  "input": {
+    "name": "Globex Ltd"
+  },
+  "expectedUrl": "https://api.pipedrive.com/api/v2/organizations",
+  "response": {
+    "success": true,
+    "data": {
+      "id": 318,
+      "name": "Globex Ltd",
+      "owner_id": 13540546,
+      "add_time": "2026-10-24T08:14:00Z",
+      "update_time": "2026-10-24T08:14:00Z",
+      "address": null,
+      "is_deleted": false,
+      "visible_to": 3,
+      "label_ids": [],
+      "website": null,
+      "linkedin": null,
+      "industry": null,
+      "annual_revenue": null,
+      "employee_count": null,
+      "custom_fields": {}
+    }
+  },
+  "expectedReadBackUrl": "https://api.pipedrive.com/api/v2/organizations/318",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "id": 318,
+        "name": "Globex Ltd",
+        "owner_id": 13540546,
+        "add_time": "2026-10-24T08:14:00Z",
+        "update_time": "2026-10-24T08:14:00Z",
+        "address": null,
+        "is_deleted": false,
+        "visible_to": 3,
+        "label_ids": [],
+        "website": null,
+        "linkedin": null,
+        "industry": null,
+        "annual_revenue": null,
+        "employee_count": null,
+        "custom_fields": {}
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "id": 318,
+        "name": "Globex",
+        "owner_id": 13540546,
+        "add_time": "2026-10-24T08:14:00Z",
+        "update_time": "2026-10-24T08:14:00Z",
+        "address": null,
+        "is_deleted": false,
+        "visible_to": 3,
+        "label_ids": [],
+        "website": null,
+        "linkedin": null,
+        "industry": null,
+        "annual_revenue": null,
+        "employee_count": null,
+        "custom_fields": {}
+      }
+    }
+  }
+}

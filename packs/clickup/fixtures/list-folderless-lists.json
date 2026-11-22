@@ -1,0 +1,31 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/getfolderlesslists).",
+  "params": {},
+  "input": {
+    "space_id": "90120012345"
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/space/90120012345/list",
+  "response": {
+    "lists": [
+      {
+        "id": "901201234999",
+        "name": "Inbox",
+        "orderindex": 0,
+        "task_count": 3,
+        "due_date": null,
+        "folder": {
+          "id": "90120129999",
+          "name": "hidden",
+          "hidden": true,
+          "access": true
+        },
+        "space": {
+          "id": "90120012345",
+          "name": "Customers",
+          "access": true
+        },
+        "archived": false
+      }
+    ]
+  }
+}

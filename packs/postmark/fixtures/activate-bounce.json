@@ -1,0 +1,78 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/bounce-api).",
+  "params": {},
+  "input": {
+    "bounce_id": 692560173
+  },
+  "expectedUrl": "https://api.postmarkapp.com/bounces/692560173/activate",
+  "response": {
+    "Message": "OK",
+    "Bounce": {
+      "ID": 692560173,
+      "Type": "HardBounce",
+      "TypeCode": 1,
+      "Name": "Hard bounce",
+      "Tag": "orders",
+      "MessageID": "2c1b63fe-43f2-4db5-91b0-8bdfa44a9316",
+      "ServerID": 23,
+      "MessageStream": "outbound",
+      "Description": "The server was unable to deliver your message (ex: unknown user, mailbox not found).",
+      "Details": "action: failed\r\n",
+      "Email": "hardbounce@bounce-testing.postmarkapp.com",
+      "From": "support@acme.example",
+      "BouncedAt": "2026-10-20T16:09:19.6421112-04:00",
+      "DumpAvailable": false,
+      "Inactive": false,
+      "CanActivate": true,
+      "Subject": "Your order has shipped",
+      "Content": "Return-Path: <>"
+    }
+  },
+  "expectedReadBackUrl": "https://api.postmarkapp.com/bounces/692560173",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "ID": 692560173,
+      "Type": "HardBounce",
+      "TypeCode": 1,
+      "Name": "Hard bounce",
+      "Tag": "orders",
+      "MessageID": "2c1b63fe-43f2-4db5-91b0-8bdfa44a9316",
+      "ServerID": 23,
+      "MessageStream": "outbound",
+      "Description": "The server was unable to deliver your message (ex: unknown user, mailbox not found).",
+      "Details": "action: failed\r\n",
+      "Email": "hardbounce@bounce-testing.postmarkapp.com",
+      "From": "support@acme.example",
+      "BouncedAt": "2026-10-20T16:09:19.6421112-04:00",
+      "DumpAvailable": false,
+      "Inactive": false,
+      "CanActivate": true,
+      "Subject": "Your order has shipped",
+      "Content": "Return-Path: <>"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "ID": 692560173,
+      "Type": "HardBounce",
+      "TypeCode": 1,
+      "Name": "Hard bounce",
+      "Tag": "orders",
+      "MessageID": "2c1b63fe-43f2-4db5-91b0-8bdfa44a9316",
+      "ServerID": 23,
+      "MessageStream": "outbound",
+      "Description": "The server was unable to deliver your message (ex: unknown user, mailbox not found).",
+      "Details": "action: failed\r\n",
+      "Email": "hardbounce@bounce-testing.postmarkapp.com",
+      "From": "support@acme.example",
+      "BouncedAt": "2026-10-20T16:09:19.6421112-04:00",
+      "DumpAvailable": false,
+      "Inactive": true,
+      "CanActivate": true,
+      "Subject": "Your order has shipped",
+      "Content": "Return-Path: <>"
+    }
+  }
+}

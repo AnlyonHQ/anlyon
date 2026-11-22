@@ -1,0 +1,194 @@
+{
+  "needs": {
+    "organization": "Your organization's slug, as in sentry.io/organizations/<slug>/",
+    "issue_id": "An unresolved, unassigned issue with a priority set, in a test project that has at least one release: the number in the issue's URL",
+    "assignee_email": "Your own Sentry account's primary email address"
+  },
+  "steps": [
+    {
+      "action": "list-projects",
+      "input": {
+        "organization": "{{needs.organization}}"
+      }
+    },
+    {
+      "action": "list-teams",
+      "input": {
+        "organization": "{{needs.organization}}"
+      },
+      "save": {
+        "team_id": "0.id"
+      }
+    },
+    {
+      "action": "list-issues",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "query": "is:unresolved",
+        "sort": "date"
+      }
+    },
+    {
+      "action": "get-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      },
+      "save": {
+        "priority": "priority",
+        "bookmarked": "isBookmarked",
+        "seen": "hasSeen"
+      }
+    },
+    {
+      "action": "list-issue-events",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      }
+    },
+    {
+      "action": "get-issue-event",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "event_id": "latest"
+      }
+    },
+    {
+      "action": "list-releases",
+      "input": {
+        "organization": "{{needs.organization}}"
+      }
+    },
+    {
+      "action": "set-issue-priority",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "priority": "low"
+      }
+    },
+    {
+      "action": "set-issue-priority",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "priority": "{{saved.priority}}"
+      }
+    },
+    {
+      "action": "bookmark-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "bookmarked": true
+      }
+    },
+    {
+      "action": "bookmark-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "bookmarked": "{{saved.bookmarked}}"
+      }
+    },
+    {
+      "action": "mark-issue-seen",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "seen": true
+      }
+    },
+    {
+      "action": "mark-issue-seen",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "seen": "{{saved.seen}}"
+      }
+    },
+    {
+      "action": "assign-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "assignee_email": "{{needs.assignee_email}}"
+      }
+    },
+    {
+      "action": "assign-issue-to-team",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "team_id": "{{saved.team_id}}"
+      }
+    },
+    {
+      "action": "unassign-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      }
+    },
+    {
+      "action": "resolve-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      }
+    },
+    {
+      "action": "reopen-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      }
+    },
+    {
+      "action": "resolve-issue-in-next-release",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      }
+    },
+    {
+      "action": "reopen-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      }
+    },
+    {
+      "action": "archive-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "substatus": "archived_until_escalating"
+      }
+    },
+    {
+      "action": "reopen-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      }
+    },
+    {
+      "action": "archive-issue-for-duration",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}",
+        "ignore_duration": 30
+      }
+    },
+    {
+      "action": "reopen-issue",
+      "input": {
+        "organization": "{{needs.organization}}",
+        "issue_id": "{{needs.issue_id}}"
+      }
+    }
+  ]
+}

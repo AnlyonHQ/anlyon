@@ -1,0 +1,34 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/getthreadedcomments).",
+  "params": {},
+  "input": {
+    "comment_id": "90120000001"
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/comment/90120000001/reply",
+  "response": {
+    "comments": [
+      {
+        "id": "90120000005",
+        "comment": [
+          {
+            "text": "Thanks, I will chase it on Friday."
+          }
+        ],
+        "comment_text": "Thanks, I will chase it on Friday.",
+        "user": {
+          "id": 4501234,
+          "username": "Sam Rivera",
+          "color": "#827718",
+          "initials": "SR",
+          "email": "sam@example.com"
+        },
+        "resolved": false,
+        "assignee": null,
+        "assigned_by": null,
+        "reactions": [],
+        "date": "1761303600000",
+        "reply_count": "0"
+      }
+    ]
+  }
+}

@@ -1,0 +1,888 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/calcom",
+  "version": "0.1.0",
+  "description": "Cal.com tools an agent can be given: read the user, event types, free slots, availability schedules, bookings and attendees; book, reschedule, cancel, confirm and decline bookings, mark no-shows and add guests, each write governed and read back.",
+  "secrets": [
+    {
+      "name": "CALCOM",
+      "kind": "connection",
+      "integrationId": "calcom",
+      "hosts": [
+        "api.cal.com"
+      ],
+      "description": "The connected Cal.com credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "get-me",
+      "kind": "read",
+      "description": "Get the Cal.com user the key belongs to: id, username, email, name, time zone and defaultScheduleId. Bookings and event types are read as this user.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/me",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-event-types",
+      "kind": "read",
+      "description": "List event types, the kinds of meeting that can be booked: id, title, slug, length in minutes, locations, booking fields and booking URL. Without a username it lists the key owner's own event types, hidden ones included. With a username it lists that user's public event types. Cal.com returns them all at once, with no page cursor; an account with very many event types can be cut at 64 KB, so then read one with get-event-type.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/event-types?username={{input.username}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-06-12"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "username": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]{1,64}$",
+            "description": "Another Cal.com user's username, to list their public event types. Leave out for the key owner's own."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-event-type",
+      "kind": "read",
+      "description": "Get one event type: title, slug, length and the lengths a booker may choose, locations, booking fields (including any required custom fields), confirmation policy, recurrence, seats and booking URL.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/event-types/{{input.event_type_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-06-12"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_type_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_type_id": {
+            "type": "integer",
+            "description": "The event type's numeric id, from list-event-types (data.*.id)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "find-available-slots",
+      "kind": "read",
+      "description": "Find the free times for one event type between two dates, grouped by date, each with a start and an end. Ask for a week or less at a time so the answer stays small. Times come back in time_zone (UTC when left out). Pass booking_uid_to_reschedule when looking for a new time for an existing booking, so its own time counts as free.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/slots?eventTypeId={{input.event_type_id}}&start={{input.start}}&end={{input.end}}&timeZone={{input.time_zone}}&duration={{input.duration}}&bookingUidToReschedule={{input.booking_uid_to_reschedule}}&format=range",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2024-09-04"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_type_id",
+          "start",
+          "end"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_type_id": {
+            "type": "integer",
+            "description": "The event type's numeric id, from list-event-types (data.*.id)."
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?Z)?$",
+            "description": "Start of the range, in UTC: a date (2026-11-02) or a date-time (2026-11-02T09:00:00Z)."
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?Z)?$",
+            "description": "End of the range, in UTC: a date (a date alone means the end of that day) or a date-time."
+          },
+          "time_zone": {
+            "type": "string",
+            "pattern": "^[A-Za-z_]{1,32}(/[A-Za-z0-9_+-]{1,32}){0,2}$",
+            "description": "An IANA time zone for the returned times, such as Europe/Rome. UTC when left out."
+          },
+          "duration": {
+            "type": "integer",
+            "description": "Meeting length in minutes, for an event type that offers several lengths. The default length when left out."
+          },
+          "booking_uid_to_reschedule": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The uid of a booking being rescheduled, so its current time shows as free."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-schedules",
+      "kind": "read",
+      "description": "List the key owner's availability schedules: id, name, time zone, weekly hours, date overrides and which one is the default.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/schedules",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2024-06-11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-schedule",
+      "kind": "read",
+      "description": "Get one availability schedule: name, time zone, weekly hours (days with a start and end time), date overrides and whether it is the default. The default schedule's id is defaultScheduleId from get-me.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/schedules/{{input.schedule_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2024-06-11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "schedule_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "schedule_id": {
+            "type": "integer",
+            "description": "The schedule's numeric id, from list-schedules or get-me (defaultScheduleId)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-bookings",
+      "kind": "read",
+      "description": "List the key owner's bookings, 20 per page: uid, title, status, start and end, event type, location, hosts and attendees. Filter by status (one at a time), attendee email or name, event type, or a time range. Cal.com returns pagination.nextCursor while pagination.hasMore is true; pass it as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/bookings?limit=20&status={{input.status}}&attendeeEmail={{input.attendee_email}}&attendeeName={{input.attendee_name}}&eventTypeId={{input.event_type_id}}&afterStart={{input.after_start}}&beforeEnd={{input.before_end}}&sortStart={{input.sort_start}}&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-05-01"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "upcoming",
+              "recurring",
+              "past",
+              "cancelled",
+              "unconfirmed"
+            ],
+            "description": "One status to list. unconfirmed is bookings waiting for the host to confirm. All statuses when left out."
+          },
+          "attendee_email": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._%+-]{1,64}@[A-Za-z0-9-]{1,63}(\\.[A-Za-z0-9-]{1,63}){1,8}$",
+            "description": "Filter to bookings with this attendee email."
+          },
+          "attendee_name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "Filter to bookings with this attendee name."
+          },
+          "event_type_id": {
+            "type": "integer",
+            "description": "Filter to bookings of this event type (its numeric id)."
+          },
+          "after_start": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?Z$",
+            "description": "Filter to bookings that start after this UTC date-time, such as 2026-11-02T00:00:00Z."
+          },
+          "before_end": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?Z$",
+            "description": "Filter to bookings that end before this UTC date-time."
+          },
+          "sort_start": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Sort by start time: asc (earliest to latest) or desc (latest to earliest)."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/-]{1,512}$",
+            "description": "pagination.nextCursor from the previous page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-booking",
+      "kind": "read",
+      "description": "Get one booking by uid: title, description, status (accepted, pending, cancelled, rejected), start, end, duration, event type, location or meeting link, hosts, attendees with their absent flag, guests, cancellation or rescheduling reason, and the uid it was rescheduled from or to. A recurring booking's own uid returns every occurrence as a list.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-02-25"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-booking-attendees",
+      "kind": "read",
+      "description": "List the attendees of one booking, guests included: id, name, email, time zone, language, phone number and whether they were marked absent.",
+      "method": "GET",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/attendees",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2024-08-13"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-booking",
+      "kind": "write",
+      "description": "Book one meeting of an event type for one attendee, at a start time from find-available-slots. Cal.com emails the attendee and the host and adds it to the host's calendar. An event type that needs confirmation creates the booking as pending. Read back by the new booking's uid; the event type and the attendee email must match. Limitation: an event type with required custom booking fields cannot be booked with this action. Limitation: for a recurring event type Cal.com creates every occurrence and returns a list, so the read-back cannot run. Limitation: no provider idempotency, so a retry after an unknown outcome can book a second meeting.",
+      "method": "POST",
+      "urlTemplate": "https://api.cal.com/v2/bookings",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-02-25",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "start": "{{input.start}}",
+        "eventTypeId": "{{input.event_type_id}}",
+        "lengthInMinutes": "{{input.length_in_minutes}}",
+        "attendee": {
+          "name": "{{input.attendee_name}}",
+          "email": "{{input.attendee_email}}",
+          "timeZone": "{{input.attendee_time_zone}}",
+          "phoneNumber": "{{input.attendee_phone}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "event_type_id",
+          "start",
+          "attendee_name",
+          "attendee_email",
+          "attendee_time_zone"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "event_type_id": {
+            "type": "integer",
+            "description": "The numeric id of the event type to book, from list-event-types."
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?Z$",
+            "description": "The start time in UTC, such as 2026-11-02T09:00:00Z. Take it from find-available-slots and convert it to UTC."
+          },
+          "attendee_name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "The attendee's full name."
+          },
+          "attendee_email": {
+            "type": "string",
+            "pattern": "^[a-z0-9._%+-]{1,64}@[a-z0-9-]{1,63}(\\.[a-z0-9-]{1,63}){1,8}$",
+            "description": "The attendee's email, in lowercase. Cal.com sends the confirmation here."
+          },
+          "attendee_time_zone": {
+            "type": "string",
+            "pattern": "^[A-Za-z_]{1,32}(/[A-Za-z0-9_+-]{1,32}){0,2}$",
+            "description": "The attendee's IANA time zone, such as America/New_York. Emails show times in it."
+          },
+          "attendee_phone": {
+            "type": "string",
+            "pattern": "^\\+[1-9][0-9]{6,14}$",
+            "description": "The attendee's phone number in international format (+14155550123). Needed when the event type sends SMS reminders."
+          },
+          "length_in_minutes": {
+            "type": "integer",
+            "description": "The meeting length, for an event type that offers several lengths. The default length when left out."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.cal.com/v2/bookings/{{response.data.uid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.eventType.id",
+            "equals": "{{input.event_type_id}}"
+          },
+          {
+            "path": "data.attendees.*.email",
+            "equals": "{{input.attendee_email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reschedule-booking",
+      "kind": "write",
+      "description": "Move one accepted or pending booking to a new start time. Cal.com cancels the old booking, creates a new one with a new uid, and emails the attendees. A pending booking stays pending. Read back by the new uid; it must say it was rescheduled from this booking. Limitation: a cancelled or declined booking cannot be rescheduled; create a new booking instead. Limitation: a seat in a seated booking cannot be moved with this action.",
+      "method": "POST",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/reschedule",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-02-25",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "start": "{{input.start}}",
+        "reschedulingReason": "{{input.reason}}",
+        "rescheduledBy": "{{input.rescheduled_by}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid",
+          "start"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?Z$",
+            "description": "The new start time in UTC, such as 2026-11-03T14:00:00Z. Find one with find-available-slots and booking_uid_to_reschedule."
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "Why the booking is moved. Cal.com shows it to the attendees."
+          },
+          "rescheduled_by": {
+            "type": "string",
+            "pattern": "^[a-z0-9._%+-]{1,64}@[a-z0-9-]{1,63}(\\.[a-z0-9-]{1,63}){1,8}$",
+            "description": "Email of the person moving it, in lowercase. Needed for an event type that needs confirmation: the host's email keeps the new booking confirmed."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.cal.com/v2/bookings/{{response.data.uid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.rescheduledFromUid",
+            "equals": "{{input.booking_uid}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "cancel-booking",
+      "kind": "write",
+      "description": "Cancel one booking. Cal.com emails the attendees and the host and removes it from the calendar. Read back by uid; its status must be cancelled. Limitation: pass the uid of one occurrence; the uid of a whole recurring series cancels every occurrence and returns a list, which the read-back cannot match. Limitation: one seat of a seated booking cannot be cancelled with this action. Cancelling cannot be undone; the attendee has to book again.",
+      "method": "POST",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/cancel",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-02-25",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "cancellationReason": "{{input.reason}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "Why it is cancelled. Cal.com shows it to the attendees."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.cal.com/v2/bookings/{{input.booking_uid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.uid",
+            "equals": "{{input.booking_uid}}"
+          },
+          {
+            "path": "data.status",
+            "equals": "cancelled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "confirm-booking",
+      "kind": "write",
+      "description": "Confirm one pending booking of an event type that needs the host's confirmation. Cal.com emails the attendee that it is confirmed. Read back by uid; its status must be accepted. Limitation: the read-back also holds for a booking that was already accepted.",
+      "method": "POST",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/confirm",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-02-25"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.cal.com/v2/bookings/{{input.booking_uid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.uid",
+            "equals": "{{input.booking_uid}}"
+          },
+          {
+            "path": "data.status",
+            "equals": "accepted"
+          }
+        ]
+      }
+    },
+    {
+      "name": "decline-booking",
+      "kind": "write",
+      "description": "Decline one pending booking of an event type that needs the host's confirmation. Cal.com emails the attendee, with the reason when given. Read back by uid; its status must be rejected. A declined booking cannot be rescheduled or confirmed later.",
+      "method": "POST",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/decline",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-02-25",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "reason": "{{input.reason}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "Why it is declined. Cal.com sends it to the attendee."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.cal.com/v2/bookings/{{input.booking_uid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.uid",
+            "equals": "{{input.booking_uid}}"
+          },
+          {
+            "path": "data.status",
+            "equals": "rejected"
+          }
+        ]
+      }
+    },
+    {
+      "name": "mark-attendee-absent",
+      "kind": "write",
+      "description": "Mark one attendee of a past booking as a no-show. This can start the event type's no-show workflows. Read back from the booking; an attendee with this email must be there and an attendee must be marked absent. Limitation: in a booking with several attendees, the read-back can match when another attendee was marked absent earlier.",
+      "method": "POST",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/mark-absent",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-02-25",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "attendees": [
+          {
+            "email": "{{input.attendee_email}}",
+            "absent": true
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid",
+          "attendee_email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          },
+          "attendee_email": {
+            "type": "string",
+            "pattern": "^[a-z0-9._%+-]{1,64}@[a-z0-9-]{1,63}(\\.[a-z0-9-]{1,63}){1,8}$",
+            "description": "The absent attendee's email, in lowercase, as get-booking lists it."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.cal.com/v2/bookings/{{input.booking_uid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.attendees.*.email",
+            "equals": "{{input.attendee_email}}"
+          },
+          {
+            "path": "data.attendees.*.absent",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "mark-host-absent",
+      "kind": "write",
+      "description": "Mark the host of a past booking as a no-show. Read back from the booking; absentHost must be true. Limitation: the read-back also holds for a host already marked absent.",
+      "method": "POST",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/mark-absent",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2026-02-25",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "host": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.cal.com/v2/bookings/{{input.booking_uid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.uid",
+            "equals": "{{input.booking_uid}}"
+          },
+          {
+            "path": "data.absentHost",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-guest",
+      "kind": "write",
+      "description": "Add one guest to an existing booking. Cal.com emails the guest an invitation and updates the calendar event. Read back from the booking's attendees; the guest's email must be among them. Limitation: Cal.com allows this call 5 times a minute and 30 guests per booking, and not on seated bookings.",
+      "method": "POST",
+      "urlTemplate": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/guests",
+      "headers": {
+        "Authorization": "Bearer {{connection:calcom}}",
+        "cal-api-version": "2024-08-13",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "guests": [
+          {
+            "email": "{{input.guest_email}}",
+            "name": "{{input.guest_name}}",
+            "timeZone": "{{input.guest_time_zone}}"
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "booking_uid",
+          "guest_email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "booking_uid": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$",
+            "description": "The booking's uid, from list-bookings or create-booking (data.uid). Not the numeric id."
+          },
+          "guest_email": {
+            "type": "string",
+            "pattern": "^[a-z0-9._%+-]{1,64}@[a-z0-9-]{1,63}(\\.[a-z0-9-]{1,63}){1,8}$",
+            "description": "The guest's email, in lowercase. Cal.com sends the invitation here."
+          },
+          "guest_name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "The guest's name."
+          },
+          "guest_time_zone": {
+            "type": "string",
+            "pattern": "^[A-Za-z_]{1,32}(/[A-Za-z0-9_+-]{1,32}){0,2}$",
+            "description": "The guest's IANA time zone, such as Europe/London."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.cal.com/v2/bookings/{{input.booking_uid}}/attendees",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.*.email",
+            "equals": "{{input.guest_email}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "calcom: approve creating a booking",
+      "matchKind": "action",
+      "matchActionName": "create-booking",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calcom: approve rescheduling a booking",
+      "matchKind": "action",
+      "matchActionName": "reschedule-booking",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calcom: approve cancelling a booking",
+      "matchKind": "action",
+      "matchActionName": "cancel-booking",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calcom: approve confirming a booking",
+      "matchKind": "action",
+      "matchActionName": "confirm-booking",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calcom: approve declining a booking",
+      "matchKind": "action",
+      "matchActionName": "decline-booking",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calcom: approve marking an attendee absent",
+      "matchKind": "action",
+      "matchActionName": "mark-attendee-absent",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calcom: approve marking the host absent",
+      "matchKind": "action",
+      "matchActionName": "mark-host-absent",
+      "effect": "require_approval"
+    },
+    {
+      "name": "calcom: approve adding a guest",
+      "matchKind": "action",
+      "matchActionName": "add-guest",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "calcom: bookings created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "create-booking"
+    },
+    {
+      "name": "calcom: bookings rescheduled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "reschedule-booking"
+    },
+    {
+      "name": "calcom: bookings cancelled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "cancel-booking"
+    },
+    {
+      "name": "calcom: bookings confirmed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "confirm-booking"
+    },
+    {
+      "name": "calcom: bookings declined per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "decline-booking"
+    },
+    {
+      "name": "calcom: attendees marked absent per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "mark-attendee-absent"
+    },
+    {
+      "name": "calcom: hosts marked absent per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "mark-host-absent"
+    },
+    {
+      "name": "calcom: guests added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "add-guest"
+    }
+  ]
+}

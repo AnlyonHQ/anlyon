@@ -1,0 +1,73 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/listcontacts).",
+  "params": {},
+  "input": {
+    "starting_after": "WzE3MzQ1Mzc0MjEwMDAsIjY3NjJmMGNkIl0="
+  },
+  "expectedUrl": "https://api.intercom.io/contacts?per_page=15&starting_after=WzE3MzQ1Mzc0MjEwMDAsIjY3NjJmMGNkIl0%3D",
+  "response": {
+    "type": "list",
+    "data": [
+      {
+        "type": "contact",
+        "id": "6762f0cd1bb69f9f2193bb7f",
+        "workspace_id": "ecahpwf5",
+        "external_id": null,
+        "role": "lead",
+        "email": "sam@example.com",
+        "phone": null,
+        "name": "Sam Rivera",
+        "avatar": null,
+        "owner_id": null,
+        "has_hard_bounced": false,
+        "marked_email_as_spam": false,
+        "unsubscribed_from_emails": false,
+        "created_at": 1734537421,
+        "updated_at": 1734537421,
+        "signed_up_at": null,
+        "last_seen_at": null,
+        "browser": null,
+        "os": null,
+        "custom_attributes": {},
+        "tags": {
+          "type": "list",
+          "data": [],
+          "url": "/contacts/6762f0cd1bb69f9f2193bb7f/tags",
+          "total_count": 0,
+          "has_more": false
+        },
+        "notes": {
+          "type": "list",
+          "data": [],
+          "url": "/contacts/6762f0cd1bb69f9f2193bb7f/notes",
+          "total_count": 0,
+          "has_more": false
+        },
+        "companies": {
+          "type": "list",
+          "data": [],
+          "url": "/contacts/6762f0cd1bb69f9f2193bb7f/companies",
+          "total_count": 0,
+          "has_more": false
+        },
+        "location": {
+          "type": "location",
+          "country": null,
+          "region": null,
+          "city": null
+        }
+      }
+    ],
+    "total_count": 31,
+    "pages": {
+      "type": "pages",
+      "page": 2,
+      "per_page": 15,
+      "total_pages": 3,
+      "next": {
+        "per_page": 15,
+        "starting_after": "WzE3MzQ1MzcxMDAwMDAsIjY3NjJmMGE5Il0="
+      }
+    }
+  }
+}

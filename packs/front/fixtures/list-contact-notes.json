@@ -1,0 +1,39 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/reference/list-notes).",
+  "params": {},
+  "input": {
+    "contact_id": "crd_2njtoem"
+  },
+  "expectedUrl": "https://api2.frontapp.com/contacts/crd_2njtoem/notes",
+  "response": {
+    "_pagination": {
+      "next": null
+    },
+    "_links": {
+      "self": "https://api2.frontapp.com/x"
+    },
+    "_results": [
+      {
+        "_links": {},
+        "author": {
+          "_links": {
+            "self": "https://api2.frontapp.com/teammates/tea_6r55a"
+          },
+          "id": "tea_6r55a",
+          "email": "michael@dundermifflin.com",
+          "username": "michael",
+          "first_name": "Michael",
+          "last_name": "Scott",
+          "is_admin": true,
+          "is_available": true,
+          "is_blocked": false,
+          "type": "user",
+          "custom_fields": {}
+        },
+        "body": "Prefers email over phone.",
+        "created_at": 1729760400,
+        "is_private": false
+      }
+    ]
+  }
+}

@@ -1,0 +1,179 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/subscriptions/cancel).",
+  "params": {},
+  "input": {
+    "subscription_id": "sub_1INpz9SmGbSQSg6s42jRwpyk",
+    "prorate": false,
+    "comment": "Customer asked to stop."
+  },
+  "expectedUrl": "https://api.stripe.com/v1/subscriptions/sub_1INpz9SmGbSQSg6s42jRwpyk?prorate=false&cancellation_details%5Bcomment%5D=Customer%20asked%20to%20stop.",
+  "response": {
+    "id": "sub_1INpz9SmGbSQSg6s42jRwpyk",
+    "object": "subscription",
+    "billing_cycle_anchor": 1679609767,
+    "cancel_at": null,
+    "cancel_at_period_end": false,
+    "canceled_at": 1792050400,
+    "cancellation_details": {
+      "comment": "Customer asked to stop.",
+      "feedback": null,
+      "reason": "cancellation_requested"
+    },
+    "collection_method": "charge_automatically",
+    "created": 1679609767,
+    "currency": "usd",
+    "customer": "cus_oZqfGzqqY12Nhi",
+    "ended_at": 1792050400,
+    "items": {
+      "object": "list",
+      "data": [
+        {
+          "id": "si_3or4YJ8eqYfeUY",
+          "object": "subscription_item",
+          "current_period_end": 1682288167,
+          "current_period_start": 1679609767,
+          "price": {
+            "id": "price_1kvaMr5mldb5Ebk5mnpNzxYn",
+            "object": "price",
+            "currency": "usd",
+            "product": "prod_6driCHxhq8V2qq",
+            "recurring": {
+              "interval": "month",
+              "interval_count": 1
+            },
+            "unit_amount": 1000
+          },
+          "quantity": 1,
+          "subscription": "sub_1INpz9SmGbSQSg6s42jRwpyk"
+        }
+      ],
+      "has_more": false,
+      "total_count": 1,
+      "url": "/v1/subscription_items?subscription=sub_1INpz9SmGbSQSg6s42jRwpyk"
+    },
+    "latest_invoice": "in_1vuJGG10I0PSdIbVEkfxB9cJ",
+    "livemode": false,
+    "metadata": {},
+    "pause_collection": null,
+    "schedule": null,
+    "start_date": 1679609767,
+    "status": "canceled",
+    "trial_end": null,
+    "trial_start": null
+  },
+  "expectedReadBackUrl": "https://api.stripe.com/v1/subscriptions/sub_1INpz9SmGbSQSg6s42jRwpyk",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "sub_1INpz9SmGbSQSg6s42jRwpyk",
+      "object": "subscription",
+      "billing_cycle_anchor": 1679609767,
+      "cancel_at": null,
+      "cancel_at_period_end": false,
+      "canceled_at": 1792050400,
+      "cancellation_details": {
+        "comment": "Customer asked to stop.",
+        "feedback": null,
+        "reason": "cancellation_requested"
+      },
+      "collection_method": "charge_automatically",
+      "created": 1679609767,
+      "currency": "usd",
+      "customer": "cus_oZqfGzqqY12Nhi",
+      "ended_at": 1792050400,
+      "items": {
+        "object": "list",
+        "data": [
+          {
+            "id": "si_3or4YJ8eqYfeUY",
+            "object": "subscription_item",
+            "current_period_end": 1682288167,
+            "current_period_start": 1679609767,
+            "price": {
+              "id": "price_1kvaMr5mldb5Ebk5mnpNzxYn",
+              "object": "price",
+              "currency": "usd",
+              "product": "prod_6driCHxhq8V2qq",
+              "recurring": {
+                "interval": "month",
+                "interval_count": 1
+              },
+              "unit_amount": 1000
+            },
+            "quantity": 1,
+            "subscription": "sub_1INpz9SmGbSQSg6s42jRwpyk"
+          }
+        ],
+        "has_more": false,
+        "total_count": 1,
+        "url": "/v1/subscription_items?subscription=sub_1INpz9SmGbSQSg6s42jRwpyk"
+      },
+      "latest_invoice": "in_1vuJGG10I0PSdIbVEkfxB9cJ",
+      "livemode": false,
+      "metadata": {},
+      "pause_collection": null,
+      "schedule": null,
+      "start_date": 1679609767,
+      "status": "canceled",
+      "trial_end": null,
+      "trial_start": null
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "sub_1INpz9SmGbSQSg6s42jRwpyk",
+      "object": "subscription",
+      "billing_cycle_anchor": 1679609767,
+      "cancel_at": null,
+      "cancel_at_period_end": false,
+      "canceled_at": null,
+      "cancellation_details": {
+        "comment": null,
+        "feedback": null,
+        "reason": null
+      },
+      "collection_method": "charge_automatically",
+      "created": 1679609767,
+      "currency": "usd",
+      "customer": "cus_oZqfGzqqY12Nhi",
+      "ended_at": null,
+      "items": {
+        "object": "list",
+        "data": [
+          {
+            "id": "si_3or4YJ8eqYfeUY",
+            "object": "subscription_item",
+            "current_period_end": 1682288167,
+            "current_period_start": 1679609767,
+            "price": {
+              "id": "price_1kvaMr5mldb5Ebk5mnpNzxYn",
+              "object": "price",
+              "currency": "usd",
+              "product": "prod_6driCHxhq8V2qq",
+              "recurring": {
+                "interval": "month",
+                "interval_count": 1
+              },
+              "unit_amount": 1000
+            },
+            "quantity": 1,
+            "subscription": "sub_1INpz9SmGbSQSg6s42jRwpyk"
+          }
+        ],
+        "has_more": false,
+        "total_count": 1,
+        "url": "/v1/subscription_items?subscription=sub_1INpz9SmGbSQSg6s42jRwpyk"
+      },
+      "latest_invoice": "in_1vuJGG10I0PSdIbVEkfxB9cJ",
+      "livemode": false,
+      "metadata": {},
+      "pause_collection": null,
+      "schedule": null,
+      "start_date": 1679609767,
+      "status": "active",
+      "trial_end": null,
+      "trial_start": null
+    }
+  }
+}

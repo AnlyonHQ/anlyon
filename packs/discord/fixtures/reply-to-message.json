@@ -1,0 +1,95 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.discord.com/developers/resources/message).",
+  "params": {},
+  "input": {
+    "channel_id": "1100000000000000001",
+    "message_id": "1290000000000000042",
+    "content": "Thanks, checking now."
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1100000000000000001/messages",
+  "response": {
+    "id": "1290000000000000043",
+    "type": 19,
+    "channel_id": "1100000000000000001",
+    "author": {
+      "id": "1200000000000000007",
+      "username": "anlyon-bot",
+      "global_name": null,
+      "bot": true
+    },
+    "content": "Thanks, checking now.",
+    "timestamp": "2026-10-15T09:12:00.000000+00:00",
+    "edited_timestamp": null,
+    "tts": false,
+    "mention_everyone": false,
+    "mentions": [],
+    "attachments": [],
+    "embeds": [],
+    "pinned": false,
+    "message_reference": {
+      "type": 0,
+      "message_id": "1290000000000000042",
+      "channel_id": "1100000000000000001",
+      "guild_id": "1100000000000000000"
+    }
+  },
+  "expectedReadBackUrl": "https://discord.com/api/v10/channels/1100000000000000001/messages/1290000000000000043",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000043",
+      "type": 19,
+      "channel_id": "1100000000000000001",
+      "author": {
+        "id": "1200000000000000007",
+        "username": "anlyon-bot",
+        "global_name": null,
+        "bot": true
+      },
+      "content": "Thanks, checking now.",
+      "timestamp": "2026-10-15T09:12:00.000000+00:00",
+      "edited_timestamp": null,
+      "tts": false,
+      "mention_everyone": false,
+      "mentions": [],
+      "attachments": [],
+      "embeds": [],
+      "pinned": false,
+      "message_reference": {
+        "type": 0,
+        "message_id": "1290000000000000042",
+        "channel_id": "1100000000000000001",
+        "guild_id": "1100000000000000000"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000043",
+      "type": 19,
+      "channel_id": "1100000000000000001",
+      "author": {
+        "id": "1200000000000000007",
+        "username": "anlyon-bot",
+        "global_name": null,
+        "bot": true
+      },
+      "content": "Thanks, checking now.",
+      "timestamp": "2026-10-15T09:12:00.000000+00:00",
+      "edited_timestamp": null,
+      "tts": false,
+      "mention_everyone": false,
+      "mentions": [],
+      "attachments": [],
+      "embeds": [],
+      "pinned": false,
+      "message_reference": {
+        "type": 0,
+        "message_id": "1290000000000000001",
+        "channel_id": "1100000000000000001",
+        "guild_id": "1100000000000000000"
+      }
+    }
+  }
+}

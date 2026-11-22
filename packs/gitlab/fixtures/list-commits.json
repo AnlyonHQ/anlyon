@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/commits/).",
+  "params": {},
+  "input": {
+    "project": "acme/web",
+    "ref_name": "main",
+    "path": "src/checkout.ts",
+    "since": "2026-10-01T00:00:00Z"
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/repository/commits?ref_name=main&path=src%2Fcheckout.ts&since=2026-10-01T00%3A00%3A00Z&per_page=20",
+  "response": [
+    {
+      "id": "8f3a1c2d4e5f60718293a4b5c6d7e8f901234567",
+      "short_id": "8f3a1c2d",
+      "title": "Fix Safari checkout",
+      "message": "Fix Safari checkout\n",
+      "author_name": "Jane Doe",
+      "authored_date": "2026-10-21T09:00:00.000Z",
+      "committed_date": "2026-10-21T09:00:00.000Z",
+      "web_url": "https://gitlab.com/acme/web/-/commit/8f3a1c2d4e5f60718293a4b5c6d7e8f901234567"
+    }
+  ]
+}

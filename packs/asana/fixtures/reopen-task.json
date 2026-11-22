@@ -1,0 +1,35 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/updatetask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210",
+  "response": {
+    "data": {
+      "gid": "1208809876543210",
+      "resource_type": "task",
+      "name": "Follow up with Acme",
+      "completed": false
+    }
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210?opt_fields=completed",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "completed": false
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "completed": true
+      }
+    }
+  }
+}

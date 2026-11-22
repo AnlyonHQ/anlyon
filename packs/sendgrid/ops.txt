@@ -1,0 +1,32 @@
+# anlyon/sendgrid allow-list. Specs: the twilio/sendgrid-oai repository, spec/json/<file>.json,
+# fetched 2026-10-24. The spec file is named after each line.
+#
+# Jobs: send one email (plain or from a template); find a person in Marketing contacts; add or
+# update contacts and put them on a list; take one off a list or delete them; honour an unsubscribe
+# (global or one group); check why mail did not arrive (bounce); find the template to send.
+#
+# action                        operation                                       kind    spec file
+send-email                      SendMail                                                # tsg_mail_v3
+send-template-email             SendMail                                                # tsg_mail_v3
+search-contacts                 SearchContact                                   read    # tsg_mc_contacts_v3
+get-contacts-by-email           ListContactByEmail                              read    # tsg_mc_contacts_v3
+get-contact                     GetContact                                              # tsg_mc_contacts_v3
+get-contact-job                 GetImportContact                                        # tsg_mc_contacts_v3
+upsert-contacts                 UpdateContact                                           # tsg_mc_contacts_v3
+delete-contact                  DELETE /v3/marketing/contacts                           # tsg_mc_contacts_v3
+list-lists                      ListMarketingList                                       # tsg_mc_lists_v3
+get-list                        GetMarketingList                                        # tsg_mc_lists_v3
+create-list                     CreateMarketingList                                     # tsg_mc_lists_v3
+rename-list                     UpdateMarketingList                                     # tsg_mc_lists_v3
+delete-list                     DeleteMarketingList                                     # tsg_mc_lists_v3
+remove-contact-from-list        DELETE /v3/marketing/lists/{id}/contacts                # tsg_mc_lists_v3
+list-templates                  ListTemplate                                            # tsg_templates_v3
+get-template                    GetTemplate                                             # tsg_templates_v3
+list-unsubscribe-groups         ListAsmGroup                                            # tsg_suppressions_v3
+get-email-unsubscribe-groups    GetAsmSuppression                                       # tsg_suppressions_v3
+add-to-unsubscribe-group        AddSuppressionToAsmGroup                                # tsg_suppressions_v3
+remove-from-unsubscribe-group   DeleteSuppressionFromAsmGroup                           # tsg_suppressions_v3
+get-global-unsubscribe          GetGlobalSuppression                                    # tsg_suppressions_v3
+add-global-unsubscribe          CreateGlobalSuppression                                 # tsg_suppressions_v3
+remove-global-unsubscribe       DeleteGlobalSuppression                                 # tsg_suppressions_v3
+get-bounce                      GetSuppressionBounces                                   # tsg_suppressions_v3

@@ -1,0 +1,22 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/addfollowersfortask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210",
+    "follower": "me"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210/addFollowers?opt_fields=followers.name",
+  "response": {
+    "data": {
+      "gid": "1208809876543210",
+      "resource_type": "task",
+      "followers": [
+        {
+          "gid": "1208800000000042",
+          "resource_type": "user",
+          "name": "Dana Lee"
+        }
+      ]
+    }
+  }
+}

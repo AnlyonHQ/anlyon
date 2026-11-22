@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/editchecklistitem).",
+  "params": {},
+  "input": {
+    "checklist_id": "b955c4dc-b8a8-48d8-a0c6-b4200788a683",
+    "checklist_item_id": "21e08dc8-e491-47f5-9fd8-d1dc4cedcc6f",
+    "resolved": true
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/checklist/b955c4dc-b8a8-48d8-a0c6-b4200788a683/checklist_item/21e08dc8-e491-47f5-9fd8-d1dc4cedcc6f",
+  "response": {
+    "checklist": {
+      "id": "b955c4dc-b8a8-48d8-a0c6-b4200788a683",
+      "task_id": "86a1b2c3d",
+      "name": "Security review",
+      "date_created": "1761304000000",
+      "orderindex": 0,
+      "resolved": 1,
+      "unresolved": 0,
+      "items": [
+        {
+          "id": "21e08dc8-e491-47f5-9fd8-d1dc4cedcc6f",
+          "name": "Send the questionnaire",
+          "orderindex": 0,
+          "assignee": null,
+          "resolved": true,
+          "parent": null,
+          "date_created": "1761304100000",
+          "children": []
+        }
+      ]
+    }
+  }
+}

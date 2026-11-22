@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"id\": \"inv_fixture\",\n  \"actionName\": \"update-ticket-priority\",\n  \"status\": \"pending_approval\",\n  \"responseStatus\": null,\n  \"body\": null,\n  \"error\": null,\n  \"durationMs\": 41,\n  \"approvalId\": \"apr_fixture\",\n  \"decision\": null,\n  \"retryOf\": null,\n  \"createdAt\": \"2026-09-30T00:00:00.000Z\",\n  \"completedAt\": null,\n  \"pendingApproval\": true\n}"
+    }
+  ]
+}

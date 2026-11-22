@@ -1,0 +1,66 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/pulls/pulls#list-pull-requests).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "state": "open",
+    "base": "main"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/pulls?state=open&base=main&per_page=3",
+  "response": [
+    {
+      "id": 1934882761,
+      "number": 57,
+      "state": "open",
+      "title": "Retry saved-card checkout once on timeout",
+      "user": {
+        "login": "octo-dev",
+        "id": 583231,
+        "type": "User",
+        "html_url": "https://github.com/octo-dev"
+      },
+      "body": "Fixes #412.",
+      "draft": false,
+      "merged_at": null,
+      "merge_commit_sha": null,
+      "head": {
+        "label": "acme:fix-saved-cards",
+        "ref": "fix-saved-cards",
+        "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+        "repo": {
+          "id": 1296269,
+          "name": "widgets",
+          "full_name": "acme/widgets",
+          "private": true,
+          "owner": {
+            "login": "acme",
+            "id": 9919,
+            "type": "Organization"
+          },
+          "default_branch": "main"
+        }
+      },
+      "base": {
+        "label": "acme:main",
+        "ref": "main",
+        "sha": "c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c",
+        "repo": {
+          "id": 1296269,
+          "name": "widgets",
+          "full_name": "acme/widgets",
+          "private": true,
+          "owner": {
+            "login": "acme",
+            "id": 9919,
+            "type": "Organization"
+          },
+          "default_branch": "main"
+        }
+      },
+      "requested_reviewers": [],
+      "labels": [],
+      "html_url": "https://github.com/acme/widgets/pull/57"
+    }
+  ]
+}

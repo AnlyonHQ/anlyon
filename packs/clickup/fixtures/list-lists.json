@@ -1,0 +1,38 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/getlists).",
+  "params": {},
+  "input": {
+    "folder_id": "90120123456",
+    "archived": false
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/folder/90120123456/list?archived=false",
+  "response": {
+    "lists": [
+      {
+        "id": "901201234567",
+        "name": "Customer follow-ups",
+        "orderindex": 0,
+        "status": null,
+        "priority": null,
+        "assignee": null,
+        "task_count": 12,
+        "due_date": null,
+        "start_date": null,
+        "folder": {
+          "id": "90120123456",
+          "name": "Sales",
+          "hidden": false,
+          "access": true
+        },
+        "space": {
+          "id": "90120012345",
+          "name": "Customers",
+          "access": true
+        },
+        "archived": false,
+        "override_statuses": false,
+        "permission_level": "create"
+      }
+    ]
+  }
+}

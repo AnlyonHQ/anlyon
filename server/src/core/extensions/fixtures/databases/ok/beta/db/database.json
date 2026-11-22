@@ -1,0 +1,14 @@
+{
+  "migrations": { "folder": "migrations", "table": "__beta_migrations", "baselineOfHistory": false },
+  "partitionedLogs": [
+    {
+      "logType": "beta_event",
+      "table": "beta_event_logs",
+      "partitionColumn": "at",
+      "partitionFunction": "create_beta_log_partition",
+      "columns": ["id uuid NOT NULL", "at timestamp NOT NULL"],
+      "primaryKey": ["id", "at"],
+      "indexes": [{ "name": "idx_beta_at", "columns": ["at"] }]
+    }
+  ]
+}

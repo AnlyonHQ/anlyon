@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.todoist.com/api/v1/).",
+  "params": {},
+  "input": {
+    "section_id": "6fFPHV272WWh3gpW"
+  },
+  "expectedUrl": "https://api.todoist.com/api/v1/sections/6fFPHV272WWh3gpW",
+  "response": {
+    "id": "6fFPHV272WWh3gpW",
+    "user_id": "1234567",
+    "project_id": "6XGgm6PHrGgMpCFX",
+    "added_at": "2026-10-01T10:30:00Z",
+    "updated_at": "2026-10-01T10:30:00Z",
+    "archived_at": null,
+    "name": "This week",
+    "description": "",
+    "section_order": 1,
+    "order_key": "a1",
+    "is_collapsed": false,
+    "is_archived": false,
+    "is_deleted": false
+  }
+}

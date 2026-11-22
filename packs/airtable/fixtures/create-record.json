@@ -1,0 +1,46 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/create-records).",
+  "params": {},
+  "input": {
+    "base_id": "appLkNDICXNqxSDhG",
+    "table": "tblIhd7aUd4H6h2rS",
+    "fields": {
+      "Name": "Acme",
+      "Email": "ops@acme.example",
+      "Status": "Open"
+    }
+  },
+  "expectedUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS",
+  "response": {
+    "id": "recWb3VrpJ4kQh1Rz",
+    "createdTime": "2026-10-24T09:12:03.000Z",
+    "fields": {
+      "Name": "Acme",
+      "Email": "ops@acme.example",
+      "Status": "Open"
+    }
+  },
+  "expectedReadBackUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS/recWb3VrpJ4kQh1Rz",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "recWb3VrpJ4kQh1Rz",
+      "createdTime": "2026-10-24T09:12:03.000Z",
+      "fields": {
+        "Name": "Acme",
+        "Email": "ops@acme.example",
+        "Status": "Open"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "recWb3VrpJ4kQh1Rz",
+      "createdTime": "2025-01-02T03:04:05.000Z",
+      "fields": {
+        "Name": "Acme"
+      }
+    }
+  }
+}

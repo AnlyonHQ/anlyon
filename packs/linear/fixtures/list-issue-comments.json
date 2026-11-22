@@ -1,0 +1,42 @@
+{
+  "_source": "Shaped after the provider's documented response (https://github.com/linear/linear/blob/master/packages/sdk/src/schema.graphql, Issue.comments, CommentConnection; https://linear.app/developers/graphql).",
+  "params": {},
+  "input": {
+    "issue_id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90"
+  },
+  "expectedUrl": "https://api.linear.app/graphql",
+  "expectedBody": {
+    "query": "query ListIssueComments($id: String!, $after: String) { issue(id: $id) { id identifier comments(first: 20, after: $after) { nodes { id body createdAt editedAt url user { id name } parent { id } } pageInfo { hasNextPage endCursor } } } }",
+    "variables": {
+      "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90"
+    }
+  },
+  "response": {
+    "data": {
+      "issue": {
+        "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+        "identifier": "ENG-412",
+        "comments": {
+          "nodes": [
+            {
+              "id": "f2a4c6e8-0b1d-4f3a-8c5e-7d9b1f3a5c62",
+              "body": "Reproduced with a 45 item cart.",
+              "createdAt": "2026-10-24T09:05:00.000Z",
+              "editedAt": null,
+              "url": "https://linear.app/acme/issue/ENG-412#comment-f2a4c6e8",
+              "user": {
+                "id": "e7f9b1d3-5a2c-4b4e-8d6f-1a3c5e7b9d24",
+                "name": "Priya Nair"
+              },
+              "parent": null
+            }
+          ],
+          "pageInfo": {
+            "hasNextPage": false,
+            "endCursor": "cursor_page_2"
+          }
+        }
+      }
+    }
+  }
+}

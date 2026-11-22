@@ -1,0 +1,19 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/suppressions-api).",
+  "params": {},
+  "input": {
+    "message_stream": "outbound",
+    "reason": "HardBounce"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/message-streams/outbound/suppressions/dump?SuppressionReason=HardBounce",
+  "response": {
+    "Suppressions": [
+      {
+        "EmailAddress": "hardbounce@bounce-testing.postmarkapp.com",
+        "SuppressionReason": "HardBounce",
+        "Origin": "Recipient",
+        "CreatedAt": "2026-10-20T16:09:20-04:00"
+      }
+    ]
+  }
+}

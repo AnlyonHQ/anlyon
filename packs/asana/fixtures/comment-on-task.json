@@ -1,0 +1,36 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210",
+    "text": "Sent the review this morning."
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210/stories",
+  "response": {
+    "data": {
+      "gid": "1208811122334455",
+      "resource_type": "story",
+      "text": "Sent the review this morning."
+    }
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/stories/1208811122334455",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208811122334455",
+        "type": "comment",
+        "text": "Sent the review this morning."
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208811122334455",
+        "text": "Something else."
+      }
+    }
+  }
+}

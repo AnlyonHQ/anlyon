@@ -1,0 +1,75 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.sentry.io/api/events/retrieve-an-issue/).",
+  "params": {},
+  "input": {
+    "organization": "acme",
+    "issue_id": "4509877862"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/",
+  "response": {
+    "id": "4509877862",
+    "shortId": "WEB-4F",
+    "title": "TypeError: Cannot read properties of undefined (reading 'total')",
+    "culprit": "app/checkout/summary.tsx in CheckoutSummary",
+    "permalink": "https://acme.sentry.io/issues/4509877862/",
+    "level": "error",
+    "status": "unresolved",
+    "substatus": "ongoing",
+    "statusDetails": {},
+    "priority": "high",
+    "isPublic": false,
+    "platform": "javascript",
+    "project": {
+      "id": "4504127832",
+      "name": "Web",
+      "slug": "web",
+      "platform": "javascript-react"
+    },
+    "type": "error",
+    "issueCategory": "error",
+    "metadata": {
+      "type": "TypeError",
+      "value": "Cannot read properties of undefined (reading 'total')",
+      "filename": "app/checkout/summary.tsx"
+    },
+    "numComments": 0,
+    "assignedTo": null,
+    "isBookmarked": false,
+    "isSubscribed": false,
+    "hasSeen": false,
+    "count": "312",
+    "userCount": 87,
+    "firstSeen": "2026-10-12T08:14:00Z",
+    "lastSeen": "2026-10-15T09:02:11Z",
+    "activity": [
+      {
+        "id": "4821",
+        "type": "note",
+        "data": {
+          "text": "Looks like the cart total is null after a coupon."
+        },
+        "user": {
+          "id": "2301",
+          "name": "Dana",
+          "email": "dana@example.com"
+        },
+        "dateCreated": "2026-10-15T09:10:00Z"
+      },
+      {
+        "id": "4807",
+        "type": "first_seen",
+        "data": {},
+        "user": null,
+        "dateCreated": "2026-10-12T08:14:00Z"
+      }
+    ],
+    "tags": [
+      {
+        "key": "browser",
+        "name": "Browser",
+        "totalValues": 312
+      }
+    ],
+    "seenBy": []
+  }
+}

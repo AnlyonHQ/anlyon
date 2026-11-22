@@ -1,0 +1,46 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/deals/get-deal).",
+  "params": {},
+  "input": {
+    "dealId": "7701"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/deals/7701?properties=dealname,amount,dealstage,pipeline,closedate,dealtype,hs_priority,description,hubspot_owner_id,createdate,hs_lastmodifieddate&associations=contacts,companies",
+  "response": {
+    "id": "7701",
+    "properties": {
+      "amount": "12000.00",
+      "closedate": "2026-12-31T00:00:00Z",
+      "createdate": "2026-10-01T12:00:00.000Z",
+      "dealname": "Acme renewal",
+      "dealstage": "qualifiedtobuy",
+      "dealtype": "existingbusiness",
+      "description": null,
+      "hs_lastmodifieddate": "2026-10-12T09:40:00.210Z",
+      "hs_object_id": "7701",
+      "hs_priority": "high",
+      "hubspot_owner_id": "84021733",
+      "pipeline": "default"
+    },
+    "createdAt": "2026-10-01T12:00:00.000Z",
+    "updatedAt": "2026-10-12T09:40:00.210Z",
+    "archived": false,
+    "associations": {
+      "contacts": {
+        "results": [
+          {
+            "id": "151",
+            "type": "deal_to_contact"
+          }
+        ]
+      },
+      "companies": {
+        "results": [
+          {
+            "id": "9001",
+            "type": "deal_to_company"
+          }
+        ]
+      }
+    }
+  }
+}

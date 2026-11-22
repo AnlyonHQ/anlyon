@@ -1,0 +1,26 @@
+{
+  "needs": {
+    "team_id": "The test team's id (team_...): from list-teams, or Team Settings, General, Team ID",
+    "project": "A test project in that team, by name: one with at least two production deployments, whose production domain may point at the previous deployment for a minute",
+    "project_id": "That project's id (prj_...): Project Settings, General, Project ID",
+    "production_deployment_id": "The project's current production deployment (dpl_...): the one get-alias returns for the production domain",
+    "previous_production_deployment_id": "The production deployment just before it (dpl_...): the next READY deployment in list-deployments with target=production",
+    "production_domain": "One of the project's production domains, such as its .vercel.app production domain (from list-project-domains with production=true)"
+  },
+  "steps": [
+    { "action": "list-teams", "input": {} },
+    { "action": "list-deployments", "input": { "team_id": "{{needs.team_id}}", "project": "{{needs.project}}", "target": "production", "state": "READY" } },
+    { "action": "get-deployment", "input": { "team_id": "{{needs.team_id}}", "deployment_id": "{{needs.production_deployment_id}}" } },
+    { "action": "list-deployment-events", "input": { "team_id": "{{needs.team_id}}", "deployment_id": "{{needs.production_deployment_id}}" } },
+    { "action": "list-deployment-aliases", "input": { "team_id": "{{needs.team_id}}", "deployment_id": "{{needs.production_deployment_id}}" } },
+    { "action": "list-project-domains", "input": { "team_id": "{{needs.team_id}}", "project": "{{needs.project}}", "production": true } },
+    { "action": "get-domain-config", "input": { "team_id": "{{needs.team_id}}", "domain": "{{needs.production_domain}}" } },
+    { "action": "get-alias", "input": { "team_id": "{{needs.team_id}}", "alias": "{{needs.production_domain}}" } },
+    { "action": "redeploy", "input": { "team_id": "{{needs.team_id}}", "project_name": "{{needs.project}}", "deployment_id": "{{needs.production_deployment_id}}" }, "save": { "preview_id": "id" } },
+    { "action": "cancel-deployment", "input": { "team_id": "{{needs.team_id}}", "deployment_id": "{{saved.preview_id}}" } },
+    { "action": "delete-deployment", "input": { "team_id": "{{needs.team_id}}", "deployment_id": "{{saved.preview_id}}" } },
+    { "action": "rollback-deployment", "input": { "team_id": "{{needs.team_id}}", "project_id": "{{needs.project_id}}", "deployment_id": "{{needs.previous_production_deployment_id}}", "domain": "{{needs.production_domain}}", "reason": "Anlyon pack exercise {{run}}" } },
+    { "action": "promote-deployment", "input": { "team_id": "{{needs.team_id}}", "project_id": "{{needs.project_id}}", "deployment_id": "{{needs.production_deployment_id}}", "domain": "{{needs.production_domain}}" } },
+    { "action": "list-promote-aliases", "input": { "team_id": "{{needs.team_id}}", "project_id": "{{needs.project_id}}" } }
+  ]
+}

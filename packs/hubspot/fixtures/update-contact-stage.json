@@ -1,0 +1,37 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/update-contact).",
+  "params": {},
+  "input": {
+    "contactId": "151",
+    "lifecyclestage": "opportunity"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/contacts/151",
+  "response": {
+    "id": "151",
+    "properties": {
+      "lifecyclestage": "opportunity",
+      "lastmodifieddate": "2026-10-12T09:31:02.118Z"
+    }
+  },
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/contacts/151?properties=lifecyclestage",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "151",
+      "properties": {
+        "lifecyclestage": "opportunity",
+        "hs_object_id": "151"
+      },
+      "archived": false
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "151",
+      "properties": {
+        "lifecyclestage": "lead"
+      }
+    }
+  }
+}

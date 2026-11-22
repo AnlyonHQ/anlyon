@@ -1,0 +1,63 @@
+{
+  "_source": "Shaped after the provider's documented response (https://github.com/linear/linear/blob/master/packages/sdk/src/schema.graphql, Query.issue, Issue; https://linear.app/developers/graphql).",
+  "params": {},
+  "input": {
+    "issue_id": "ENG-412"
+  },
+  "expectedUrl": "https://api.linear.app/graphql",
+  "expectedBody": {
+    "query": "query GetIssue($id: String!) { issue(id: $id) { id identifier title description priority priorityLabel estimate url dueDate createdAt updatedAt startedAt completedAt canceledAt archivedAt state { id name type } team { id key name } assignee { id name } creator { id name } project { id name } parent { id identifier title } labels(first: 50) { nodes { id name } } } }",
+    "variables": {
+      "id": "ENG-412"
+    }
+  },
+  "response": {
+    "data": {
+      "issue": {
+        "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+        "identifier": "ENG-412",
+        "title": "Checkout page times out for large carts",
+        "description": "Carts with more than 40 items time out at payment.",
+        "priority": 2,
+        "priorityLabel": "High",
+        "estimate": null,
+        "url": "https://linear.app/acme/issue/ENG-412/checkout-page-times-out-for-large-carts",
+        "dueDate": "2026-11-07",
+        "createdAt": "2026-10-24T08:10:00.000Z",
+        "updatedAt": "2026-10-24T09:00:00.000Z",
+        "startedAt": null,
+        "completedAt": null,
+        "canceledAt": null,
+        "archivedAt": null,
+        "state": {
+          "id": "0b6e8f2a-1c3d-4e5f-8a9b-7c6d5e4f3a21",
+          "name": "Todo",
+          "type": "unstarted"
+        },
+        "team": {
+          "id": "5f1c2a8e-3b7d-4e9a-8c21-6d0f4b2e9a17",
+          "key": "ENG",
+          "name": "Engineering"
+        },
+        "assignee": {
+          "id": "e7f9b1d3-5a2c-4b4e-8d6f-1a3c5e7b9d24",
+          "name": "Priya Nair"
+        },
+        "creator": {
+          "id": "e7f9b1d3-5a2c-4b4e-8d6f-1a3c5e7b9d24",
+          "name": "Priya Nair"
+        },
+        "project": null,
+        "parent": null,
+        "labels": {
+          "nodes": [
+            {
+              "id": "c4e6a8b0-2d1f-4e3a-9b5c-8f7e6d5c4b31",
+              "name": "Bug"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

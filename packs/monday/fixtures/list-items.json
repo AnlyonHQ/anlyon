@@ -1,0 +1,83 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/items-page).",
+  "params": {},
+  "input": {
+    "board_id": "5091234567",
+    "column_ids": [
+      "status",
+      "date4"
+    ]
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "query ($board_id: ID!, $column_ids: [String!]) { boards(ids: [$board_id]) { id items_page(limit: 20) { cursor items { id name state updated_at group { id title } column_values(ids: $column_ids) { id type text } } } } }",
+    "variables": {
+      "board_id": "5091234567",
+      "column_ids": [
+        "status",
+        "date4"
+      ]
+    }
+  },
+  "response": {
+    "data": {
+      "boards": [
+        {
+          "id": "5091234567",
+          "items_page": {
+            "cursor": "cursor_page_2",
+            "items": [
+              {
+                "id": "9120000001",
+                "name": "Globex onboarding",
+                "state": "active",
+                "updated_at": "2026-10-23T14:02:11Z",
+                "group": {
+                  "id": "topics",
+                  "title": "This week"
+                },
+                "column_values": [
+                  {
+                    "id": "status",
+                    "type": "status",
+                    "text": "Working on it"
+                  },
+                  {
+                    "id": "date4",
+                    "type": "date",
+                    "text": "2026-11-02"
+                  }
+                ]
+              },
+              {
+                "id": "9120000002",
+                "name": "Initech onboarding",
+                "state": "active",
+                "updated_at": "2026-10-23T14:02:11Z",
+                "group": {
+                  "id": "topics",
+                  "title": "This week"
+                },
+                "column_values": [
+                  {
+                    "id": "status",
+                    "type": "status",
+                    "text": "Stuck"
+                  },
+                  {
+                    "id": "date4",
+                    "type": "date",
+                    "text": "2026-11-05"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "extensions": {
+      "request_id": "req_list_items_1"
+    }
+  }
+}

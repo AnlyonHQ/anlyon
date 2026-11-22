@@ -1,0 +1,22 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/list-bases).",
+  "params": {},
+  "input": {
+    "offset": "itr23sEjsdfEr3282/appSW9R5uCNmRmfl6"
+  },
+  "expectedUrl": "https://api.airtable.com/v0/meta/bases?offset=itr23sEjsdfEr3282%2FappSW9R5uCNmRmfl6",
+  "response": {
+    "bases": [
+      {
+        "id": "appLkNDICXNqxSDhG",
+        "name": "Customers",
+        "permissionLevel": "create"
+      },
+      {
+        "id": "appSW9R5uCNmRmfl6",
+        "name": "Product roadmap",
+        "permissionLevel": "edit"
+      }
+    ]
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/reference/create-message-reply).",
+  "params": {},
+  "input": {
+    "conversation_id": "cnv_yo1kg5q",
+    "body": "Your order ships today.",
+    "author_id": "tea_6r55a"
+  },
+  "expectedUrl": "https://api2.frontapp.com/conversations/cnv_yo1kg5q/messages",
+  "response": {
+    "status": "accepted",
+    "message_uid": "1eab543f84a0785f7b6b8967cck18f4e"
+  },
+  "expectedReadBackUrl": "https://api2.frontapp.com/messages/alt:uid:1eab543f84a0785f7b6b8967cck18f4e",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "_links": {
+        "self": "https://api2.frontapp.com/messages/msg_1q15qmtq",
+        "related": {
+          "conversation": "https://api2.frontapp.com/conversations/cnv_yo1kg5q"
+        }
+      },
+      "id": "msg_1q15qmtr",
+      "message_uid": "1eab543f84a0785f7b6b8967cck18f4e",
+      "type": "email",
+      "is_inbound": false,
+      "draft_mode": null,
+      "created_at": 1729760100,
+      "subject": "Where is my order?",
+      "blurb": "Hi, my order has not arrived.",
+      "author": {
+        "_links": {
+          "self": "https://api2.frontapp.com/teammates/tea_6r55a"
+        },
+        "id": "tea_6r55a",
+        "email": "michael@dundermifflin.com",
+        "username": "michael",
+        "first_name": "Michael",
+        "last_name": "Scott",
+        "is_admin": true,
+        "is_available": true,
+        "is_blocked": false,
+        "type": "user",
+        "custom_fields": {}
+      },
+      "recipients": [
+        {
+          "_links": {},
+          "name": "Pam Beesly",
+          "handle": "pam@example.com",
+          "role": "from"
+        }
+      ],
+      "body": "<p>Your order ships today.</p>",
+      "text": "Your order ships today.",
+      "attachments": [],
+      "metadata": {}
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "_links": {
+        "self": "https://api2.frontapp.com/messages/msg_1q15qmtq",
+        "related": {
+          "conversation": "https://api2.frontapp.com/conversations/cnv_yo1kg5q"
+        }
+      },
+      "id": "msg_1q15qmtq",
+      "message_uid": "1eab543f84a0785f7b6b8967cck18f4d",
+      "type": "email",
+      "is_inbound": true,
+      "draft_mode": null,
+      "created_at": 1729760100,
+      "subject": "Where is my order?",
+      "blurb": "Hi, my order has not arrived.",
+      "author": null,
+      "recipients": [
+        {
+          "_links": {},
+          "name": "Pam Beesly",
+          "handle": "pam@example.com",
+          "role": "from"
+        }
+      ],
+      "body": "<p>Hi, my order has not arrived.</p>",
+      "text": "Hi, my order has not arrived.",
+      "attachments": [],
+      "metadata": {}
+    }
+  }
+}

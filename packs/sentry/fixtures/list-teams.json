@@ -1,0 +1,26 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.sentry.io/api/teams/list-an-organizations-teams/).",
+  "params": {},
+  "input": {
+    "organization": "acme",
+    "query": "front"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/teams/?detailed=0&per_page=25&query=front",
+  "response": [
+    {
+      "id": "2",
+      "slug": "frontend",
+      "name": "Frontend",
+      "dateCreated": "2025-03-02T10:00:00Z",
+      "isMember": true,
+      "teamRole": "contributor",
+      "hasAccess": true,
+      "isPending": false,
+      "memberCount": 6,
+      "avatar": {
+        "avatarType": "letter_avatar",
+        "avatarUuid": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "incident_id": "Q1ABCDEF2GHIJK",
+    "is_overview": true
+  },
+  "expectedUrl": "https://api.pagerduty.com/incidents/Q1ABCDEF2GHIJK/log_entries?limit=25&is_overview=true",
+  "response": {
+    "log_entries": [
+      {
+        "id": "Q02JTSNZWHSEKV",
+        "type": "trigger_log_entry",
+        "summary": "Triggered through the API",
+        "self": "https://api.pagerduty.com/log_entries/Q02JTSNZWHSEKV?incident_id=Q1ABCDEF2GHIJK",
+        "created_at": "2026-10-15T09:12:03Z",
+        "agent": {
+          "id": "PWIXJZS",
+          "type": "service_reference",
+          "summary": "Checkout API"
+        },
+        "channel": {
+          "type": "api"
+        },
+        "incident": {
+          "id": "Q1ABCDEF2GHIJK",
+          "type": "incident_reference",
+          "summary": "[#1234] Checkout error rate above 5%"
+        },
+        "contexts": []
+      }
+    ],
+    "limit": 25,
+    "offset": 0,
+    "more": false,
+    "total": null
+  }
+}

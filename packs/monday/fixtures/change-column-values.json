@@ -1,0 +1,62 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/columns).",
+  "params": {},
+  "input": {
+    "board_id": "5091234567",
+    "item_id": "9120000002",
+    "column_values": "{\"status\":{\"label\":\"Stuck\"},\"date4\":{\"date\":\"2026-11-09\"},\"text_mkx1abcd\":\"Waiting on legal\"}"
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "mutation ($board_id: ID!, $item_id: ID!, $column_values: JSON!) { change_multiple_column_values(board_id: $board_id, item_id: $item_id, column_values: $column_values) { id updated_at } }",
+    "variables": {
+      "board_id": "5091234567",
+      "item_id": "9120000002",
+      "column_values": "{\"status\":{\"label\":\"Stuck\"},\"date4\":{\"date\":\"2026-11-09\"},\"text_mkx1abcd\":\"Waiting on legal\"}"
+    }
+  },
+  "response": {
+    "data": {
+      "change_multiple_column_values": {
+        "id": "9120000002",
+        "updated_at": "2026-10-24T08:31:05Z"
+      }
+    },
+    "extensions": {
+      "request_id": "req_change_column_values_1"
+    }
+  },
+  "expectedReadBackUrl": "https://api.monday.com/v2",
+  "expectedReadBackBody": {
+    "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id updated_at } }",
+    "variables": {
+      "item_id": "9120000002"
+    }
+  },
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000002",
+            "updated_at": "2026-10-24T08:31:05Z"
+          }
+        ]
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000002",
+            "updated_at": "2026-10-23T14:02:11Z"
+          }
+        ]
+      }
+    }
+  }
+}

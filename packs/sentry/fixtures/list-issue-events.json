@@ -1,0 +1,49 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.sentry.io/api/events/list-an-issues-events/).",
+  "params": {},
+  "input": {
+    "organization": "acme",
+    "issue_id": "4509877862",
+    "environment": "production"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/events/?per_page=20&environment=production",
+  "response": [
+    {
+      "id": "dfb1a2d057194e76a4186cc8a5271553",
+      "eventID": "dfb1a2d057194e76a4186cc8a5271553",
+      "groupID": "4509877862",
+      "projectID": "4504127832",
+      "event.type": "error",
+      "title": "TypeError: Cannot read properties of undefined (reading 'total')",
+      "message": "",
+      "location": "app/checkout/summary.tsx",
+      "culprit": "app/checkout/summary.tsx in CheckoutSummary",
+      "platform": "javascript",
+      "dateCreated": "2026-10-15T09:02:11Z",
+      "user": {
+        "id": "u_8812",
+        "email": null,
+        "username": null,
+        "ip_address": null,
+        "name": null,
+        "geo": null,
+        "data": null
+      },
+      "tags": [
+        {
+          "key": "environment",
+          "value": "production"
+        },
+        {
+          "key": "release",
+          "value": "web@2.14.0"
+        }
+      ],
+      "crashFile": null,
+      "metadata": {
+        "type": "TypeError",
+        "value": "Cannot read properties of undefined (reading 'total')"
+      }
+    }
+  ]
+}

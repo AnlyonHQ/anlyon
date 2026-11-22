@@ -1,0 +1,166 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.attio.com/rest-api/endpoint-reference/records/update-a-record-append-multiselect-values).",
+  "params": {},
+  "input": {
+    "record_id": "6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e",
+    "description": "Industrial supplies; pilot planned for November."
+  },
+  "expectedUrl": "https://api.attio.com/v2/objects/companies/records/6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e",
+  "response": {
+    "data": {
+      "id": {
+        "workspace_id": "14beef7a-99f7-4534-a87e-70b564330a4c",
+        "object_id": "a0b1c2d3-e4f5-4a6b-8c7d-9e0f1a2b3c4d",
+        "record_id": "6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e"
+      },
+      "created_at": "2026-10-15T09:30:00.000000000Z",
+      "web_url": "https://app.attio.com/acme/company/6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e/overview",
+      "values": {
+        "name": [
+          {
+            "active_from": "2026-10-15T09:30:00.000000000Z",
+            "active_until": null,
+            "created_by_actor": {
+              "type": "api-token",
+              "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+            },
+            "value": "Acme",
+            "attribute_type": "text"
+          }
+        ],
+        "domains": [
+          {
+            "active_from": "2026-10-15T09:30:00.000000000Z",
+            "active_until": null,
+            "created_by_actor": {
+              "type": "api-token",
+              "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+            },
+            "domain": "acme.com",
+            "root_domain": "acme.com",
+            "attribute_type": "domain"
+          }
+        ],
+        "description": [
+          {
+            "active_from": "2026-10-15T09:30:00.000000000Z",
+            "active_until": null,
+            "created_by_actor": {
+              "type": "api-token",
+              "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+            },
+            "value": "Industrial supplies; pilot planned for November.",
+            "attribute_type": "text"
+          }
+        ]
+      }
+    }
+  },
+  "expectedReadBackUrl": "https://api.attio.com/v2/objects/companies/records/6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "id": {
+          "workspace_id": "14beef7a-99f7-4534-a87e-70b564330a4c",
+          "object_id": "a0b1c2d3-e4f5-4a6b-8c7d-9e0f1a2b3c4d",
+          "record_id": "6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e"
+        },
+        "created_at": "2026-10-15T09:30:00.000000000Z",
+        "web_url": "https://app.attio.com/acme/company/6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e/overview",
+        "values": {
+          "name": [
+            {
+              "active_from": "2026-10-15T09:30:00.000000000Z",
+              "active_until": null,
+              "created_by_actor": {
+                "type": "api-token",
+                "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+              },
+              "value": "Acme",
+              "attribute_type": "text"
+            }
+          ],
+          "domains": [
+            {
+              "active_from": "2026-10-15T09:30:00.000000000Z",
+              "active_until": null,
+              "created_by_actor": {
+                "type": "api-token",
+                "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+              },
+              "domain": "acme.com",
+              "root_domain": "acme.com",
+              "attribute_type": "domain"
+            }
+          ],
+          "description": [
+            {
+              "active_from": "2026-10-15T09:30:00.000000000Z",
+              "active_until": null,
+              "created_by_actor": {
+                "type": "api-token",
+                "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+              },
+              "value": "Industrial supplies; pilot planned for November.",
+              "attribute_type": "text"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "id": {
+          "workspace_id": "14beef7a-99f7-4534-a87e-70b564330a4c",
+          "object_id": "a0b1c2d3-e4f5-4a6b-8c7d-9e0f1a2b3c4d",
+          "record_id": "6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e"
+        },
+        "created_at": "2026-10-15T09:30:00.000000000Z",
+        "web_url": "https://app.attio.com/acme/company/6a2bc5f2-1b1c-4f04-8e7a-0f8f9a1c2d3e/overview",
+        "values": {
+          "name": [
+            {
+              "active_from": "2026-10-15T09:30:00.000000000Z",
+              "active_until": null,
+              "created_by_actor": {
+                "type": "api-token",
+                "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+              },
+              "value": "Acme",
+              "attribute_type": "text"
+            }
+          ],
+          "domains": [
+            {
+              "active_from": "2026-10-15T09:30:00.000000000Z",
+              "active_until": null,
+              "created_by_actor": {
+                "type": "api-token",
+                "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+              },
+              "domain": "acme.com",
+              "root_domain": "acme.com",
+              "attribute_type": "domain"
+            }
+          ],
+          "description": [
+            {
+              "active_from": "2026-10-15T09:30:00.000000000Z",
+              "active_until": null,
+              "created_by_actor": {
+                "type": "api-token",
+                "id": "d3c0e4a8-1f2b-4c5d-8e9f-0a1b2c3d4e5f"
+              },
+              "value": "Industrial supplies for road runners.",
+              "attribute_type": "text"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

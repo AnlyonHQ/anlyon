@@ -1,0 +1,25 @@
+# action                 operation                       kind
+list-workspaces          GetAuthorizedTeams
+list-spaces              GetSpaces
+list-folders             GetFolders
+list-lists               GetLists
+list-folderless-lists    GetFolderlessLists
+get-list                 GetList
+list-tasks               GetTasks
+search-tasks             GetFilteredTeamTasks
+get-task                 GetTask
+list-task-comments       GetTaskComments
+list-comment-replies     GetThreadedComments
+list-space-tags          GetSpaceTags
+create-task              CreateTask
+update-task              UpdateTask
+set-task-status          PUT /v2/task/{task_id}
+add-assignee             PUT /v2/task/{task_id}
+remove-assignee          PUT /v2/task/{task_id}
+comment-on-task          CreateTaskComment
+add-tag                  AddTagToTask
+remove-tag               RemoveTagFromTask
+create-checklist         CreateChecklist
+add-checklist-item       CreateChecklistItem
+resolve-checklist-item   EditChecklistItem
+delete-task              DeleteTask

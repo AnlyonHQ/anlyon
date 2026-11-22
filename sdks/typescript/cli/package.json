@@ -1,0 +1,57 @@
+{
+  "name": "@anlyonhq/cli",
+  "version": "0.6.0",
+  "description": "The Anlyon command-line interface. Log in with your Anlyon account and operate Anlyon from a terminal, with the same permissions as the API and dashboard.",
+  "author": "Anlyon <support@anlyon.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnlyonHQ/anlyon.git",
+    "directory": "sdks/typescript/cli"
+  },
+  "homepage": "https://docs.anlyon.com",
+  "bugs": {
+    "url": "https://docs.anlyon.com",
+    "email": "support@anlyon.com"
+  },
+  "keywords": [
+    "anlyon",
+    "cli",
+    "ai-agents",
+    "approvals",
+    "actions"
+  ],
+  "type": "module",
+  "bin": {
+    "anlyon": "./dist/anlyon.js"
+  },
+  "files": [
+    "dist/anlyon.js",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.3.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "build:binaries": "node scripts/build-binaries.mjs",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "smoke": "node scripts/smoke.mjs"
+  },
+  "devDependencies": {
+    "@anlyonhq/sdk": "workspace:*",
+    "@types/node": "^20.17.10",
+    "rimraf": "^5.0.10",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12",
+    "yaml": "2.9.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

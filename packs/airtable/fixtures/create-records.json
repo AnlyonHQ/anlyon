@@ -1,0 +1,57 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/create-records).",
+  "params": {},
+  "input": {
+    "base_id": "appLkNDICXNqxSDhG",
+    "table": "tblIhd7aUd4H6h2rS",
+    "records": [
+      {
+        "fields": {
+          "Name": "Example A"
+        }
+      },
+      {
+        "fields": {
+          "Name": "Example B"
+        }
+      }
+    ],
+    "typecast": true
+  },
+  "expectedUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS",
+  "response": {
+    "records": [
+      {
+        "id": "recXa1Bc2De3Fg4Hi",
+        "createdTime": "2026-10-24T09:12:03.000Z",
+        "fields": {
+          "Name": "Example A"
+        }
+      },
+      {
+        "id": "recYb5Cd6Ef7Gh8Ij",
+        "createdTime": "2026-10-24T09:12:03.000Z",
+        "fields": {
+          "Name": "Example B"
+        }
+      }
+    ]
+  },
+  "expectedReadBackUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS/recXa1Bc2De3Fg4Hi",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "recXa1Bc2De3Fg4Hi",
+      "createdTime": "2026-10-24T09:12:03.000Z",
+      "fields": {
+        "Name": "Example A"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 404,
+    "json": {
+      "error": "NOT_FOUND"
+    }
+  }
+}

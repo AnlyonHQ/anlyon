@@ -1,0 +1,9 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.todoist.com/api/v1/).",
+  "params": {},
+  "input": {
+    "task_id": "6XGgmFVcrG5RRjVr"
+  },
+  "expectedUrl": "https://api.todoist.com/api/v1/tasks/6XGgmFVcrG5RRjVr/close",
+  "response": null
+}

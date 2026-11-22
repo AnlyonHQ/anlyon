@@ -1,0 +1,23 @@
+{
+  "needs": {
+    "assignee_id": "The id of a user in the team the run uses, such as your own (get-issue shows it as assignee.id or creator.id on an issue you made)",
+    "label_id": "A workspace label, or a label of the team the run uses (list-labels shows them)"
+  },
+  "steps": [
+    { "action": "list-teams", "input": {}, "save": { "team_id": "data.teams.nodes.0.id" } },
+    { "action": "list-workflow-states", "input": { "team_id": "{{saved.team_id}}" }, "save": { "state_id": "data.team.states.nodes.1.id" } },
+    { "action": "list-labels", "input": {} },
+    { "action": "create-issue", "input": { "team_id": "{{saved.team_id}}", "title": "Anlyon exercise {{run}}", "description": "Made by the Anlyon pack exercise. It archives this issue at the end.", "priority": 4 }, "save": { "issue_id": "data.issueCreate.issue.id" } },
+    { "action": "get-issue", "input": { "issue_id": "{{saved.issue_id}}" } },
+    { "action": "update-issue", "input": { "issue_id": "{{saved.issue_id}}", "title": "Anlyon exercise {{run}} (updated)", "priority": 3 } },
+    { "action": "assign-issue", "input": { "issue_id": "{{saved.issue_id}}", "assignee_id": "{{needs.assignee_id}}" } },
+    { "action": "move-issue", "input": { "issue_id": "{{saved.issue_id}}", "state_id": "{{saved.state_id}}" } },
+    { "action": "add-issue-label", "input": { "issue_id": "{{saved.issue_id}}", "label_id": "{{needs.label_id}}" } },
+    { "action": "remove-issue-label", "input": { "issue_id": "{{saved.issue_id}}", "label_id": "{{needs.label_id}}" } },
+    { "action": "add-comment", "input": { "issue_id": "{{saved.issue_id}}", "body": "Anlyon exercise {{run}} comment" } },
+    { "action": "list-issue-comments", "input": { "issue_id": "{{saved.issue_id}}" } },
+    { "action": "list-issues", "input": { "filter": { "team": { "id": { "eq": "{{saved.team_id}}" } }, "title": { "containsIgnoreCase": "Anlyon exercise {{run}}" } } } },
+    { "action": "search-issues", "input": { "term": "Anlyon exercise {{run}}", "team_id": "{{saved.team_id}}" } },
+    { "action": "archive-issue", "input": { "issue_id": "{{saved.issue_id}}" } }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/getworkspaces).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://app.asana.com/api/1.0/workspaces?limit=25&opt_fields=name,is_organization",
+  "response": {
+    "data": [
+      {
+        "gid": "1208800000000001",
+        "resource_type": "workspace",
+        "name": "Acme",
+        "is_organization": true
+      }
+    ],
+    "next_page": null
+  }
+}

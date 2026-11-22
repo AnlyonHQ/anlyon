@@ -1,0 +1,180 @@
+{
+  "_source": "Shaped after the provider's documented response (Calendly API v2 OpenAPI document, post-invitee).",
+  "params": {},
+  "input": {
+    "event_type": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+    "start_time": "2026-11-03T15:00:00Z",
+    "invitee_name": "Alex Chen",
+    "invitee_email": "alex@example.com",
+    "invitee_timezone": "Europe/London",
+    "user": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+    "answers": [
+      {
+        "question": "What would you like to discuss?",
+        "answer": "Pricing",
+        "position": 0
+      }
+    ]
+  },
+  "expectedUrl": "https://api.calendly.com/invitees",
+  "response": {
+    "resource": {
+      "uri": "https://api.calendly.com/scheduled_events/FGHAB3CDEJKLMNOP/invitees/AHCDE4FGHIJKLMNO",
+      "email": "alex@example.com",
+      "first_name": null,
+      "last_name": null,
+      "name": "Alex Chen",
+      "status": "active",
+      "questions_and_answers": [
+        {
+          "question": "What would you like to discuss?",
+          "answer": "Pricing",
+          "position": 0
+        }
+      ],
+      "timezone": "Europe/London",
+      "event": "https://api.calendly.com/scheduled_events/FGHAB3CDEJKLMNOP",
+      "created_at": "2026-10-24T10:00:00.000000Z",
+      "updated_at": "2026-10-24T10:00:00.000000Z",
+      "tracking": {
+        "utm_campaign": null,
+        "utm_source": null,
+        "utm_medium": null,
+        "utm_content": null,
+        "utm_term": null,
+        "salesforce_uuid": null
+      },
+      "text_reminder_number": null,
+      "rescheduled": false,
+      "old_invitee": null,
+      "new_invitee": null,
+      "cancel_url": "https://calendly.com/cancellations/AHCDE4FGHIJKLMNO",
+      "reschedule_url": "https://calendly.com/reschedulings/AHCDE4FGHIJKLMNO",
+      "routing_form_submission": null,
+      "payment": null,
+      "no_show": null,
+      "reconfirmation": null,
+      "scheduling_method": null,
+      "invitee_scheduled_by": null
+    }
+  },
+  "expectedReadBackUrl": "https://api.calendly.com/scheduled_events?user=https%3A%2F%2Fapi.calendly.com%2Fusers%2FBDHFGIJ2KLMNOPQR&invitee_email=alex%40example.com&status=active&sort=start_time:desc&count=20",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "collection": [
+        {
+          "uri": "https://api.calendly.com/scheduled_events/ZYXWV9UTSRQPONML",
+          "name": "30 Minute Meeting",
+          "meeting_notes_plain": null,
+          "meeting_notes_html": null,
+          "status": "active",
+          "start_time": "2026-12-01T15:00:00.000000Z",
+          "end_time": "2026-11-03T15:30:00.000000Z",
+          "event_type": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+          "location": {
+            "type": "google_conference",
+            "status": "pushed",
+            "join_url": "https://meet.google.com/abc-defg-hij"
+          },
+          "invitees_counter": {
+            "total": 1,
+            "active": 1,
+            "limit": 1
+          },
+          "created_at": "2026-10-24T10:00:00.000000Z",
+          "updated_at": "2026-10-24T10:00:00.000000Z",
+          "event_memberships": [
+            {
+              "user": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+              "user_email": "sam@example.com",
+              "user_name": "Sam Rivera"
+            }
+          ],
+          "event_guests": []
+        },
+        {
+          "uri": "https://api.calendly.com/scheduled_events/FGHAB3CDEJKLMNOP",
+          "name": "30 Minute Meeting",
+          "meeting_notes_plain": null,
+          "meeting_notes_html": null,
+          "status": "active",
+          "start_time": "2026-11-03T15:00:00.000000Z",
+          "end_time": "2026-11-03T15:30:00.000000Z",
+          "event_type": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+          "location": {
+            "type": "google_conference",
+            "status": "pushed",
+            "join_url": "https://meet.google.com/abc-defg-hij"
+          },
+          "invitees_counter": {
+            "total": 1,
+            "active": 1,
+            "limit": 1
+          },
+          "created_at": "2026-10-24T10:00:00.000000Z",
+          "updated_at": "2026-10-24T10:00:00.000000Z",
+          "event_memberships": [
+            {
+              "user": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+              "user_email": "sam@example.com",
+              "user_name": "Sam Rivera"
+            }
+          ],
+          "event_guests": []
+        }
+      ],
+      "pagination": {
+        "count": 1,
+        "next_page": null,
+        "previous_page": null,
+        "next_page_token": null,
+        "previous_page_token": null
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "collection": [
+        {
+          "uri": "https://api.calendly.com/scheduled_events/ZYXWV9UTSRQPONML",
+          "name": "30 Minute Meeting",
+          "meeting_notes_plain": null,
+          "meeting_notes_html": null,
+          "status": "active",
+          "start_time": "2026-11-03T15:00:00.000000Z",
+          "end_time": "2026-11-03T15:30:00.000000Z",
+          "event_type": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+          "location": {
+            "type": "google_conference",
+            "status": "pushed",
+            "join_url": "https://meet.google.com/abc-defg-hij"
+          },
+          "invitees_counter": {
+            "total": 1,
+            "active": 1,
+            "limit": 1
+          },
+          "created_at": "2026-10-24T10:00:00.000000Z",
+          "updated_at": "2026-10-24T10:00:00.000000Z",
+          "event_memberships": [
+            {
+              "user": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+              "user_email": "sam@example.com",
+              "user_name": "Sam Rivera"
+            }
+          ],
+          "event_guests": []
+        }
+      ],
+      "pagination": {
+        "count": 1,
+        "next_page": null,
+        "previous_page": null,
+        "next_page_token": null,
+        "previous_page_token": null
+      }
+    }
+  }
+}

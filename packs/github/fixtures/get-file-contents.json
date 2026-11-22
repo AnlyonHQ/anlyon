@@ -1,0 +1,20 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/repos/contents#get-repository-content).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "path": "src/checkout/retry.ts",
+    "ref": "fix-saved-cards"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/contents/src/checkout/retry.ts?ref=fix-saved-cards",
+  "response": {
+    "type": "file",
+    "encoding": "base64",
+    "size": 23,
+    "name": "retry.ts",
+    "path": "src/checkout/retry.ts",
+    "content": "ZXhwb3J0IGNvbnN0IHJldHJpZXMgPSAxOwo=\n",
+    "sha": "3d21ec53a331a6f037a91c368710b99387d012c1"
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "needs": {
+    "event_type_uuid": "A test event type the token's user hosts, with no required custom questions: the last part of its uri from list-event-types",
+    "window_start": "The start of a range of at most 7 days, in the future, UTC ISO 8601 (2026-11-02T09:00:00Z)",
+    "window_end": "The end of that range, UTC ISO 8601",
+    "start_time": "An open start time in that range, from list-available-times (a paid Calendly plan is needed to book)",
+    "invitee_email": "A mailbox you control, which receives the test booking's confirmation",
+    "event_uuid": "A past test meeting of the token's user: the last part of its uri from list-scheduled-events",
+    "invitee_uuid": "That meeting's invitee, already marked as a no-show: the last part of its uri from list-event-invitees",
+    "no_show_uuid": "That invitee's no-show mark: the last part of no_show.uri from get-invitee",
+    "cancel_event_uuid": "A future test meeting the run may cancel (its invitee should be a mailbox you control)"
+  },
+  "steps": [
+    {
+      "action": "get-current-user",
+      "input": {},
+      "save": {
+        "user_uri": "resource.uri"
+      }
+    },
+    {
+      "action": "list-event-types",
+      "input": {
+        "user": "{{saved.user_uri}}",
+        "active": true
+      }
+    },
+    {
+      "action": "get-event-type",
+      "input": {
+        "event_type_uuid": "{{needs.event_type_uuid}}"
+      }
+    },
+    {
+      "action": "list-availability-schedules",
+      "input": {
+        "user": "{{saved.user_uri}}"
+      }
+    },
+    {
+      "action": "list-available-times",
+      "input": {
+        "event_type": "https://api.calendly.com/event_types/{{needs.event_type_uuid}}",
+        "start_time": "{{needs.window_start}}",
+        "end_time": "{{needs.window_end}}"
+      }
+    },
+    {
+      "action": "list-busy-times",
+      "input": {
+        "user": "{{saved.user_uri}}",
+        "start_time": "{{needs.window_start}}",
+        "end_time": "{{needs.window_end}}"
+      }
+    },
+    {
+      "action": "create-scheduling-link",
+      "input": {
+        "event_type": "https://api.calendly.com/event_types/{{needs.event_type_uuid}}"
+      }
+    },
+    {
+      "action": "book-meeting",
+      "input": {
+        "event_type": "https://api.calendly.com/event_types/{{needs.event_type_uuid}}",
+        "start_time": "{{needs.start_time}}",
+        "invitee_name": "Anlyon exercise {{run}}",
+        "invitee_email": "{{needs.invitee_email}}",
+        "invitee_timezone": "UTC",
+        "user": "{{saved.user_uri}}"
+      }
+    },
+    {
+      "action": "list-scheduled-events",
+      "input": {
+        "user": "{{saved.user_uri}}",
+        "status": "active",
+        "invitee_email": "{{needs.invitee_email}}",
+        "sort": "start_time:desc"
+      }
+    },
+    {
+      "action": "get-scheduled-event",
+      "input": {
+        "event_uuid": "{{needs.event_uuid}}"
+      }
+    },
+    {
+      "action": "list-event-invitees",
+      "input": {
+        "event_uuid": "{{needs.event_uuid}}"
+      }
+    },
+    {
+      "action": "get-invitee",
+      "input": {
+        "event_uuid": "{{needs.event_uuid}}",
+        "invitee_uuid": "{{needs.invitee_uuid}}"
+      }
+    },
+    {
+      "action": "get-no-show",
+      "input": {
+        "no_show_uuid": "{{needs.no_show_uuid}}"
+      }
+    },
+    {
+      "action": "unmark-no-show",
+      "input": {
+        "no_show_uuid": "{{needs.no_show_uuid}}",
+        "event_uuid": "{{needs.event_uuid}}",
+        "invitee_uuid": "{{needs.invitee_uuid}}"
+      }
+    },
+    {
+      "action": "mark-no-show",
+      "input": {
+        "event_uuid": "{{needs.event_uuid}}",
+        "invitee_uuid": "{{needs.invitee_uuid}}"
+      }
+    },
+    {
+      "action": "cancel-event",
+      "input": {
+        "event_uuid": "{{needs.cancel_event_uuid}}",
+        "reason": "Anlyon exercise {{run}}: test meeting cancelled."
+      }
+    }
+  ]
+}

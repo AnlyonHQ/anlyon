@@ -1,0 +1,25 @@
+# Todoist API v1 (https://developer.todoist.com/api/v1/, OpenAPI 3.1 embedded in the page, fetched 2026-10-24)
+# Jobs: find a project, section or label; list or filter a person's tasks; read one task and its
+# comments; see what was completed; add, change, complete, reopen, move and delete tasks; comment;
+# create and delete a section.
+# action                 operation                                  kind
+list-projects            GET /api/v1/projects
+get-project              GET /api/v1/projects/{project_id}
+list-sections            GET /api/v1/sections
+get-section              GET /api/v1/sections/{section_id}
+list-labels              GET /api/v1/labels
+list-tasks               GET /api/v1/tasks
+filter-tasks             GET /api/v1/tasks/filter
+get-task                 GET /api/v1/tasks/{task_id}
+list-completed-tasks     GET /api/v1/tasks/completed/by_completion_date
+list-task-comments       GET /api/v1/comments
+create-task              POST /api/v1/tasks
+update-task              POST /api/v1/tasks/{task_id}
+close-task               POST /api/v1/tasks/{task_id}/close
+reopen-task              POST /api/v1/tasks/{task_id}/reopen
+move-task-to-project     POST /api/v1/tasks/{task_id}/move
+move-task-to-section     POST /api/v1/tasks/{task_id}/move
+delete-task              DELETE /api/v1/tasks/{task_id}
+add-comment              POST /api/v1/comments
+create-section           POST /api/v1/sections
+delete-section           DELETE /api/v1/sections/{section_id}

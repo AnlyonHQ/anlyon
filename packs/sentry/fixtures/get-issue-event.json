@@ -1,0 +1,69 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.sentry.io/api/events/retrieve-an-issue-event/).",
+  "params": {},
+  "input": {
+    "organization": "acme",
+    "issue_id": "4509877862",
+    "event_id": "latest"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/events/latest/",
+  "response": {
+    "id": "dfb1a2d057194e76a4186cc8a5271553",
+    "eventID": "dfb1a2d057194e76a4186cc8a5271553",
+    "groupID": "4509877862",
+    "projectID": "4504127832",
+    "title": "TypeError: Cannot read properties of undefined (reading 'total')",
+    "message": "",
+    "platform": "javascript",
+    "type": "error",
+    "dateReceived": "2026-10-15T09:02:12Z",
+    "tags": [
+      {
+        "key": "environment",
+        "value": "production"
+      },
+      {
+        "key": "release",
+        "value": "web@2.14.0"
+      }
+    ],
+    "contexts": {
+      "browser": {
+        "name": "Chrome",
+        "version": "129.0"
+      }
+    },
+    "entries": [
+      {
+        "type": "exception",
+        "data": {
+          "values": [
+            {
+              "type": "TypeError",
+              "value": "Cannot read properties of undefined (reading 'total')",
+              "stacktrace": {
+                "frames": [
+                  {
+                    "filename": "app/checkout/summary.tsx",
+                    "function": "CheckoutSummary",
+                    "lineNo": 42,
+                    "colNo": 18,
+                    "inApp": true
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "sdk": {
+      "name": "sentry.javascript.react",
+      "version": "8.40.0"
+    },
+    "user": {
+      "id": "u_8812"
+    },
+    "size": 6712
+  }
+}

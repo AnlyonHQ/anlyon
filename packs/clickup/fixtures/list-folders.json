@@ -1,0 +1,31 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/getfolders).",
+  "params": {},
+  "input": {
+    "space_id": "90120012345"
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/space/90120012345/folder",
+  "response": {
+    "folders": [
+      {
+        "id": "90120123456",
+        "name": "Sales",
+        "orderindex": 0,
+        "override_statuses": false,
+        "hidden": false,
+        "space": {
+          "id": "90120012345",
+          "name": "Customers",
+          "access": true
+        },
+        "task_count": "12",
+        "lists": [
+          {
+            "id": "901201234567",
+            "name": "Customer follow-ups"
+          }
+        ]
+      }
+    ]
+  }
+}

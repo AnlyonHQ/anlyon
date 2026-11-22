@@ -1,0 +1,32 @@
+{
+  "_source": "Shaped after the provider's documented response (https://cal.com/docs/api-reference/v2/slots/get-available-time-slots-for-an-event-type).",
+  "params": {},
+  "input": {
+    "event_type_id": 88231,
+    "start": "2026-11-02",
+    "end": "2026-11-03",
+    "time_zone": "Europe/London"
+  },
+  "expectedUrl": "https://api.cal.com/v2/slots?eventTypeId=88231&start=2026-11-02&end=2026-11-03&timeZone=Europe%2FLondon&format=range",
+  "response": {
+    "status": "success",
+    "data": {
+      "2026-11-02": [
+        {
+          "start": "2026-11-02T14:00:00.000+00:00",
+          "end": "2026-11-02T14:30:00.000+00:00"
+        },
+        {
+          "start": "2026-11-02T14:30:00.000+00:00",
+          "end": "2026-11-02T15:00:00.000+00:00"
+        }
+      ],
+      "2026-11-03": [
+        {
+          "start": "2026-11-03T09:00:00.000+00:00",
+          "end": "2026-11-03T09:30:00.000+00:00"
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/getsectionsforproject).",
+  "params": {},
+  "input": {
+    "project_gid": "1208801234567890"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/projects/1208801234567890/sections?limit=50&opt_fields=name",
+  "response": {
+    "data": [
+      {
+        "gid": "1208805555555550",
+        "resource_type": "section",
+        "name": "To do"
+      },
+      {
+        "gid": "1208805555555555",
+        "resource_type": "section",
+        "name": "In progress"
+      }
+    ],
+    "next_page": null
+  }
+}

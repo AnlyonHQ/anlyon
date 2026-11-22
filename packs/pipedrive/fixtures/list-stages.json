@@ -1,0 +1,40 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi-v2.yaml, GET /stages).",
+  "params": {},
+  "input": {
+    "pipeline_id": 1
+  },
+  "expectedUrl": "https://api.pipedrive.com/api/v2/stages?pipeline_id=1&limit=50",
+  "response": {
+    "success": true,
+    "data": [
+      {
+        "id": 1,
+        "order_nr": 1,
+        "name": "Lead in",
+        "is_deleted": false,
+        "deal_probability": 100,
+        "pipeline_id": 1,
+        "is_deal_rot_enabled": false,
+        "days_to_rotten": null,
+        "add_time": "2026-01-12T10:00:00Z",
+        "update_time": "2026-01-12T10:00:00Z"
+      },
+      {
+        "id": 2,
+        "order_nr": 2,
+        "name": "Qualified",
+        "is_deleted": false,
+        "deal_probability": 100,
+        "pipeline_id": 1,
+        "is_deal_rot_enabled": false,
+        "days_to_rotten": null,
+        "add_time": "2026-01-12T10:00:00Z",
+        "update_time": "2026-01-12T10:00:00Z"
+      }
+    ],
+    "additional_data": {
+      "next_cursor": null
+    }
+  }
+}

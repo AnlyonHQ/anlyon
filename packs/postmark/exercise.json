@@ -1,0 +1,50 @@
+{
+  "needs": {
+    "from": "An address on a confirmed sender signature or domain of the server, e.g. support@acme.example",
+    "to": "An address you own that may receive two test emails",
+    "message_stream": "The id of a transactional stream on the server (outbound unless you renamed it)",
+    "template_alias": "The alias of an active Standard template on the server; its placeholders may stay empty",
+    "bounce_id": "The ID of an inactive hard bounce with CanActivate true. Send one email to hardbounce@bounce-testing.postmarkapp.com from this server, then list-bounces shows it",
+    "inbound_message_id": "The MessageID of one email the server received (search-inbound-messages shows it)"
+  },
+  "steps": [
+    { "action": "list-message-streams", "input": {} },
+    { "action": "get-delivery-stats", "input": {} },
+    { "action": "get-outbound-stats", "input": { "message_stream": "{{needs.message_stream}}" } },
+    { "action": "list-templates", "input": { "offset": 0 } },
+    { "action": "get-template", "input": { "template": "{{needs.template_alias}}" } },
+    {
+      "action": "send-email",
+      "input": {
+        "from": "{{needs.from}}",
+        "to": "{{needs.to}}",
+        "subject": "Anlyon exercise {{run}}",
+        "text_body": "A test email sent by the Anlyon pack exercise. No action needed.",
+        "tag": "anlyon-exercise",
+        "message_stream": "{{needs.message_stream}}"
+      },
+      "save": { "message_id": "MessageID" }
+    },
+    { "action": "get-outbound-message", "input": { "message_id": "{{saved.message_id}}" } },
+    { "action": "search-outbound-messages", "input": { "offset": 0, "tag": "anlyon-exercise", "message_stream": "{{needs.message_stream}}" } },
+    {
+      "action": "send-template-email",
+      "input": {
+        "template_alias": "{{needs.template_alias}}",
+        "template_model": {},
+        "from": "{{needs.from}}",
+        "to": "{{needs.to}}",
+        "tag": "anlyon-exercise",
+        "message_stream": "{{needs.message_stream}}"
+      }
+    },
+    { "action": "suppress-recipient", "input": { "message_stream": "{{needs.message_stream}}", "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "list-suppressions", "input": { "message_stream": "{{needs.message_stream}}", "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "unsuppress-recipient", "input": { "message_stream": "{{needs.message_stream}}", "email": "anlyon-exercise-{{run}}@example.com" } },
+    { "action": "list-bounces", "input": { "offset": 0, "inactive": true, "message_stream": "{{needs.message_stream}}" } },
+    { "action": "get-bounce", "input": { "bounce_id": "{{needs.bounce_id}}" } },
+    { "action": "activate-bounce", "input": { "bounce_id": "{{needs.bounce_id}}" } },
+    { "action": "search-inbound-messages", "input": { "offset": 0 } },
+    { "action": "get-inbound-message", "input": { "message_id": "{{needs.inbound_message_id}}" } }
+  ]
+}

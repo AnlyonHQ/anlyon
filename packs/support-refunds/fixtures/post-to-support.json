@@ -1,0 +1,43 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {
+    "slack_channel": "C0123456789"
+  },
+  "input": {
+    "text": "Refund of 25.00 USD for order 1042 issued."
+  },
+  "expectedUrl": "https://slack.com/api/chat.postMessage",
+  "response": {
+    "ok": true,
+    "channel": "C0123456789",
+    "ts": "1791797400.000200",
+    "message": {
+      "type": "message",
+      "text": "Refund of 25.00 USD for order 1042 issued.",
+      "ts": "1791797400.000200"
+    }
+  },
+  "expectedReadBackUrl": "https://slack.com/api/conversations.history?channel=C0123456789&latest=1791797400.000200&inclusive=true&limit=1",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "ok": true,
+      "messages": [
+        {
+          "type": "message",
+          "text": "Refund of 25.00 USD for order 1042 issued.",
+          "ts": "1791797400.000200"
+        }
+      ],
+      "has_more": false
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "ok": false,
+      "error": "channel_not_found"
+    }
+  },
+  "_limitation": "A refused post also answers HTTP 200 (ok:false). mismatchedReadBack is what the read-back finds then: no message, so the receipt stays acknowledged, not confirmed."
+}

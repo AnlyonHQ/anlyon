@@ -1,0 +1,160 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/outbound-sales",
+  "version": "0.3.0",
+  "description": "Update a CRM contact, book a meeting and announce the win in Slack, each under a shared limit and a read-back.",
+  "secrets": [
+    {
+      "name": "HUBSPOT",
+      "kind": "connection",
+      "integrationId": "hubspot",
+      "hosts": [
+        "api.hubapi.com"
+      ],
+      "description": "HubSpot account the agent updates"
+    },
+    {
+      "name": "GOOGLE_CALENDAR",
+      "kind": "connection",
+      "integrationId": "google-calendar",
+      "hosts": [
+        "www.googleapis.com"
+      ],
+      "description": "Google account that owns the calendar"
+    },
+    {
+      "name": "SLACK",
+      "kind": "connection",
+      "integrationId": "slack",
+      "hosts": [
+        "slack.com"
+      ],
+      "description": "Slack workspace with the channel the win is announced in"
+    }
+  ],
+  "actions": [
+    {
+      "name": "update-contact",
+      "ref": "anlyon/hubspot#update-contact-stage"
+    },
+    {
+      "name": "book-meeting",
+      "description": "Create one event on the connected account's primary Google Calendar and invite the attendees. Read back by event id; the summary must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second event.",
+      "method": "POST",
+      "urlTemplate": "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+      "headers": {
+        "Authorization": "Bearer {{connection:google-calendar}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "summary": "{{input.summary}}",
+        "start": {
+          "dateTime": "{{input.start}}"
+        },
+        "end": {
+          "dateTime": "{{input.end}}"
+        },
+        "attendees": "{{input.attendees}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "summary",
+          "start",
+          "end",
+          "attendees"
+        ],
+        "properties": {
+          "summary": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,200}$"
+          },
+          "start": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "end": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})$"
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "pattern": "^[^@\\s]+@[^@\\s]+$"
+                }
+              }
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://www.googleapis.com/calendar/v3/calendars/primary/events/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "summary",
+            "equals": "{{input.summary}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "announce-win",
+      "ref": "anlyon/slack#post-message"
+    }
+  ],
+  "policies": [
+    {
+      "name": "outbound-sales: approve a stage change to customer",
+      "matchKind": "action",
+      "matchActionName": "update-contact",
+      "condition": "input.lifecyclestage == 'customer'",
+      "effect": "require_approval"
+    },
+    {
+      "name": "outbound-sales: approve meetings with more than three attendees",
+      "matchKind": "action",
+      "matchActionName": "book-meeting",
+      "condition": "size(input.attendees) > 3",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "outbound-sales: contact updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-contact"
+    },
+    {
+      "name": "outbound-sales: meetings per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "book-meeting"
+    },
+    {
+      "name": "outbound-sales: announcements per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "announce-win"
+    }
+  ]
+}

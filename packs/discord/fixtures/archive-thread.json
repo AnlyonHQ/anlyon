@@ -1,0 +1,72 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.discord.com/developers/resources/channel).",
+  "params": {},
+  "input": {
+    "thread_id": "1290000000000000099"
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1290000000000000099",
+  "response": {
+    "id": "1290000000000000099",
+    "type": 11,
+    "guild_id": "1100000000000000000",
+    "parent_id": "1100000000000000001",
+    "owner_id": "1200000000000000007",
+    "name": "Deploy follow-up",
+    "last_message_id": "1290000000000000120",
+    "message_count": 1,
+    "member_count": 1,
+    "rate_limit_per_user": 0,
+    "flags": 0,
+    "thread_metadata": {
+      "archived": true,
+      "auto_archive_duration": 4320,
+      "archive_timestamp": "2026-10-15T10:00:00.000000+00:00",
+      "locked": false
+    }
+  },
+  "expectedReadBackUrl": "https://discord.com/api/v10/channels/1290000000000000099",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000099",
+      "type": 11,
+      "guild_id": "1100000000000000000",
+      "parent_id": "1100000000000000001",
+      "owner_id": "1200000000000000007",
+      "name": "Deploy follow-up",
+      "last_message_id": "1290000000000000120",
+      "message_count": 1,
+      "member_count": 1,
+      "rate_limit_per_user": 0,
+      "flags": 0,
+      "thread_metadata": {
+        "archived": true,
+        "auto_archive_duration": 4320,
+        "archive_timestamp": "2026-10-15T10:00:00.000000+00:00",
+        "locked": false
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000099",
+      "type": 11,
+      "guild_id": "1100000000000000000",
+      "parent_id": "1100000000000000001",
+      "owner_id": "1200000000000000007",
+      "name": "Deploy follow-up",
+      "last_message_id": "1290000000000000120",
+      "message_count": 1,
+      "member_count": 1,
+      "rate_limit_per_user": 0,
+      "flags": 0,
+      "thread_metadata": {
+        "archived": false,
+        "auto_archive_duration": 4320,
+        "archive_timestamp": "2026-10-15T09:20:00.000000+00:00",
+        "locked": false
+      }
+    }
+  }
+}

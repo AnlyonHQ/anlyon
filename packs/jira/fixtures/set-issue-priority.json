@@ -1,0 +1,53 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {
+    "issue_key": "OPS-142",
+    "priority_id": "2"
+  },
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142",
+  "expectedBody": {
+    "fields": {
+      "priority": {
+        "id": "2"
+      }
+    }
+  },
+  "response": {},
+  "expectedReadBackUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142?fields=priority",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "id": "10142",
+      "self": "https://acme.atlassian.net/rest/api/3/issue/10142",
+      "key": "OPS-142",
+      "fields": {
+        "priority": {
+          "self": "https://acme.atlassian.net/rest/api/3/priority/2",
+          "iconUrl": "https://acme.atlassian.net/images/icons/priorities/high.svg",
+          "name": "High",
+          "id": "2"
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "id": "10142",
+      "self": "https://acme.atlassian.net/rest/api/3/issue/10142",
+      "key": "OPS-142",
+      "fields": {
+        "priority": {
+          "self": "https://acme.atlassian.net/rest/api/3/priority/3",
+          "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+          "name": "Medium",
+          "id": "3"
+        }
+      }
+    }
+  }
+}

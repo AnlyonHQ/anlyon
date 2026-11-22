@@ -1,0 +1,20 @@
+# Calendly API v2 (https://api.calendly.com), from Calendly's published OpenAPI document.
+# Jobs: know whose calendar this is; find a meeting type and its open times; see what is booked;
+# read who booked; book a time for someone; share a one-time link; cancel; record a no-show.
+# action                     operation                                                      kind
+get-current-user             get-current-user
+list-event-types             list-event-types
+get-event-type               get-event-type
+list-available-times         list-event-type-available-times
+list-busy-times              list-user-busy-times
+list-availability-schedules  list-user-availability-schedules
+list-scheduled-events        list-scheduled-events
+get-scheduled-event          get-scheduled-event
+list-event-invitees          list-event-invitees
+get-invitee                  get-scheduled-event-invitees
+get-no-show                  get-invitee-no-show
+book-meeting                 post-invitee
+create-scheduling-link       create-scheduling-link
+cancel-event                 create-scheduled-event-cancellation
+mark-no-show                 create-invitee-no-show
+unmark-no-show               delete-invitee-no-show

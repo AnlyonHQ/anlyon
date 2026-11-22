@@ -1,0 +1,13 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation deleteDeployment).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "deployment_id": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6"
+  },
+  "expectedUrl": "https://api.vercel.com/v13/deployments/dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "response": {
+    "uid": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6",
+    "state": "DELETED"
+  }
+}

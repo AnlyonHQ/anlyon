@@ -1,0 +1,37 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/reference/get-message).",
+  "params": {},
+  "input": {
+    "message_id": "msg_1q15qmtq"
+  },
+  "expectedUrl": "https://api2.frontapp.com/messages/msg_1q15qmtq",
+  "response": {
+    "_links": {
+      "self": "https://api2.frontapp.com/messages/msg_1q15qmtq",
+      "related": {
+        "conversation": "https://api2.frontapp.com/conversations/cnv_yo1kg5q"
+      }
+    },
+    "id": "msg_1q15qmtq",
+    "message_uid": "1eab543f84a0785f7b6b8967cck18f4d",
+    "type": "email",
+    "is_inbound": true,
+    "draft_mode": null,
+    "created_at": 1729760100,
+    "subject": "Where is my order?",
+    "blurb": "Hi, my order has not arrived.",
+    "author": null,
+    "recipients": [
+      {
+        "_links": {},
+        "name": "Pam Beesly",
+        "handle": "pam@example.com",
+        "role": "from"
+      }
+    ],
+    "body": "<p>Hi, my order has not arrived.</p>",
+    "text": "Hi, my order has not arrived.",
+    "attachments": [],
+    "metadata": {}
+  }
+}

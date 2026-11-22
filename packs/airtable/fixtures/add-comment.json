@@ -1,0 +1,72 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/create-comment).",
+  "params": {},
+  "input": {
+    "base_id": "appLkNDICXNqxSDhG",
+    "table": "tblIhd7aUd4H6h2rS",
+    "record_id": "rec560UJdUtocSouk",
+    "text": "Sent the proposal."
+  },
+  "expectedUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS/rec560UJdUtocSouk/comments",
+  "response": {
+    "id": "comHq2Xn8Yt5Wp4Lm",
+    "author": {
+      "id": "usrL2PNC5o3H4lBEi",
+      "email": "ada@example.com",
+      "name": "Ada Lovelace"
+    },
+    "text": "Sent the proposal.",
+    "createdTime": "2026-10-24T10:00:00.000Z",
+    "lastUpdatedTime": null
+  },
+  "expectedReadBackUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS/rec560UJdUtocSouk/comments?pageSize=20",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "comments": [
+        {
+          "id": "comHq2Xn8Yt5Wp4Lm",
+          "author": {
+            "id": "usrL2PNC5o3H4lBEi",
+            "email": "ada@example.com",
+            "name": "Ada Lovelace"
+          },
+          "text": "Sent the proposal.",
+          "createdTime": "2026-10-24T10:00:00.000Z",
+          "lastUpdatedTime": null
+        },
+        {
+          "id": "comB5z37Mg9zaEPw6",
+          "author": {
+            "id": "usrL2PNC5o3H4lBEi",
+            "email": "ada@example.com",
+            "name": "Ada Lovelace"
+          },
+          "text": "Called them, they want a demo next week.",
+          "createdTime": "2026-10-20T09:00:00.000Z",
+          "lastUpdatedTime": null
+        }
+      ],
+      "offset": null
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "comments": [
+        {
+          "id": "comB5z37Mg9zaEPw6",
+          "author": {
+            "id": "usrL2PNC5o3H4lBEi",
+            "email": "ada@example.com",
+            "name": "Ada Lovelace"
+          },
+          "text": "Called them, they want a demo next week.",
+          "createdTime": "2026-10-20T09:00:00.000Z",
+          "lastUpdatedTime": null
+        }
+      ],
+      "offset": null
+    }
+  }
+}

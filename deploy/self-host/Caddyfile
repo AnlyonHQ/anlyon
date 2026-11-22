@@ -1,0 +1,33 @@
+{$SITE_ADDRESS::80} {
+	encode gzip zstd
+
+	@server path /api/* /mcp /mcp/* /health /health/* /.well-known/* /assets/anlyon-logo.png
+	handle @server {
+		reverse_proxy server:4000 {
+			transport http {
+				read_timeout 60s
+				write_timeout 60s
+				dial_timeout 5s
+			}
+		}
+	}
+
+	handle {
+		reverse_proxy dashboard:8080
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	@https protocol https
+	header @https Strict-Transport-Security "max-age=31536000; includeSubDomains"
+	header /api/* Content-Security-Policy "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
+
+	log {
+		output stdout
+		format json
+		level INFO
+	}
+}

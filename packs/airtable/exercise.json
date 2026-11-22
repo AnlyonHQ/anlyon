@@ -1,0 +1,53 @@
+{
+  "needs": {
+    "base_id": "The id of a test base the token can edit (app followed by 14 characters; list-bases shows it)",
+    "table": "The id of a table in that base the run may write to, whose primary field is a single line text field named Name, as on a new table (get-base-schema shows it)"
+  },
+  "steps": [
+    { "action": "get-current-user", "input": {} },
+    { "action": "list-bases", "input": {} },
+    { "action": "get-base-schema", "input": { "base_id": "{{needs.base_id}}" } },
+    {
+      "action": "create-record",
+      "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "fields": { "Name": "Anlyon exercise {{run}}" } },
+      "save": { "record_id": "id" }
+    },
+    { "action": "get-record", "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "record_id": "{{saved.record_id}}" } },
+    { "action": "list-records", "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "filter_by_formula": "{Name}='Anlyon exercise {{run}}'" } },
+    {
+      "action": "update-record",
+      "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "record_id": "{{saved.record_id}}", "fields": { "Name": "Anlyon exercise {{run}} updated" } }
+    },
+    {
+      "action": "create-records",
+      "input": {
+        "base_id": "{{needs.base_id}}",
+        "table": "{{needs.table}}",
+        "records": [{ "fields": { "Name": "Anlyon exercise {{run}} a" } }, { "fields": { "Name": "Anlyon exercise {{run}} b" } }]
+      },
+      "save": { "batch_a": "records.0.id", "batch_b": "records.1.id" }
+    },
+    {
+      "action": "upsert-records",
+      "input": {
+        "base_id": "{{needs.base_id}}",
+        "table": "{{needs.table}}",
+        "merge_on": ["Name"],
+        "records": [{ "fields": { "Name": "Anlyon exercise {{run}} a" } }]
+      }
+    },
+    {
+      "action": "add-comment",
+      "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "record_id": "{{saved.record_id}}", "text": "Anlyon exercise {{run}}" },
+      "save": { "comment_id": "id" }
+    },
+    { "action": "list-comments", "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "record_id": "{{saved.record_id}}" } },
+    {
+      "action": "update-comment",
+      "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "record_id": "{{saved.record_id}}", "comment_id": "{{saved.comment_id}}", "text": "Anlyon exercise {{run}} edited" }
+    },
+    { "action": "delete-record", "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "record_id": "{{saved.batch_b}}" } },
+    { "action": "delete-record", "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "record_id": "{{saved.batch_a}}" } },
+    { "action": "delete-record", "input": { "base_id": "{{needs.base_id}}", "table": "{{needs.table}}", "record_id": "{{saved.record_id}}" } }
+  ]
+}

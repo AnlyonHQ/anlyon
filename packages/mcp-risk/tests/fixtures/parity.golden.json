@@ -1,0 +1,171 @@
+{
+  "github-like": {
+    "hash": "e9a106a905083aa70c03d2f908d94f3e0b81f5da5fd4c11f37135b392f19db27",
+    "counts": {
+      "read": 7,
+      "write": 8,
+      "irreversible": 1,
+      "destructive": 1
+    },
+    "classes": {
+      "get_me": "read",
+      "search_repositories": "read",
+      "get_file_contents": "read",
+      "list_issues": "read",
+      "issue_read": "read",
+      "create_issue": "write",
+      "add_issue_comment": "write",
+      "create_or_update_file": "write",
+      "push_files": "write",
+      "delete_file": "destructive",
+      "create_branch": "write",
+      "create_pull_request": "write",
+      "merge_pull_request": "irreversible",
+      "fork_repository": "write",
+      "list_commits": "read",
+      "search_code": "read",
+      "request_copilot_review": "write"
+    }
+  },
+  "filesystem-like": {
+    "hash": "16e61caa6f22a532ea61a13c26be03a7e17b60f0885fdaadecbbd7ba1a152e1c",
+    "counts": {
+      "read": 9,
+      "write": 2,
+      "irreversible": 0,
+      "destructive": 2
+    },
+    "classes": {
+      "read_text_file": "read",
+      "read_media_file": "read",
+      "read_multiple_files": "read",
+      "write_file": "destructive",
+      "edit_file": "destructive",
+      "create_directory": "write",
+      "list_directory": "read",
+      "list_directory_with_sizes": "read",
+      "directory_tree": "read",
+      "move_file": "write",
+      "search_files": "read",
+      "get_file_info": "read",
+      "list_allowed_directories": "read"
+    }
+  },
+  "stripe-like": {
+    "hash": "84bc9dcc69bc17d6e84e76408bdbe1c41220a7a680b359863a3ebb5e15a76f4f",
+    "counts": {
+      "read": 6,
+      "write": 7,
+      "irreversible": 2,
+      "destructive": 1
+    },
+    "classes": {
+      "create_customer": "write",
+      "list_customers": "read",
+      "create_product": "write",
+      "create_price": "write",
+      "list_prices": "read",
+      "create_payment_link": "write",
+      "create_invoice": "write",
+      "finalize_invoice": "irreversible",
+      "retrieve_balance": "read",
+      "create_refund": "irreversible",
+      "list_payment_intents": "read",
+      "list_subscriptions": "read",
+      "update_subscription": "write",
+      "cancel_subscription": "destructive",
+      "create_coupon": "write",
+      "search_stripe_documentation": "read"
+    }
+  },
+  "slack-like": {
+    "hash": "709ce54dbfe9ce48dad69ac37c98d125065240e90cccc8d49db59671e73fd9df",
+    "counts": {
+      "read": 5,
+      "write": 1,
+      "irreversible": 2,
+      "destructive": 1
+    },
+    "classes": {
+      "slack_list_channels": "read",
+      "slack_post_message": "irreversible",
+      "slack_reply_to_thread": "irreversible",
+      "slack_add_reaction": "write",
+      "slack_get_channel_history": "read",
+      "slack_get_thread_replies": "read",
+      "slack_get_users": "read",
+      "slack_get_user_profile": "read",
+      "slack_archive_channel": "destructive"
+    }
+  },
+  "empty": {
+    "hash": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "counts": {
+      "read": 0,
+      "write": 0,
+      "irreversible": 0,
+      "destructive": 0
+    },
+    "classes": {}
+  },
+  "names nothing": {
+    "hash": "3a4912cbaa4031cbe96e4e6098ec5702a77770e7a1333869348d1b4532742385",
+    "counts": {
+      "read": 0,
+      "write": 1,
+      "irreversible": 0,
+      "destructive": 0
+    },
+    "classes": {
+      "do_the_thing": "write"
+    }
+  },
+  "read-only hint never lowers a delete": {
+    "hash": "1c75dbc59d1082a792b9652dc04d9985d1b02cecf6d14ed96c228b6648dd789e",
+    "counts": {
+      "read": 0,
+      "write": 0,
+      "irreversible": 0,
+      "destructive": 1
+    },
+    "classes": {
+      "delete_record": "destructive"
+    }
+  },
+  "destructive hint raises a read": {
+    "hash": "86ba991e60ef8ee544e005b85ebe43123b547fa20a8848f5740b7f6e27030413",
+    "counts": {
+      "read": 0,
+      "write": 0,
+      "irreversible": 0,
+      "destructive": 1
+    },
+    "classes": {
+      "get_item": "destructive"
+    }
+  },
+  "money in the input": {
+    "hash": "a165318b57713e97630bb1ec1a4e9ff3c5add385053a59e29810989d7f66a394",
+    "counts": {
+      "read": 0,
+      "write": 0,
+      "irreversible": 1,
+      "destructive": 0
+    },
+    "classes": {
+      "create_payment": "irreversible"
+    }
+  },
+  "an invisible character in a description": {
+    "hash": "51c354fd6875fbe29b344556512209b39dd3a25d9ec4672d0c71d750802fd380",
+    "counts": {
+      "read": 1,
+      "write": 0,
+      "irreversible": 0,
+      "destructive": 0
+    },
+    "classes": {
+      "list_items": "read"
+    }
+  }
+}

@@ -1,0 +1,115 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi.yaml, POST /notes).",
+  "params": {},
+  "input": {
+    "content": "Priya confirmed the pilot starts in November.",
+    "deal_id": 4290
+  },
+  "expectedUrl": "https://api.pipedrive.com/v1/notes",
+  "response": {
+    "success": true,
+    "data": {
+      "id": 5541,
+      "active_flag": true,
+      "add_time": "2026-10-24 08:32:00",
+      "content": "Priya confirmed the pilot starts in November.",
+      "deal": {
+        "title": "Globex pilot"
+      },
+      "lead_id": null,
+      "deal_id": 4290,
+      "last_update_user_id": 13540546,
+      "org_id": null,
+      "organization": null,
+      "person": null,
+      "person_id": null,
+      "project_id": null,
+      "pinned_to_lead_flag": false,
+      "pinned_to_deal_flag": false,
+      "pinned_to_organization_flag": false,
+      "pinned_to_person_flag": false,
+      "pinned_to_project_flag": false,
+      "update_time": "2026-10-24 08:32:00",
+      "user": {
+        "email": "sam@acme-sales.example",
+        "icon_url": null,
+        "is_you": true,
+        "name": "Sam Reyes"
+      },
+      "user_id": 13540546
+    }
+  },
+  "expectedReadBackUrl": "https://api.pipedrive.com/v1/notes/5541",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "id": 5541,
+        "active_flag": true,
+        "add_time": "2026-10-24 08:32:00",
+        "content": "Priya confirmed the pilot starts in November.",
+        "deal": {
+          "title": "Globex pilot"
+        },
+        "lead_id": null,
+        "deal_id": 4290,
+        "last_update_user_id": 13540546,
+        "org_id": null,
+        "organization": null,
+        "person": null,
+        "person_id": null,
+        "project_id": null,
+        "pinned_to_lead_flag": false,
+        "pinned_to_deal_flag": false,
+        "pinned_to_organization_flag": false,
+        "pinned_to_person_flag": false,
+        "pinned_to_project_flag": false,
+        "update_time": "2026-10-24 08:32:00",
+        "user": {
+          "email": "sam@acme-sales.example",
+          "icon_url": null,
+          "is_you": true,
+          "name": "Sam Reyes"
+        },
+        "user_id": 13540546
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "id": 5541,
+        "active_flag": true,
+        "add_time": "2026-10-24 08:32:00",
+        "content": "Priya confirmed the pilot.",
+        "deal": {
+          "title": "Globex pilot"
+        },
+        "lead_id": null,
+        "deal_id": 4290,
+        "last_update_user_id": 13540546,
+        "org_id": null,
+        "organization": null,
+        "person": null,
+        "person_id": null,
+        "project_id": null,
+        "pinned_to_lead_flag": false,
+        "pinned_to_deal_flag": false,
+        "pinned_to_organization_flag": false,
+        "pinned_to_person_flag": false,
+        "pinned_to_project_flag": false,
+        "update_time": "2026-10-24 08:32:00",
+        "user": {
+          "email": "sam@acme-sales.example",
+          "icon_url": null,
+          "is_you": true,
+          "name": "Sam Reyes"
+        },
+        "user_id": 13540546
+      }
+    }
+  }
+}

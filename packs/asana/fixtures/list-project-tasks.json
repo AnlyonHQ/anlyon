@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/gettasksforproject).",
+  "params": {},
+  "input": {
+    "project_gid": "1208801234567890",
+    "completed_since": "now",
+    "offset": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/projects/1208801234567890/tasks?limit=25&offset=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9&completed_since=now&opt_fields=name,completed,assignee.name,due_on,permalink_url",
+  "response": {
+    "data": [
+      {
+        "gid": "1208809876543210",
+        "resource_type": "task",
+        "resource_subtype": "default_task",
+        "name": "Follow up with Acme",
+        "completed": false,
+        "assignee": {
+          "gid": "1208800000000042",
+          "resource_type": "user",
+          "name": "Dana Lee"
+        },
+        "due_on": "2026-10-20",
+        "permalink_url": "https://app.asana.com/0/1208801234567890/1208809876543210"
+      }
+    ],
+    "next_page": null
+  }
+}

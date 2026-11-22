@@ -1,0 +1,21 @@
+{
+  "params": {},
+  "accountHost": "us21.api.mailchimp.com",
+  "_source": "Shaped after the response documented in Mailchimp's official OpenAPI spec (https://api.mailchimp.com/schema/openapi/OpenAPI.json, getLists).",
+  "input": {},
+  "expectedUrl": "https://us21.api.mailchimp.com/3.0/lists?count=20&fields=lists.id,lists.name,lists.date_created,lists.stats.member_count,lists.stats.unsubscribe_count,total_items",
+  "response": {
+    "lists": [
+      {
+        "id": "4ca5becb8d",
+        "name": "Newsletter",
+        "date_created": "2025-03-02T09:00:00+00:00",
+        "stats": {
+          "member_count": 1240,
+          "unsubscribe_count": 31
+        }
+      }
+    ],
+    "total_items": 1
+  }
+}

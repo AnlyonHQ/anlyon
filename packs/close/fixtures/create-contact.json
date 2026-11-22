@@ -1,0 +1,94 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/contacts, POST /contact/).",
+  "params": {},
+  "input": {
+    "lead_id": "lead_Acme01",
+    "name": "Sam Lee",
+    "title": "Buyer",
+    "emails": [
+      {
+        "email": "sam@acme.example",
+        "type": "office"
+      }
+    ]
+  },
+  "expectedUrl": "https://api.close.com/api/v1/contact/",
+  "expectedBody": {
+    "lead_id": "lead_Acme01",
+    "name": "Sam Lee",
+    "title": "Buyer",
+    "emails": [
+      {
+        "email": "sam@acme.example",
+        "type": "office"
+      }
+    ]
+  },
+  "response": {
+    "id": "cont_SamAcme02",
+    "organization_id": "orga_Example01",
+    "lead_id": "lead_Acme01",
+    "name": "Sam Lee",
+    "display_name": "Sam Lee",
+    "title": "Buyer",
+    "emails": [
+      {
+        "type": "office",
+        "email": "sam@acme.example"
+      }
+    ],
+    "phones": [],
+    "urls": [],
+    "date_created": "2026-10-24T08:10:00.000000+00:00",
+    "date_updated": "2026-10-24T08:10:00.000000+00:00",
+    "created_by": "user_Alice01",
+    "updated_by": "user_Alice01"
+  },
+  "expectedReadBackUrl": "https://api.close.com/api/v1/contact/cont_SamAcme02/",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "cont_SamAcme02",
+      "organization_id": "orga_Example01",
+      "lead_id": "lead_Acme01",
+      "name": "Sam Lee",
+      "display_name": "Sam Lee",
+      "title": "Buyer",
+      "emails": [
+        {
+          "type": "office",
+          "email": "sam@acme.example"
+        }
+      ],
+      "phones": [],
+      "urls": [],
+      "date_created": "2026-10-24T08:10:00.000000+00:00",
+      "date_updated": "2026-10-24T08:10:00.000000+00:00",
+      "created_by": "user_Alice01",
+      "updated_by": "user_Alice01"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "cont_SamAcme02",
+      "organization_id": "orga_Example01",
+      "lead_id": "lead_Other02",
+      "name": "Sam Lee",
+      "display_name": "Sam Lee",
+      "title": "Buyer",
+      "emails": [
+        {
+          "type": "office",
+          "email": "sam@acme.example"
+        }
+      ],
+      "phones": [],
+      "urls": [],
+      "date_created": "2026-10-24T08:10:00.000000+00:00",
+      "date_updated": "2026-10-24T08:10:00.000000+00:00",
+      "created_by": "user_Alice01",
+      "updated_by": "user_Alice01"
+    }
+  }
+}

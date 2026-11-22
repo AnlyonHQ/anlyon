@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"workspaces\": [\n    {\n      \"id\": \"ws_fixture\",\n      \"name\": \"Fixture\",\n      \"slug\": \"fixture\",\n      \"role\": \"admin\",\n      \"environments\": [\n        {\n          \"id\": \"env_fixture\",\n          \"name\": \"Production\",\n          \"isDefault\": true\n        }\n      ]\n    }\n  ],\n  \"hint\": \"Pass a workspaceId to select_workspace to switch. Everything after that acts in the new workspace.\"\n}"
+    }
+  ]
+}

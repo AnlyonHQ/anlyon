@@ -1,0 +1,40 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "channel": "C0123456789",
+    "ts": "1791797400.000200",
+    "emoji": "white_check_mark"
+  },
+  "expectedUrl": "https://slack.com/api/reactions.add",
+  "response": {
+    "ok": true
+  },
+  "expectedReadBackUrl": "https://slack.com/api/reactions.get?channel=C0123456789&timestamp=1791797400.000200",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "ok": true,
+      "type": "message",
+      "message": {
+        "ts": "1791797400.000200",
+        "reactions": [
+          {
+            "name": "white_check_mark",
+            "count": 1
+          }
+        ]
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "ok": true,
+      "type": "message",
+      "message": {
+        "ts": "1791797400.000200"
+      }
+    }
+  }
+}

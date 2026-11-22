@@ -1,0 +1,120 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi-v2.yaml, PATCH /activities/{id}).",
+  "params": {},
+  "input": {
+    "activity_id": 7781
+  },
+  "expectedUrl": "https://api.pipedrive.com/api/v2/activities/7781",
+  "response": {
+    "success": true,
+    "data": {
+      "id": 7781,
+      "subject": "Call Dana about the renewal",
+      "type": "call",
+      "owner_id": 13540546,
+      "creator_user_id": 13540546,
+      "is_deleted": false,
+      "add_time": "2026-10-24T08:05:00Z",
+      "update_time": "2026-10-24T08:30:00Z",
+      "deal_id": 4217,
+      "lead_id": null,
+      "person_id": 902,
+      "org_id": 311,
+      "project_id": null,
+      "due_date": "2026-10-28",
+      "due_time": "15:00",
+      "duration": "00:30",
+      "busy": false,
+      "done": true,
+      "marked_as_done_time": "2026-10-24T08:30:00Z",
+      "location": null,
+      "participants": [
+        {
+          "person_id": 902,
+          "primary": true
+        }
+      ],
+      "public_description": null,
+      "priority": null,
+      "outcome": null,
+      "note": null
+    }
+  },
+  "expectedReadBackUrl": "https://api.pipedrive.com/api/v2/activities/7781",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "id": 7781,
+        "subject": "Call Dana about the renewal",
+        "type": "call",
+        "owner_id": 13540546,
+        "creator_user_id": 13540546,
+        "is_deleted": false,
+        "add_time": "2026-10-24T08:05:00Z",
+        "update_time": "2026-10-24T08:30:00Z",
+        "deal_id": 4217,
+        "lead_id": null,
+        "person_id": 902,
+        "org_id": 311,
+        "project_id": null,
+        "due_date": "2026-10-28",
+        "due_time": "15:00",
+        "duration": "00:30",
+        "busy": false,
+        "done": true,
+        "marked_as_done_time": "2026-10-24T08:30:00Z",
+        "location": null,
+        "participants": [
+          {
+            "person_id": 902,
+            "primary": true
+          }
+        ],
+        "public_description": null,
+        "priority": null,
+        "outcome": null,
+        "note": null
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "success": true,
+      "data": {
+        "id": 7781,
+        "subject": "Call Dana about the renewal",
+        "type": "call",
+        "owner_id": 13540546,
+        "creator_user_id": 13540546,
+        "is_deleted": false,
+        "add_time": "2026-10-24T08:05:00Z",
+        "update_time": "2026-10-24T08:05:00Z",
+        "deal_id": 4217,
+        "lead_id": null,
+        "person_id": 902,
+        "org_id": 311,
+        "project_id": null,
+        "due_date": "2026-10-28",
+        "due_time": "15:00",
+        "duration": "00:30",
+        "busy": false,
+        "done": false,
+        "marked_as_done_time": null,
+        "location": null,
+        "participants": [
+          {
+            "person_id": 902,
+            "primary": true
+          }
+        ],
+        "public_description": null,
+        "priority": null,
+        "outcome": null,
+        "note": null
+      }
+    }
+  }
+}

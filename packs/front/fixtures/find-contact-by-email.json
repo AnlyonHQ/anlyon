@@ -1,0 +1,32 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/docs/resource-aliases-1).",
+  "params": {},
+  "input": {
+    "email": "pam@example.com"
+  },
+  "expectedUrl": "https://api2.frontapp.com/contacts/alt:email:pam%40example.com",
+  "response": {
+    "_links": {
+      "self": "https://api2.frontapp.com/contacts/crd_2njtoem",
+      "related": {
+        "notes": "https://api2.frontapp.com/contacts/crd_2njtoem/notes",
+        "conversations": "https://api2.frontapp.com/contacts/crd_2njtoem/conversations"
+      }
+    },
+    "id": "crd_2njtoem",
+    "name": "Pam Beesly",
+    "description": "Office administrator",
+    "avatar_url": null,
+    "links": [],
+    "groups": [],
+    "lists": [],
+    "handles": [
+      {
+        "handle": "pam@example.com",
+        "source": "email"
+      }
+    ],
+    "custom_fields": {},
+    "is_private": false
+  }
+}

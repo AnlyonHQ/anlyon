@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Awaiting human approval. Nothing has been sent. Tell the user it is waiting for them in Anlyon, under Approvals. Call wait_for_approval with approvalId=apr_<id> to block until they decide. The action runs by itself once approved, and wait_for_approval returns its outcome."
+    }
+  ]
+}

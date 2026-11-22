@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"id\": \"apr_fixture\",\n  \"kind\": \"action\",\n  \"status\": \"approved\",\n  \"title\": \"Run action \\\"update-ticket-priority\\\"\",\n  \"description\": \"Change a support ticket priority.\",\n  \"payload\": {\n    \"invocationId\": \"inv_fixture\",\n    \"actionName\": \"update-ticket-priority\",\n    \"method\": \"PATCH\"\n  },\n  \"decisionNote\": \"Checked the ticket.\",\n  \"decidedBy\": {\n    \"type\": \"user\",\n    \"id\": \"usr_fixture\",\n    \"displayName\": null\n  },\n  \"votes\": [\n    {\n      \"decision\": \"approve\",\n      \"decidedBy\": {\n        \"type\": \"user\",\n        \"id\": \"usr_fixture\",\n        \"displayName\": null\n      },\n      \"note\": null,\n      \"decidedAt\": \"2026-09-30T00:01:00.000Z\"\n    }\n  ],\n  \"requiredApprovals\": 1,\n  \"approvedCount\": 1,\n  \"matchedPolicyId\": \"pol_fixture\",\n  \"matchedPolicyVersion\": 2,\n  \"policyExplanation\": \"Every call needs one approver.\",\n  \"decisionOrigin\": \"human\",\n  \"expiresAt\": \"2026-10-01T00:00:00.000Z\",\n  \"decidedAt\": \"2026-09-30T00:01:00.000Z\",\n  \"createdAt\": \"2026-09-30T00:00:00.000Z\",\n  \"invocation\": {\n    \"id\": \"inv_fixture\",\n    \"actionName\": \"update-ticket-priority\",\n    \"status\": \"succeeded\",\n    \"responseStatus\": 200,\n    \"body\": \"{\\\"ok\\\":true}\",\n    \"error\": null,\n    \"durationMs\": 41,\n    \"approvalId\": null,\n    \"decision\": null,\n    \"retryOf\": null,\n    \"createdAt\": \"2026-09-30T00:00:00.000Z\",\n    \"completedAt\": \"2026-09-30T00:00:01.000Z\"\n  }\n}"
+    }
+  ]
+}

@@ -1,0 +1,43 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "filter": "open",
+    "service_id": "PWIXJZS"
+  },
+  "expectedUrl": "https://api.pagerduty.com/maintenance_windows?limit=25&filter=open&service_ids[]=PWIXJZS",
+  "response": {
+    "maintenance_windows": [
+      {
+        "id": "PW98YIO",
+        "type": "maintenance_window",
+        "summary": "Database upgrade",
+        "sequence_number": 3,
+        "start_time": "2026-10-16T22:00:00Z",
+        "end_time": "2026-10-16T23:00:00Z",
+        "description": "Database upgrade",
+        "services": [
+          {
+            "id": "PWIXJZS",
+            "type": "service_reference",
+            "summary": "Checkout API",
+            "self": "https://api.pagerduty.com/services/PWIXJZS",
+            "html_url": "https://acme.pagerduty.com/services/PWIXJZS"
+          }
+        ],
+        "teams": [],
+        "created_by": {
+          "id": "PXPGF42",
+          "type": "user_reference",
+          "summary": "Dana Lee",
+          "self": "https://api.pagerduty.com/users/PXPGF42",
+          "html_url": "https://acme.pagerduty.com/users/PXPGF42"
+        }
+      }
+    ],
+    "limit": 25,
+    "offset": 0,
+    "more": false,
+    "total": null
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/trello/rest/api-group-boards/, GET /1/boards/{id}).",
+  "params": {},
+  "input": {
+    "board_id": "6720a1b2c3d4e5f6a7b8c9d0"
+  },
+  "expectedUrl": "https://api.trello.com/1/boards/6720a1b2c3d4e5f6a7b8c9d0?fields=name,desc,closed,url,idOrganization,dateLastActivity,labelNames",
+  "response": {
+    "id": "6720a1b2c3d4e5f6a7b8c9d0",
+    "name": "Customer requests",
+    "desc": "Requests from the support inbox.",
+    "closed": false,
+    "url": "https://trello.com/b/Qw3rTy12/customer-requests",
+    "idOrganization": "6720a1b2c3d4e5f6a7b8c900",
+    "dateLastActivity": "2026-10-24T09:14:22.103Z",
+    "labelNames": {
+      "green": "Done",
+      "yellow": "",
+      "orange": "",
+      "red": "Urgent",
+      "purple": "",
+      "blue": "Billing"
+    }
+  }
+}

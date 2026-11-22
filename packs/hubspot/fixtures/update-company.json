@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/update-company).",
+  "params": {},
+  "input": {
+    "companyId": "9001",
+    "numberofemployees": "140",
+    "website": "https://acme.example"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/companies/9001",
+  "response": {
+    "id": "9001",
+    "properties": {
+      "createdate": "2026-08-20T08:00:11.052Z",
+      "hs_lastmodifieddate": "2026-10-15T09:03:40.020Z",
+      "hs_object_id": "9001",
+      "numberofemployees": "140",
+      "website": "https://acme.example"
+    },
+    "createdAt": "2026-08-20T08:00:11.052Z",
+    "updatedAt": "2026-10-15T09:03:40.020Z",
+    "archived": false
+  }
+}

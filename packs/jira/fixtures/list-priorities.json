@@ -1,0 +1,34 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-priorities/#api-rest-api-3-priority-search-get).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {},
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/priority/search?maxResults=50",
+  "response": {
+    "self": "https://acme.atlassian.net/rest/api/3/priority/search?maxResults=50&startAt=0",
+    "maxResults": 50,
+    "startAt": 0,
+    "total": 2,
+    "isLast": true,
+    "values": [
+      {
+        "self": "https://acme.atlassian.net/rest/api/3/priority/2",
+        "iconUrl": "https://acme.atlassian.net/images/icons/priorities/high.svg",
+        "name": "High",
+        "id": "2",
+        "description": "Serious problem that could block progress.",
+        "statusColor": "#f15C75",
+        "isDefault": false
+      },
+      {
+        "self": "https://acme.atlassian.net/rest/api/3/priority/3",
+        "iconUrl": "https://acme.atlassian.net/images/icons/priorities/medium.svg",
+        "name": "Medium",
+        "id": "3",
+        "description": "Has the potential to affect progress.",
+        "statusColor": "#f79232",
+        "isDefault": true
+      }
+    ]
+  }
+}

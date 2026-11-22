@@ -1,0 +1,37 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.discord.com/developers/resources/message).",
+  "params": {},
+  "input": {
+    "channel_id": "1100000000000000001",
+    "before": "2026-10-15T09:12:00.000000+00:00"
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1100000000000000001/messages/pins?limit=20&before=2026-10-15T09%3A12%3A00.000000%2B00%3A00",
+  "response": {
+    "items": [
+      {
+        "pinned_at": "2026-10-14T16:00:00.000000+00:00",
+        "message": {
+          "id": "1290000000000000030",
+          "type": 0,
+          "channel_id": "1100000000000000001",
+          "author": {
+            "id": "1200000000000000007",
+            "username": "anlyon-bot",
+            "global_name": null,
+            "bot": true
+          },
+          "content": "Runbook: https://example.com/runbook",
+          "timestamp": "2026-10-15T09:12:00.000000+00:00",
+          "edited_timestamp": null,
+          "tts": false,
+          "mention_everyone": false,
+          "mentions": [],
+          "attachments": [],
+          "embeds": [],
+          "pinned": true
+        }
+      }
+    ],
+    "has_more": false
+  }
+}

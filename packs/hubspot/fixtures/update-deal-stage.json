@@ -1,0 +1,34 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/deals/update-deal).",
+  "params": {},
+  "input": {
+    "dealId": "7701",
+    "dealstage": "closedwon"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/deals/7701",
+  "response": {
+    "id": "7701",
+    "properties": {
+      "dealstage": "closedwon"
+    }
+  },
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/deals/7701?properties=dealstage",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "7701",
+      "properties": {
+        "dealstage": "closedwon"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "7701",
+      "properties": {
+        "dealstage": "contractsent"
+      }
+    }
+  }
+}

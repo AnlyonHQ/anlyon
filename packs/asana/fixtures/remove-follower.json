@@ -1,0 +1,16 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/removefollowerfortask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210",
+    "follower": "dana@example.com"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210/removeFollowers?opt_fields=followers.name",
+  "response": {
+    "data": {
+      "gid": "1208809876543210",
+      "resource_type": "task",
+      "followers": []
+    }
+  }
+}

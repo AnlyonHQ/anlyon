@@ -1,0 +1,192 @@
+{
+  "name": "@anlyonhq/sdk",
+  "version": "3.0.0",
+  "description": "Official TypeScript SDK for Anlyon. Your agent invokes a named action. Anlyon holds the credentials, evaluates policy, waits for approval when required, and makes the production call.",
+  "author": "Anlyon <support@anlyon.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnlyonHQ/anlyon.git",
+    "directory": "sdks/typescript/sdk"
+  },
+  "homepage": "https://docs.anlyon.com/guides/typescript-sdk",
+  "bugs": {
+    "url": "https://docs.anlyon.com",
+    "email": "support@anlyon.com"
+  },
+  "keywords": [
+    "anlyon",
+    "ai",
+    "ai-agents",
+    "agent-actions",
+    "approvals",
+    "human-in-the-loop",
+    "secrets",
+    "idempotency",
+    "webhook",
+    "typescript",
+    "sdk",
+    "api"
+  ],
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./nextjs": {
+      "import": {
+        "types": "./dist/nextjs.d.ts",
+        "default": "./dist/nextjs.js"
+      },
+      "require": {
+        "types": "./dist/nextjs.d.cts",
+        "default": "./dist/nextjs.cjs"
+      }
+    },
+    "./hono": {
+      "import": {
+        "types": "./dist/hono.d.ts",
+        "default": "./dist/hono.js"
+      },
+      "require": {
+        "types": "./dist/hono.d.cts",
+        "default": "./dist/hono.cjs"
+      }
+    },
+    "./cloudflare-workers": {
+      "import": {
+        "types": "./dist/cloudflare-workers.d.ts",
+        "default": "./dist/cloudflare-workers.js"
+      },
+      "require": {
+        "types": "./dist/cloudflare-workers.d.cts",
+        "default": "./dist/cloudflare-workers.cjs"
+      }
+    },
+    "./express": {
+      "import": {
+        "types": "./dist/express.d.ts",
+        "default": "./dist/express.js"
+      },
+      "require": {
+        "types": "./dist/express.d.cts",
+        "default": "./dist/express.cjs"
+      }
+    },
+    "./fastify": {
+      "import": {
+        "types": "./dist/fastify.d.ts",
+        "default": "./dist/fastify.js"
+      },
+      "require": {
+        "types": "./dist/fastify.d.cts",
+        "default": "./dist/fastify.cjs"
+      }
+    },
+    "./sveltekit": {
+      "import": {
+        "types": "./dist/sveltekit.d.ts",
+        "default": "./dist/sveltekit.js"
+      },
+      "require": {
+        "types": "./dist/sveltekit.d.cts",
+        "default": "./dist/sveltekit.cjs"
+      }
+    },
+    "./h3": {
+      "import": {
+        "types": "./dist/h3.d.ts",
+        "default": "./dist/h3.js"
+      },
+      "require": {
+        "types": "./dist/h3.d.cts",
+        "default": "./dist/h3.cjs"
+      }
+    },
+    "./types": {
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/types/index.js"
+      },
+      "require": {
+        "types": "./dist/types/index.d.cts",
+        "default": "./dist/types/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "rimraf": "^5.0.10",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12"
+  },
+  "peerDependencies": {
+    "next": ">=13.0.0",
+    "hono": ">=4.0.0",
+    "express": ">=4.0.0",
+    "fastify": ">=4.0.0",
+    "@sveltejs/kit": ">=1.0.0",
+    "h3": ">=1.0.0",
+    "zod": "^3.20.0 || ^4.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
+    "hono": {
+      "optional": true
+    },
+    "express": {
+      "optional": true
+    },
+    "fastify": {
+      "optional": true
+    },
+    "@sveltejs/kit": {
+      "optional": true
+    },
+    "h3": {
+      "optional": true
+    },
+    "zod": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "bin": {
+    "anlyon-policy": "./dist/cli/anlyon-policy.js"
+  }
+}

@@ -1,0 +1,75 @@
+packages:
+  - "server"
+  - "dashboard"
+  - "packages/*"
+  - "sdks/typescript/*"
+
+allowBuilds:
+  "@sentry-internal/node-cpu-profiler": true
+  "@sentry/node-cpu-profiler": true
+  core-js: false
+  esbuild: true
+  lightningcss: true
+  sharp: true
+  tree-sitter-python: false
+  workerd: true
+
+packageExtensions:
+  "@hookform/resolvers@*":
+    peerDependencies:
+      zod: ">=3.25.0"
+
+overrides:
+  hono: "4.13.13"
+  drizzle-orm: "0.45.2"
+
+  "body-parser@2": "^2.4.0"
+  "brace-expansion@2": "^2.1.4"
+  "brace-expansion@5": "^5.0.11"
+  "browserslist@4": "^4.28.7"
+  "cookie@<0.7.0": "^0.7.0"
+  "devalue@5": "^5.9.3"
+  "dompurify@3": "^3.4.17"
+  "fast-uri@3": "^3.1.5"
+  "fast-uri@4": "^4.1.4"
+  "http-cache-semantics@4": "^4.2.1"
+  "lodash-es@4": "^4.17.24"
+  "proxy-addr@2": "^2.0.8"
+  "seroval@1": "^1.6.3"
+  "source-map-js@1": "^1.2.2"
+  "systeminformation@5": "^5.33.16"
+  "undici@6": "^6.28.1"
+  "find-my-way@9": "^9.6.1"
+  "ip-address@10": "^10.7.4"
+  "js-yaml@3": "^3.15.1"
+  "js-yaml@4": "^4.3.2"
+  "jsondiffpatch@0.6": "^0.7.2"
+  "mermaid@11": "^11.16.1"
+  "nanoid@3": "^3.3.18"
+  "path-to-regexp@6": "^6.3.0"
+  "postcss@8": "^8.5.23"
+  "zod@4": "^4.6.6"
+  "sharp@<0.35.5": "^0.35.5"
+  "tar@7": "^7.5.21"
+  "undici@7": "^7.30.1"
+  "undici@8": "^8.10.2"
+  "fastify@5": "^5.12.2"
+  "launch-editor@2": "^2.14.2"
+  "shell-quote@1": "^1.11.0"
+  "vite@7": "^7.3.7"
+  "vite@8": "^8.1.6"
+  "tinypool@1": "^2.1.2"
+  "next@16": "^16.4.1"
+  "@sveltejs/kit": "-"
+
+  "minimatch>brace-expansion": "^5.0.11"
+  "ajv>fast-uri": "^4.1.4"
+  "@fastify/ajv-compiler>fast-uri": "^4.1.4"
+  "miniflare>undici": "^8.10.2"
+  "shadcn>undici": "^8.10.2"
+  "@dotenvx/dotenvx>undici": "^8.10.2"
+  "tsup>esbuild": "^0.28.1"
+  "vite>esbuild": "^0.28.1"
+  "unplugin>esbuild": "^0.28.1"
+  "bundle-require>esbuild": "^0.28.1"
+  "@esbuild-kit/core-utils>esbuild": "^0.28.1"

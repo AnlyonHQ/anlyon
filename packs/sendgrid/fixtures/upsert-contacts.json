@@ -1,0 +1,53 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_mc_contacts_v3.json, UpdateContact and GetImportContact).",
+  "params": {},
+  "input": {
+    "list_ids": [
+      "ca7a3796-e8a8-4029-9ccb-df8937940562"
+    ],
+    "contacts": [
+      {
+        "email": "ada@example.com",
+        "first_name": "Ada",
+        "last_name": "Lovelace"
+      }
+    ]
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/marketing/contacts",
+  "response": {
+    "job_id": "1c7f8d2e-5a3b-4e6f-9d01-23456789abcd"
+  },
+  "expectedReadBackUrl": "https://api.sendgrid.com/v3/marketing/contacts/imports/1c7f8d2e-5a3b-4e6f-9d01-23456789abcd",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "1c7f8d2e-5a3b-4e6f-9d01-23456789abcd",
+      "status": "pending",
+      "job_type": "upsert",
+      "results": {
+        "requested_count": 1,
+        "created_count": 1,
+        "updated_count": 0,
+        "deleted_count": 0,
+        "errored_count": 0
+      },
+      "started_at": "2026-10-24T10:00:01Z"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "1c7f8d2e-5a3b-4e6f-9d01-23456789abcd",
+      "status": "pending",
+      "job_type": "delete",
+      "results": {
+        "requested_count": 1,
+        "created_count": 0,
+        "updated_count": 0,
+        "deleted_count": 1,
+        "errored_count": 0
+      },
+      "started_at": "2026-10-24T10:00:01Z"
+    }
+  }
+}

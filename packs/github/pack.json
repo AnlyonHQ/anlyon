@@ -1,0 +1,2190 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/github",
+  "version": "0.3.0",
+  "description": "GitHub issues, pull requests and repository reads for the repositories a fine-grained token reaches: search, list and read issues, pull requests, reviews, files, branches and commits; open, edit, label, assign, comment on, close and reopen issues; open, comment on, review and merge pull requests. Every write is limited and read back where GitHub can show it.",
+  "secrets": [
+    {
+      "name": "GITHUB",
+      "kind": "connection",
+      "integrationId": "github",
+      "hosts": [
+        "api.github.com"
+      ],
+      "description": "The connected GitHub token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "search-issues",
+      "kind": "read",
+      "description": "Search issues and pull requests in the repositories the token can reach, with GitHub search syntax such as `repo:acme/widgets is:issue is:open label:bug`. Returns `total_count` and up to 5 `items` per page, bodies included; pass `page` for the next page (GitHub returns at most the first 1,000 results). Include `is:issue` or `is:pr`, and `repo:owner/name` to stay in one repository; GitHub allows 30 searches a minute.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/search/issues?q={{input.q}}&sort={{input.sort}}&order={{input.order}}&per_page=5&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "q"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "q": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,512}$",
+            "description": "The search query: keywords and qualifiers (repo:, is:issue, is:pr, is:open, label:, author:, assignee:)."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "comments",
+              "reactions",
+              "interactions",
+              "created",
+              "updated"
+            ],
+            "description": "Sort field. Best match when left out."
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "desc",
+              "asc"
+            ],
+            "description": "Sort order; used only with sort."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-issues",
+      "kind": "read",
+      "description": "List issues in one repository, newest first by default, 5 per page with bodies; pass `page` for the next page. GitHub includes pull requests in this list (they carry a `pull_request` key). Filters: state (open by default), labels (comma-separated names, all must match), assignee, creator, milestone number, and since (updated after).",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues?state={{input.state}}&labels={{input.labels}}&assignee={{input.assignee}}&creator={{input.creator}}&milestone={{input.milestone}}&sort={{input.sort}}&direction={{input.direction}}&since={{input.since}}&per_page=5&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed",
+              "all"
+            ],
+            "description": "Open when left out."
+          },
+          "labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names; an issue must have all of them."
+          },
+          "assignee": {
+            "type": "string",
+            "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9_-]{0,99}|\\*|none)$",
+            "description": "A login, `none` for unassigned, or `*` for any assignee."
+          },
+          "creator": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The login of the person who opened the issue."
+          },
+          "milestone": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,8}|\\*|none)$",
+            "description": "A milestone number, `none`, or `*` for any milestone."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "created",
+              "updated",
+              "comments"
+            ],
+            "description": "created when left out."
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "desc",
+              "asc"
+            ],
+            "description": "desc when left out."
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "ISO 8601 UTC time, YYYY-MM-DDTHH:MM:SSZ."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-issue",
+      "kind": "read",
+      "description": "Get one issue by number: title, body, state and state reason, labels, assignees, milestone and comment count. A pull request number also works here and returns the pull request as an issue (with a `pull_request` key).",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-issue-comments",
+      "kind": "read",
+      "description": "List the comments on one issue or pull request conversation, oldest first, 10 per page; pass `page` for the next page. `since` returns only comments updated after that time. Comments on a pull request's diff are in list-review-comments.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}/comments?since={{input.since}}&per_page=10&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "ISO 8601 UTC time, YYYY-MM-DDTHH:MM:SSZ."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-labels",
+      "kind": "read",
+      "description": "List the labels defined in a repository (name, color, description), 100 per page; pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/labels?per_page=100&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-pull-requests",
+      "kind": "read",
+      "description": "List pull requests in one repository, newest first by default, 3 per page because each one carries full head and base repository objects; pass `page` for the next page. Filters: state (open by default), base branch, and head as `owner:branch`. For a compact list of many pull requests use search-issues with `is:pr`.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls?state={{input.state}}&head={{input.head}}&base={{input.base}}&sort={{input.sort}}&direction={{input.direction}}&per_page=3&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed",
+              "all"
+            ],
+            "description": "Open when left out."
+          },
+          "head": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}:(?!/)(?!.*\\.\\.)[A-Za-z0-9._/+@-]{1,255}$",
+            "description": "The head branch as owner:branch, for example acme:fix-saved-cards."
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/+@-]{1,255}$",
+            "description": "The base branch name."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "created",
+              "updated",
+              "popularity",
+              "long-running"
+            ],
+            "description": "created when left out."
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "desc",
+              "asc"
+            ]
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-pull-request",
+      "kind": "read",
+      "description": "Get one pull request by number: title, body, state, draft, head and base branches with their SHAs, `merged`, `mergeable` (null while GitHub is still computing it; ask again shortly), requested reviewers, and commit, addition, deletion and changed-file counts.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "pull_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The pull request number, as shown after # on GitHub."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-pull-request-files",
+      "kind": "read",
+      "description": "List the files a pull request changes, 10 per page, each with its status, addition and deletion counts and its patch; pass `page` for the next page. GitHub returns at most 3,000 files, and a page with very large patches can reach the 64 KB response cut.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}/files?per_page=10&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "pull_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The pull request number, as shown after # on GitHub."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-reviews",
+      "kind": "read",
+      "description": "List the reviews on a pull request in the order they were submitted, 10 per page, each with its reviewer, state (APPROVED, CHANGES_REQUESTED, COMMENTED, DISMISSED or PENDING), body and commit; pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}/reviews?per_page=10&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "pull_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The pull request number, as shown after # on GitHub."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-review-comments",
+      "kind": "read",
+      "description": "List the comments left on a pull request's diff, 10 per page, each with its file path, line, diff hunk, body and the review it belongs to; pass `page` for the next page. `since` returns only comments updated after that time.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}/comments?sort={{input.sort}}&direction={{input.direction}}&since={{input.since}}&per_page=10&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "pull_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The pull request number, as shown after # on GitHub."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "created",
+              "updated"
+            ]
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Used only with sort."
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "ISO 8601 UTC time, YYYY-MM-DDTHH:MM:SSZ."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-repository",
+      "kind": "read",
+      "description": "Get one repository: full name, description, visibility, default branch, topics, whether issues are enabled, and open issue count.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-branches",
+      "kind": "read",
+      "description": "List a repository's branches, each with its head commit SHA and whether it is protected, 50 per page; pass `page` for the next page. Set `protected` to true for protected branches only.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/branches?protected={{input.protected}}&per_page=50&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "protected": {
+            "type": "boolean",
+            "description": "true for protected branches only."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-file-contents",
+      "kind": "read",
+      "description": "Get one file or directory from a repository, at a branch, tag or commit (`ref`; the default branch when left out). A file comes back with its `content` in base64 and its blob `sha`; a directory comes back as a list of entries (up to 1,000). A file over about 45 KB is cut by the 64 KB response limit once encoded, and GitHub returns no content over 1 MB in this form.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/contents/{{input.path:path}}?ref={{input.ref}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "path"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)[^\\r\\n?#]{1,1024}$",
+            "description": "The file or directory path from the repository root, for example src/index.ts."
+          },
+          "ref": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/+@-]{1,255}$",
+            "description": "A branch, tag or commit SHA."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-commits",
+      "kind": "read",
+      "description": "List commits newest first from a branch or SHA (the default branch when left out), 8 per page; pass `page` for the next page. Filter by a file path, an author login or email, and a time window (since, until).",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/commits?sha={{input.sha}}&path={{input.path}}&author={{input.author}}&since={{input.since}}&until={{input.until}}&per_page=8&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/+@-]{1,255}$",
+            "description": "A branch name or commit SHA to start from."
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)[^\\r\\n?#]{1,1024}$",
+            "description": "Only commits that touch this path."
+          },
+          "author": {
+            "type": "string",
+            "pattern": "^[^\\s]{1,254}$",
+            "description": "A GitHub login or an email address."
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "ISO 8601 UTC time, YYYY-MM-DDTHH:MM:SSZ."
+          },
+          "until": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "ISO 8601 UTC time, YYYY-MM-DDTHH:MM:SSZ."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-code",
+      "kind": "read",
+      "description": "Search code on the default branches of the repositories the token can reach, for example `retryCharge repo:acme/widgets path:src`. The query needs at least one search term, not only qualifiers. Returns `total_count` and up to 8 matches per page (file name, path, blob sha, repository); pass `page` for the next page. GitHub allows 10 code searches a minute and searches only files under 384 KB.",
+      "method": "GET",
+      "urlTemplate": "https://api.github.com/search/code?q={{input.q}}&per_page=8&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "q"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "q": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,512}$",
+            "description": "Search terms and qualifiers (repo:, path:, language:, extension:)."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-issue",
+      "kind": "write",
+      "description": "Open one issue in a repository. Read back by issue number; the title must match. Limitation: no provider idempotency, so a retry after an unknown outcome can open a second issue.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "title": "{{input.title}}",
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "title",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,256}$"
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,20000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{response.number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "title",
+            "equals": "{{input.title}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "comment-on-issue",
+      "kind": "write",
+      "description": "Add one comment to an issue or a pull request conversation. Read back by comment id; the text must match. Limitation: no provider idempotency, so a retry after an unknown outcome can post the comment twice.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}/comments",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,20000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/comments/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "close-issue",
+      "kind": "write",
+      "description": "Close one issue. Read back from the issue; its state must be closed. Limitation: the read-back can match an issue that was already closed.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "state": "closed"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "state",
+            "equals": "closed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reopen-issue",
+      "kind": "write",
+      "description": "Reopen one closed issue. Read back from the issue; its state must be open. Limitation: the read-back can match an issue that was already open.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "state": "open"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "state",
+            "equals": "open"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-issue",
+      "kind": "write",
+      "description": "Change one issue: any of title, body, state (with a state reason), milestone number, and the full lists of labels and assignees, which replace the current ones (an empty list clears them). Fields left out are not changed. Read back from the issue; its number, title, state and body must equal what GitHub returned for this update. Limitations: labels, assignees and milestone need push access and GitHub silently drops them otherwise, so check the returned issue; a milestone cannot be removed with this action; GitHub accepts at most 10 assignees.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "title": "{{input.title}}",
+        "body": "{{input.body}}",
+        "state": "{{input.state}}",
+        "state_reason": "{{input.state_reason}}",
+        "milestone": "{{input.milestone}}",
+        "labels": "{{input.labels}}",
+        "assignees": "{{input.assignees}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,256}$"
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{0,20000}$",
+            "description": "The new body; an empty string clears it."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "open",
+              "closed"
+            ]
+          },
+          "state_reason": {
+            "type": "string",
+            "enum": [
+              "completed",
+              "not_planned",
+              "reopened"
+            ],
+            "description": "Why the state changed; used only when state changes."
+          },
+          "milestone": {
+            "type": "integer",
+            "description": "The milestone number to set."
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!\\.\\.?$)[^\\r\\n]{1,50}$"
+            },
+            "description": "Every label the issue should have; replaces the current labels."
+          },
+          "assignees": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$"
+            },
+            "description": "Every login the issue should be assigned to (at most 10); replaces the current assignees."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "number",
+            "equals": "{{response.number}}"
+          },
+          {
+            "path": "title",
+            "equals": "{{response.title}}"
+          },
+          {
+            "path": "state",
+            "equals": "{{response.state}}"
+          },
+          {
+            "path": "body",
+            "equals": "{{response.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-labels",
+      "kind": "write",
+      "description": "Add one or more labels to an issue or pull request, keeping the labels it already has; a name that does not exist yet is created in the repository. Returns every label now on the issue. Read back from the issue; the first label named must be among its labels. Limitation: the read-back checks only the first label, by its exact name, so name it as the repository spells it. Needs push access.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}/labels",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "labels": "{{input.labels}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number",
+          "labels"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?!\\.\\.?$)[^\\r\\n]{1,50}$"
+            },
+            "description": "Label names to add."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "labels.*.name",
+            "equals": "{{input.labels.0}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "remove-label",
+      "kind": "write",
+      "description": "Remove one label from an issue or pull request. Returns the labels left on it; GitHub answers 404 when the issue does not have that label. Read back from the issue; the label must no longer be among its labels.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}/labels/{{input.name}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[^\\r\\n]{1,50}$",
+            "description": "The label name."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "labels.*.name",
+            "equals": "{{input.name}}",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-assignees",
+      "kind": "write",
+      "description": "Add up to 10 people as assignees of an issue or pull request, keeping the current ones. Returns the issue. GitHub silently ignores a login that cannot be assigned, so check `assignees` in the response. Read back from the issue; the first login named must be among its assignees. Limitation: the read-back checks only the first login. To remove assignees, use update-issue with the full list.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}/assignees",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "assignees": "{{input.assignees}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "issue_number",
+          "assignees"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "issue_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The issue number, as shown after # on GitHub."
+          },
+          "assignees": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$"
+            },
+            "description": "Logins to add (at most 10)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.issue_number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "assignees.*.login",
+            "equals": "{{input.assignees.0}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-comment",
+      "kind": "write",
+      "description": "Replace the text of one comment on an issue or pull request conversation. Read back by comment id; the text must match.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/comments/{{input.comment_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "comment_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "comment_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$",
+            "description": "The comment id (the `id` field of a comment, not its position)."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,20000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/comments/{{input.comment_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-comment",
+      "kind": "write",
+      "description": "Delete one comment from an issue or pull request conversation. It cannot be restored. Read back by comment id; GitHub must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/comments/{{input.comment_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "comment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "comment_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$",
+            "description": "The comment id (the `id` field of a comment, not its position)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/comments/{{input.comment_id}}",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "create-label",
+      "kind": "write",
+      "description": "Create one label in a repository, with a color given as six hex digits without #. GitHub refuses a name that already exists (422). Read back by name; the id must match the new label.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/labels",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "color": "{{input.color}}",
+        "description": "{{input.description}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "name",
+          "color"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[^\\r\\n]{1,50}$",
+            "description": "The label name."
+          },
+          "color": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{6}$",
+            "description": "Six hex digits without #, for example d73a4a."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "At most 100 characters."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/labels/{{input.name}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-label",
+      "kind": "write",
+      "description": "Delete one label from a repository, which also removes it from every issue and pull request that has it. It cannot be restored. Read back by name; GitHub must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/labels/{{input.name}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[^\\r\\n]{1,50}$",
+            "description": "The label name."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/labels/{{input.name}}",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "comment-on-pull-request",
+      "kind": "write",
+      "description": "Add one comment to a pull request's conversation (not to a line of its diff; use create-review for that). Read back by comment id; the text must match. Limitation: no provider idempotency, so a retry after an unknown outcome can post the comment twice.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/{{input.pull_number}}/comments",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "pull_number",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "pull_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The pull request number, as shown after # on GitHub."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,20000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/issues/comments/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-review",
+      "kind": "write",
+      "description": "Submit one review on a pull request: APPROVE, REQUEST_CHANGES or COMMENT, with an optional list of comments on lines of the diff. A body is required to request changes or comment. GitHub refuses a review of your own pull request with APPROVE or REQUEST_CHANGES. Read back by review id; its id, state and commit must equal what GitHub returned. Limitation: no provider idempotency, so a retry after an unknown outcome can submit a second review.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}/reviews",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "event": "{{input.event}}",
+        "body": "{{input.body}}",
+        "commit_id": "{{input.commit_id}}",
+        "comments": "{{input.comments}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "pull_number",
+          "event"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "pull_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The pull request number, as shown after # on GitHub."
+          },
+          "event": {
+            "type": "string",
+            "enum": [
+              "APPROVE",
+              "REQUEST_CHANGES",
+              "COMMENT"
+            ]
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,20000}$",
+            "description": "The review's summary. Required for REQUEST_CHANGES and COMMENT."
+          },
+          "commit_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$",
+            "description": "The commit being reviewed; the pull request's latest commit when left out."
+          },
+          "comments": {
+            "type": "array",
+            "description": "Comments on lines of the diff.",
+            "items": {
+              "type": "object",
+              "required": [
+                "path",
+                "body"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "pattern": "^(?!/)[^\\r\\n?#]{1,1024}$",
+                  "description": "The file's path in the pull request."
+                },
+                "body": {
+                  "type": "string",
+                  "pattern": "^[\\s\\S]{1,20000}$"
+                },
+                "line": {
+                  "type": "integer",
+                  "description": "The line in the file to comment on (the last line of a range)."
+                },
+                "side": {
+                  "type": "string",
+                  "enum": [
+                    "LEFT",
+                    "RIGHT"
+                  ],
+                  "description": "RIGHT for the new version, LEFT for the old."
+                },
+                "start_line": {
+                  "type": "integer",
+                  "description": "The first line of a multi-line comment."
+                },
+                "start_side": {
+                  "type": "string",
+                  "enum": [
+                    "LEFT",
+                    "RIGHT"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}/reviews/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "state",
+            "equals": "{{response.state}}"
+          },
+          {
+            "path": "commit_id",
+            "equals": "{{response.commit_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "request-reviewers",
+      "kind": "write",
+      "description": "Ask people (logins) or teams (slugs, organization repositories only) to review a pull request; give at least one. Returns the pull request with its requested reviewers. GitHub refuses a person who is not a collaborator, and the pull request's author. No read-back: reviewers and team_reviewers are both optional, and a read-back can only compare an input every call gives; GitHub also drops a person from the requested reviewers once they review.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}/requested_reviewers",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "reviewers": "{{input.reviewers}}",
+        "team_reviewers": "{{input.team_reviewers}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "pull_number"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "pull_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The pull request number, as shown after # on GitHub."
+          },
+          "reviewers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$"
+            },
+            "description": "Logins to request."
+          },
+          "team_reviewers": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$"
+            },
+            "description": "Team slugs to request."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "merge-pull-request",
+      "kind": "write",
+      "description": "Merge one pull request with a merge commit, a squash or a rebase. `sha` must be the head commit you reviewed (head.sha from get-pull-request); GitHub refuses the merge (409) if the branch has moved since. Read back from the pull request; `merged` must be true and its merge commit must be the one GitHub returned. Needs the Contents: Read and write token permission. Branch protection and required checks still apply (405 when not mergeable).",
+      "method": "PUT",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}/merge",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "sha": "{{input.sha}}",
+        "merge_method": "{{input.merge_method}}",
+        "commit_title": "{{input.commit_title}}",
+        "commit_message": "{{input.commit_message}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "pull_number",
+          "sha"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "pull_number": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,8}$",
+            "description": "The pull request number, as shown after # on GitHub."
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$",
+            "description": "The pull request's head commit SHA that was reviewed."
+          },
+          "merge_method": {
+            "type": "string",
+            "enum": [
+              "merge",
+              "squash",
+              "rebase"
+            ],
+            "description": "merge when left out."
+          },
+          "commit_title": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,256}$"
+          },
+          "commit_message": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,20000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{input.pull_number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "merged",
+            "equals": true
+          },
+          {
+            "path": "merge_commit_sha",
+            "equals": "{{response.sha}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-pull-request",
+      "kind": "write",
+      "description": "Open one pull request from a head branch (`branch`, or `owner:branch` for a fork) into a base branch, optionally as a draft. Read back by number; the title and base branch must match. GitHub refuses a second open pull request for the same head and base (422), so a retry after an unknown outcome cannot open a duplicate. The head branch must already exist with at least one commit the base does not have.",
+      "method": "POST",
+      "urlTemplate": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls",
+      "headers": {
+        "Authorization": "Bearer {{connection:github}}",
+        "Accept": "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "title": "{{input.title}}",
+        "head": "{{input.head}}",
+        "base": "{{input.base}}",
+        "body": "{{input.body}}",
+        "draft": "{{input.draft}}",
+        "maintainer_can_modify": "{{input.maintainer_can_modify}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "owner",
+          "repo",
+          "title",
+          "head",
+          "base"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_-]{0,99}$",
+            "description": "The account or organization that owns the repository."
+          },
+          "repo": {
+            "type": "string",
+            "pattern": "^(?!\\.\\.?$)[A-Za-z0-9_.-]{1,100}$",
+            "description": "The repository name, without .git."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,256}$"
+          },
+          "head": {
+            "type": "string",
+            "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9_-]{0,99}:)?(?!/)(?!.*\\.\\.)[A-Za-z0-9._/+@-]{1,255}$",
+            "description": "The branch with the changes: a name, or owner:branch for a fork."
+          },
+          "base": {
+            "type": "string",
+            "pattern": "^(?!/)(?!.*\\.\\.)[A-Za-z0-9._/+@-]{1,255}$",
+            "description": "The branch to merge into."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,20000}$"
+          },
+          "draft": {
+            "type": "boolean"
+          },
+          "maintainer_can_modify": {
+            "type": "boolean"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.github.com/repos/{{input.owner}}/{{input.repo}}/pulls/{{response.number}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "title",
+            "equals": "{{input.title}}"
+          },
+          {
+            "path": "base.ref",
+            "equals": "{{input.base}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "github: approve closing an issue",
+      "matchKind": "action",
+      "matchActionName": "close-issue",
+      "effect": "require_approval"
+    },
+    {
+      "name": "github: approve closing an issue by update",
+      "matchKind": "action",
+      "matchActionName": "update-issue",
+      "condition": "has(input.state) && input.state == 'closed'",
+      "effect": "require_approval"
+    },
+    {
+      "name": "github: approve deleting a comment",
+      "matchKind": "action",
+      "matchActionName": "delete-comment",
+      "effect": "require_approval"
+    },
+    {
+      "name": "github: approve deleting a label",
+      "matchKind": "action",
+      "matchActionName": "delete-label",
+      "effect": "require_approval"
+    },
+    {
+      "name": "github: approve approving a pull request",
+      "matchKind": "action",
+      "matchActionName": "create-review",
+      "condition": "input.event == 'APPROVE'",
+      "effect": "require_approval"
+    },
+    {
+      "name": "github: approve merging a pull request",
+      "matchKind": "action",
+      "matchActionName": "merge-pull-request",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "github: issues opened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-issue"
+    },
+    {
+      "name": "github: comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "comment-on-issue"
+    },
+    {
+      "name": "github: issues closed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "close-issue"
+    },
+    {
+      "name": "github: issues reopened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "reopen-issue"
+    },
+    {
+      "name": "github: issues updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-issue"
+    },
+    {
+      "name": "github: label additions per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-labels"
+    },
+    {
+      "name": "github: label removals per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "remove-label"
+    },
+    {
+      "name": "github: assignee additions per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "add-assignees"
+    },
+    {
+      "name": "github: comments edited per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-comment"
+    },
+    {
+      "name": "github: comments deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "delete-comment"
+    },
+    {
+      "name": "github: labels created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "create-label"
+    },
+    {
+      "name": "github: labels deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "delete-label"
+    },
+    {
+      "name": "github: pull request comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "comment-on-pull-request"
+    },
+    {
+      "name": "github: reviews per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-review"
+    },
+    {
+      "name": "github: review requests per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "request-reviewers"
+    },
+    {
+      "name": "github: pull requests merged per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "merge-pull-request"
+    },
+    {
+      "name": "github: pull requests opened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "create-pull-request"
+    }
+  ]
+}

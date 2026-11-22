@@ -1,0 +1,160 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.notion.com/reference/update-a-block).",
+  "params": {},
+  "input": {
+    "block_id": "6d7e8f9a-0b1c-4d2e-8f3a-4b5c6d7e8f9a",
+    "to_do": {
+      "rich_text": [
+        {
+          "text": {
+            "content": "Review pricing page (done)"
+          }
+        }
+      ],
+      "checked": true
+    }
+  },
+  "expectedUrl": "https://api.notion.com/v1/blocks/6d7e8f9a-0b1c-4d2e-8f3a-4b5c6d7e8f9a",
+  "response": {
+    "object": "block",
+    "id": "6d7e8f9a-0b1c-4d2e-8f3a-4b5c6d7e8f9a",
+    "parent": {
+      "type": "page_id",
+      "page_id": "0a9b8c7d-6e5f-4d3c-9b2a-1f0e9d8c7b6a"
+    },
+    "created_time": "2026-10-15T09:12:00.000Z",
+    "last_edited_time": "2026-10-15T09:14:00.000Z",
+    "created_by": {
+      "object": "user",
+      "id": "ee5f0f84-409a-440f-983a-a5315961c6e4"
+    },
+    "last_edited_by": {
+      "object": "user",
+      "id": "ee5f0f84-409a-440f-983a-a5315961c6e4"
+    },
+    "has_children": false,
+    "archived": false,
+    "in_trash": false,
+    "type": "to_do",
+    "to_do": {
+      "rich_text": [
+        {
+          "type": "text",
+          "text": {
+            "content": "Review pricing page (done)",
+            "link": null
+          },
+          "annotations": {
+            "bold": false,
+            "italic": false,
+            "strikethrough": false,
+            "underline": false,
+            "code": false,
+            "color": "default"
+          },
+          "plain_text": "Review pricing page (done)",
+          "href": null
+        }
+      ],
+      "checked": true,
+      "color": "default"
+    }
+  },
+  "expectedReadBackUrl": "https://api.notion.com/v1/blocks/6d7e8f9a-0b1c-4d2e-8f3a-4b5c6d7e8f9a",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "object": "block",
+      "id": "6d7e8f9a-0b1c-4d2e-8f3a-4b5c6d7e8f9a",
+      "parent": {
+        "type": "page_id",
+        "page_id": "0a9b8c7d-6e5f-4d3c-9b2a-1f0e9d8c7b6a"
+      },
+      "created_time": "2026-10-15T09:12:00.000Z",
+      "last_edited_time": "2026-10-15T09:14:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "ee5f0f84-409a-440f-983a-a5315961c6e4"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "ee5f0f84-409a-440f-983a-a5315961c6e4"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "to_do",
+      "to_do": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Review pricing page (done)",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Review pricing page (done)",
+            "href": null
+          }
+        ],
+        "checked": true,
+        "color": "default"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "object": "block",
+      "id": "6d7e8f9a-0b1c-4d2e-8f3a-4b5c6d7e8f9a",
+      "parent": {
+        "type": "page_id",
+        "page_id": "0a9b8c7d-6e5f-4d3c-9b2a-1f0e9d8c7b6a"
+      },
+      "created_time": "2026-10-15T09:12:00.000Z",
+      "last_edited_time": "2026-10-15T09:12:00.000Z",
+      "created_by": {
+        "object": "user",
+        "id": "ee5f0f84-409a-440f-983a-a5315961c6e4"
+      },
+      "last_edited_by": {
+        "object": "user",
+        "id": "ee5f0f84-409a-440f-983a-a5315961c6e4"
+      },
+      "has_children": false,
+      "archived": false,
+      "in_trash": false,
+      "type": "to_do",
+      "to_do": {
+        "rich_text": [
+          {
+            "type": "text",
+            "text": {
+              "content": "Review pricing page",
+              "link": null
+            },
+            "annotations": {
+              "bold": false,
+              "italic": false,
+              "strikethrough": false,
+              "underline": false,
+              "code": false,
+              "color": "default"
+            },
+            "plain_text": "Review pricing page",
+            "href": null
+          }
+        ],
+        "checked": false,
+        "color": "default"
+      }
+    }
+  }
+}

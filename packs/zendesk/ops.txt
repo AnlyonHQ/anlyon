@@ -1,0 +1,18 @@
+# action               operation                                        kind
+# Zendesk Support (Ticketing) API, written by hand from https://developer.zendesk.com/api-reference/ticketing/
+search-tickets         GET /api/v2/search.json                          read
+list-tickets           GET /api/v2/tickets.json
+get-ticket             GET /api/v2/tickets/{ticket_id}.json
+list-ticket-comments   GET /api/v2/tickets/{ticket_id}/comments.json
+list-user-tickets      GET /api/v2/users/{user_id}/tickets/requested.json
+search-users           GET /api/v2/users/search.json
+get-user               GET /api/v2/users/{user_id}.json
+list-groups            GET /api/v2/groups.json
+create-ticket          POST /api/v2/tickets.json
+# reply-to-ticket and add-internal-note add ticket.comment on the ticket update (public true or false)
+reply-to-ticket        PUT /api/v2/tickets/{ticket_id}.json
+add-internal-note      PUT /api/v2/tickets/{ticket_id}.json
+set-ticket-status      PUT /api/v2/tickets/{ticket_id}.json
+set-ticket-priority    PUT /api/v2/tickets/{ticket_id}.json
+assign-ticket          PUT /api/v2/tickets/{ticket_id}.json
+add-ticket-tags        PUT /api/v2/tickets/{ticket_id}/tags.json

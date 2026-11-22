@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation getProjectDomains).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "project": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+    "production": true
+  },
+  "expectedUrl": "https://api.vercel.com/v9/projects/prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3/domains?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F&limit=20&production=true",
+  "response": {
+    "domains": [
+      {
+        "name": "www.acme.com",
+        "apexName": "acme.com",
+        "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+        "verified": true,
+        "redirect": null,
+        "gitBranch": null,
+        "createdAt": 1700000000000,
+        "updatedAt": 1700000000000
+      }
+    ],
+    "pagination": {
+      "count": 1,
+      "next": null,
+      "prev": null
+    }
+  }
+}

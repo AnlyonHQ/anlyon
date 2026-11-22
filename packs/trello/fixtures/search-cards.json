@@ -1,0 +1,47 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/trello/rest/api-group-search/, GET /1/search).",
+  "params": {},
+  "input": {
+    "query": "invoice acme",
+    "board_id": "6720a1b2c3d4e5f6a7b8c9d0",
+    "partial": true
+  },
+  "expectedUrl": "https://api.trello.com/1/search?query=invoice%20acme&modelTypes=cards&idBoards=6720a1b2c3d4e5f6a7b8c9d0&partial=true&card_fields=name,idList,idBoard,closed,due,dueComplete,idLabels,idMembers,shortUrl,dateLastActivity,pos&cards_limit=20",
+  "response": {
+    "options": {
+      "terms": [
+        {
+          "text": "invoice"
+        },
+        {
+          "text": "acme"
+        }
+      ],
+      "modifiers": [],
+      "modelTypes": [
+        "cards"
+      ],
+      "partial": true
+    },
+    "cards": [
+      {
+        "id": "6720a1b2c3d4e5f6a7b8c9c1",
+        "name": "Re-send invoice to Acme",
+        "idList": "6720a1b2c3d4e5f6a7b8c9a1",
+        "idBoard": "6720a1b2c3d4e5f6a7b8c9d0",
+        "closed": false,
+        "due": "2026-11-02T17:00:00.000Z",
+        "dueComplete": false,
+        "idLabels": [
+          "6720a1b2c3d4e5f6a7b8c9e1"
+        ],
+        "idMembers": [
+          "6720a1b2c3d4e5f6a7b8c9f1"
+        ],
+        "shortUrl": "https://trello.com/c/aB3dE5fG",
+        "dateLastActivity": "2026-10-24T09:14:22.103Z",
+        "pos": 16384
+      }
+    ]
+  }
+}

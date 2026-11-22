@@ -1,0 +1,24 @@
+{
+	"name": "@anlyon/feature-flags",
+	"license": "Elastic-2.0",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"description": "Which features this build ships, and at what release stage. Shared by the dashboard and the API so neither one owns the answer.",
+	"exports": {
+		".": {
+			"types": "./src/index.ts",
+			"default": "./src/index.ts"
+		}
+	},
+	"scripts": {
+		"check": "biome check",
+		"lint": "tsc --noEmit",
+		"test": "vitest run"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.4",
+		"typescript": "^5.7.2",
+		"vitest": "^4.1.12"
+	}
+}

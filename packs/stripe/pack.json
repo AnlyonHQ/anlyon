@@ -1,0 +1,950 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/stripe",
+  "version": "0.2.0",
+  "description": "Stripe for an agent: read customers, payment intents, charges, refunds, invoices, subscriptions and the balance; create, update and delete customers, cancel subscriptions, finalize and void invoices, and refund a payment, with every write governed and read back.",
+  "parameters": [
+    {
+      "name": "stripe_account",
+      "description": "The Stripe account refunds are made from (acct_...). The connected key must belong to it.",
+      "pattern": "^acct_[A-Za-z0-9]{1,64}$"
+    },
+    {
+      "name": "stripe_mode",
+      "description": "test or live. The connected key must be of this mode.",
+      "default": "test",
+      "enum": [
+        "test",
+        "live"
+      ]
+    },
+    {
+      "name": "currency",
+      "description": "The one currency refunds are made in, lowercase ISO code.",
+      "default": "usd",
+      "pattern": "^[a-z]{3}$"
+    }
+  ],
+  "secrets": [
+    {
+      "name": "STRIPE",
+      "kind": "connection",
+      "integrationId": "stripe",
+      "hosts": [
+        "api.stripe.com"
+      ],
+      "description": "The connected Stripe restricted key (see the pack README for the permissions it needs)"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-customers",
+      "kind": "read",
+      "description": "List customers, optionally only those whose email is exactly this one (Stripe compares case-sensitively). 20 per page, newest first; when has_more is true, pass the last customer's id as starting_after (cus_...) for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/customers?limit=20&email={{input.email}}&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^\\s@,;<>\"]{1,64}@[^\\s@,;<>\"]{1,250}\\.[A-Za-z]{2,63}$"
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^cus_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-customer",
+      "kind": "read",
+      "description": "Get one customer by id: email, name, description, phone, balance, metadata and invoice settings. A deleted customer returns only its id and deleted: true.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/customers/{{input.customer_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "customer_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "pattern": "^cus_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-customers",
+      "kind": "read",
+      "description": "Search customers with Stripe's search query language, for example email:'jane@example.com', name~'Jane' or metadata['crm_id']:'42'. 20 per page; when has_more is true, pass next_page as page. Limitation: Stripe's search can lag writes by up to a minute (longer during an outage), so do not use it to read back a change, and it is not available to accounts in India.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/customers/search?query={{input.query}}&limit=20&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$"
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/.-]{1,1000}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-payment-intents",
+      "kind": "read",
+      "description": "List payment intents, optionally for one customer. Returns amount, amount_received, currency, status and latest_charge for each. 10 per page, newest first; when has_more is true, pass the last payment intent's id as starting_after (pi_...) for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/payment_intents?limit=10&customer={{input.customer}}&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "customer": {
+            "type": "string",
+            "pattern": "^cus_[A-Za-z0-9]{1,64}$"
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^pi_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-payment-intent",
+      "kind": "read",
+      "description": "Get one payment intent by id: amount, amount_received, currency, status, customer, latest_charge and last_payment_error. Use it before refund-payment to see what was paid.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/payment_intents/{{input.payment_intent_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "payment_intent_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "payment_intent_id": {
+            "type": "string",
+            "pattern": "^pi_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-charges",
+      "kind": "read",
+      "description": "List charges, optionally for one customer or one payment intent. Returns amount, amount_refunded, refunded, disputed, outcome and card brand and last4 for each. 10 per page, newest first; when has_more is true, pass the last charge's id as starting_after (ch_... or py_...) for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/charges?limit=10&customer={{input.customer}}&payment_intent={{input.payment_intent}}&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "customer": {
+            "type": "string",
+            "pattern": "^cus_[A-Za-z0-9]{1,64}$"
+          },
+          "payment_intent": {
+            "type": "string",
+            "pattern": "^pi_[A-Za-z0-9]{1,64}$"
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^(ch|py)_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-charge",
+      "kind": "read",
+      "description": "Get one charge by id: amount, amount_refunded, refunded, disputed, failure_code, outcome, receipt_url and payment method details.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/charges/{{input.charge_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "charge_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "charge_id": {
+            "type": "string",
+            "pattern": "^(ch|py)_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-refunds",
+      "kind": "read",
+      "description": "List refunds, optionally for one charge or one payment intent. Returns amount, currency, status and reason for each. 20 per page, newest first; when has_more is true, pass the last refund's id as starting_after (re_... or pyr_...) for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/refunds?limit=20&charge={{input.charge}}&payment_intent={{input.payment_intent}}&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "charge": {
+            "type": "string",
+            "pattern": "^(ch|py)_[A-Za-z0-9]{1,64}$"
+          },
+          "payment_intent": {
+            "type": "string",
+            "pattern": "^pi_[A-Za-z0-9]{1,64}$"
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^(re|pyr)_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-refund",
+      "kind": "read",
+      "description": "Get one refund by id: amount, currency, status (pending, requires_action, succeeded, failed or canceled), reason and the charge and payment intent it belongs to.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/refunds/{{input.refund_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "refund_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "refund_id": {
+            "type": "string",
+            "pattern": "^(re|pyr)_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-invoices",
+      "kind": "read",
+      "description": "List invoices, optionally for one customer or subscription, or in one status. Each invoice carries its first line items, so pages are small. 5 per page, newest first; when has_more is true, pass the last invoice's id as starting_after (in_...) for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/invoices?limit=5&customer={{input.customer}}&subscription={{input.subscription}}&status={{input.status}}&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "customer": {
+            "type": "string",
+            "pattern": "^cus_[A-Za-z0-9]{1,64}$"
+          },
+          "subscription": {
+            "type": "string",
+            "pattern": "^sub_[A-Za-z0-9]{1,64}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "open",
+              "paid",
+              "uncollectible",
+              "void"
+            ]
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^in_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-invoice",
+      "kind": "read",
+      "description": "Get one invoice by id: status, amounts due, paid and remaining, due date, hosted invoice URL and its line items. An invoice with many lines can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/invoices/{{input.invoice_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "invoice_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "invoice_id": {
+            "type": "string",
+            "pattern": "^in_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-subscriptions",
+      "kind": "read",
+      "description": "List subscriptions, optionally for one customer or one price, or in one status. Without status Stripe returns every subscription that is not canceled; pass all for every status. 10 per page, newest first; when has_more is true, pass the last subscription's id as starting_after (sub_...) for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/subscriptions?limit=10&customer={{input.customer}}&price={{input.price}}&status={{input.status}}&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "customer": {
+            "type": "string",
+            "pattern": "^cus_[A-Za-z0-9]{1,64}$"
+          },
+          "price": {
+            "type": "string",
+            "pattern": "^price_[A-Za-z0-9]{1,64}$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "past_due",
+              "unpaid",
+              "canceled",
+              "incomplete",
+              "incomplete_expired",
+              "trialing",
+              "paused",
+              "ended",
+              "all"
+            ]
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^sub_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-subscription",
+      "kind": "read",
+      "description": "Get one subscription by id: status, cancel_at_period_end, cancel_at, canceled_at, its items with price and current period, and latest_invoice.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/subscriptions/{{input.subscription_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "subscription_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "subscription_id": {
+            "type": "string",
+            "pattern": "^sub_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-balance",
+      "kind": "read",
+      "description": "Get the account's balance: the amounts available and pending, per currency, in minor units.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/balance",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-balance-transactions",
+      "kind": "read",
+      "description": "List the transactions that make up the balance (charges, refunds, fees, payouts and so on), optionally of one type, from one payout, or for one source object. Returns amount, fee, net, status and available_on for each. 25 per page, newest first; when has_more is true, pass the last transaction's id as starting_after (txn_...) for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.stripe.com/v1/balance_transactions?limit=25&type={{input.type}}&payout={{input.payout}}&source={{input.source}}&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "pattern": "^[a-z_]{1,60}$"
+          },
+          "payout": {
+            "type": "string",
+            "pattern": "^po_[A-Za-z0-9]{1,64}$"
+          },
+          "source": {
+            "type": "string",
+            "pattern": "^[a-z]{2,6}_[A-Za-z0-9]{1,64}$"
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^txn_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "refund-payment",
+      "kind": "write",
+      "description": "Refund part or all of one payment intent, in minor units of the pack's currency, from the account and in the mode fixed at install. Stripe's idempotency key and a read-back of the refund grade the receipt; a refund can stay pending and finish later. Refunds cannot be reversed.",
+      "requiresApproval": false,
+      "adapter": {
+        "type": "stripe.refund",
+        "credentialSecret": "STRIPE",
+        "config": {
+          "account": "{{param:stripe_account}}",
+          "mode": "{{param:stripe_mode}}",
+          "currency": "{{param:currency}}"
+        }
+      }
+    },
+    {
+      "name": "create-customer",
+      "kind": "write",
+      "description": "Create one customer with this email, and optionally a name, description, phone and metadata. Read back by the new customer's id; the email must match. Limitation: no idempotency key is sent, so a retry after an unknown outcome can create a second customer.",
+      "method": "POST",
+      "urlTemplate": "https://api.stripe.com/v1/customers",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "bodyTemplate": {
+        "email": "{{input.email}}",
+        "name": "{{input.name}}",
+        "description": "{{input.description}}",
+        "phone": "{{input.phone}}",
+        "metadata": "{{input.metadata}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^\\s@,;<>\"]{1,64}@[^\\s@,;<>\"]{1,250}\\.[A-Za-z]{2,63}$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,256}$"
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^[0-9+() .-]{1,20}$"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Key-value pairs merged into the customer's metadata. Stripe allows up to 50 keys, keys up to 40 characters without square brackets, and values up to 500 characters; an empty value removes a key."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.stripe.com/v1/customers/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "email",
+            "equals": "{{input.email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-customer",
+      "kind": "write",
+      "description": "Change one customer's email, name, description or phone, or merge keys into its metadata; fields left out are not changed. Read back by id; the customer's email and name must equal what Stripe returned for the update. Limitation: because every field is optional, the read-back proves the update was stored, not which fields this call changed.",
+      "method": "POST",
+      "urlTemplate": "https://api.stripe.com/v1/customers/{{input.customer_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "bodyTemplate": {
+        "email": "{{input.email}}",
+        "name": "{{input.name}}",
+        "description": "{{input.description}}",
+        "phone": "{{input.phone}}",
+        "metadata": "{{input.metadata}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "customer_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "pattern": "^cus_[A-Za-z0-9]{1,64}$"
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^\\s@,;<>\"]{1,64}@[^\\s@,;<>\"]{1,250}\\.[A-Za-z]{2,63}$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,256}$"
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^[0-9+() .-]{1,20}$"
+          },
+          "metadata": {
+            "type": "object",
+            "description": "Key-value pairs merged into the customer's metadata. Stripe allows up to 50 keys, keys up to 40 characters without square brackets, and values up to 500 characters; an empty value removes a key."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.stripe.com/v1/customers/{{input.customer_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.customer_id}}"
+          },
+          {
+            "path": "email",
+            "equals": "{{response.email}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{response.name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-customer",
+      "kind": "write",
+      "description": "Permanently delete one customer. Stripe also cancels the customer's active subscriptions at once and removes its saved cards; this cannot be undone. Read back by id; Stripe keeps deleted customers readable, and deleted must be true.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.stripe.com/v1/customers/{{input.customer_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "customer_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "customer_id": {
+            "type": "string",
+            "pattern": "^cus_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.stripe.com/v1/customers/{{input.customer_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "deleted",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "cancel-subscription",
+      "kind": "write",
+      "description": "Cancel one subscription now. The customer is not charged for it again; invoice_now bills un-invoiced usage and pending prorations at once, and prorate credits the unused time. This cannot be undone. Read back by id; the status must be canceled. Limitation: the read-back can match a subscription that was already canceled.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.stripe.com/v1/subscriptions/{{input.subscription_id}}?invoice_now={{input.invoice_now}}&prorate={{input.prorate}}&cancellation_details%5Bcomment%5D={{input.comment}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "subscription_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "subscription_id": {
+            "type": "string",
+            "pattern": "^sub_[A-Za-z0-9]{1,64}$"
+          },
+          "invoice_now": {
+            "type": "boolean"
+          },
+          "prorate": {
+            "type": "boolean"
+          },
+          "comment": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.stripe.com/v1/subscriptions/{{input.subscription_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "canceled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-subscription-cancel-at-period-end",
+      "kind": "write",
+      "description": "Set whether one subscription cancels at the end of its current period (true) or keeps renewing (false); nothing is canceled now. Read back by id; cancel_at_period_end must equal the value sent.",
+      "method": "POST",
+      "urlTemplate": "https://api.stripe.com/v1/subscriptions/{{input.subscription_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "bodyTemplate": {
+        "cancel_at_period_end": "{{input.cancel_at_period_end}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "subscription_id",
+          "cancel_at_period_end"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "subscription_id": {
+            "type": "string",
+            "pattern": "^sub_[A-Za-z0-9]{1,64}$"
+          },
+          "cancel_at_period_end": {
+            "type": "boolean"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.stripe.com/v1/subscriptions/{{input.subscription_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "cancel_at_period_end",
+            "equals": "{{input.cancel_at_period_end}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "finalize-invoice",
+      "kind": "write",
+      "description": "Finalize one draft invoice so it gets a number and can be paid, with automatic collection turned off: Stripe does not charge or email the customer because of this call. Read back by id; the status must be open. Limitation: an invoice whose amount due is zero is marked paid when finalized, so its read-back does not match.",
+      "method": "POST",
+      "urlTemplate": "https://api.stripe.com/v1/invoices/{{input.invoice_id}}/finalize",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "bodyTemplate": {
+        "auto_advance": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "invoice_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "invoice_id": {
+            "type": "string",
+            "pattern": "^in_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.stripe.com/v1/invoices/{{input.invoice_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "open"
+          }
+        ]
+      }
+    },
+    {
+      "name": "void-invoice",
+      "kind": "write",
+      "description": "Void one finalized invoice that is not paid, so it can no longer be paid; it stays on record. This cannot be undone. Read back by id; the status must be void. Limitation: the read-back can match an invoice that was already void.",
+      "method": "POST",
+      "urlTemplate": "https://api.stripe.com/v1/invoices/{{input.invoice_id}}/void",
+      "headers": {
+        "Authorization": "Bearer {{connection:stripe}}",
+        "Stripe-Version": "2026-09-30.endive",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "invoice_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "invoice_id": {
+            "type": "string",
+            "pattern": "^in_[A-Za-z0-9]{1,64}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.stripe.com/v1/invoices/{{input.invoice_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "void"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "stripe: approve refunds over 100.00",
+      "matchKind": "action",
+      "matchActionName": "refund-payment",
+      "condition": "input.amount > 10000",
+      "effect": "require_approval"
+    },
+    {
+      "name": "stripe: approve deleting a customer",
+      "matchKind": "action",
+      "matchActionName": "delete-customer",
+      "effect": "require_approval"
+    },
+    {
+      "name": "stripe: approve canceling a subscription",
+      "matchKind": "action",
+      "matchActionName": "cancel-subscription",
+      "effect": "require_approval"
+    },
+    {
+      "name": "stripe: approve scheduling a subscription to end",
+      "matchKind": "action",
+      "matchActionName": "set-subscription-cancel-at-period-end",
+      "condition": "input.cancel_at_period_end == true",
+      "effect": "require_approval"
+    },
+    {
+      "name": "stripe: approve voiding an invoice",
+      "matchKind": "action",
+      "matchActionName": "void-invoice",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "stripe: refunds per day",
+      "dimension": "money",
+      "currency": "usd",
+      "period": "day",
+      "amount": 50000,
+      "actionName": "refund-payment"
+    },
+    {
+      "name": "stripe: customers created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-customer"
+    },
+    {
+      "name": "stripe: customers updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-customer"
+    },
+    {
+      "name": "stripe: customers deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "delete-customer"
+    },
+    {
+      "name": "stripe: subscriptions canceled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "cancel-subscription"
+    },
+    {
+      "name": "stripe: subscription renewals changed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "set-subscription-cancel-at-period-end"
+    },
+    {
+      "name": "stripe: invoices finalized per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "finalize-invoice"
+    },
+    {
+      "name": "stripe: invoices voided per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "void-invoice"
+    }
+  ]
+}

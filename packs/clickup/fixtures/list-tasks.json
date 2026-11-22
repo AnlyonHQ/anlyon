@@ -1,0 +1,70 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/gettasks).",
+  "params": {},
+  "input": {
+    "list_id": "901201234567",
+    "page": 0,
+    "status": "in progress",
+    "include_closed": true
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/list/901201234567/task?page=0&include_closed=true&statuses[]=in%20progress",
+  "response": {
+    "tasks": [
+      {
+        "id": "86a1b2c3d",
+        "custom_id": null,
+        "name": "Follow up with Acme",
+        "text_content": "They asked for the security review.",
+        "description": "They asked for the security review.",
+        "status": {
+          "id": "p9012345_iJkLmNoP",
+          "status": "in progress",
+          "color": "#4194f6",
+          "orderindex": 1,
+          "type": "custom"
+        },
+        "date_created": "1761300000000",
+        "date_updated": "1761300000000",
+        "date_closed": null,
+        "date_done": null,
+        "archived": false,
+        "creator": {
+          "id": 4501234,
+          "username": "Sam Rivera",
+          "color": "#827718"
+        },
+        "assignees": [],
+        "group_assignees": [],
+        "watchers": [],
+        "checklists": [],
+        "tags": [],
+        "parent": null,
+        "priority": {
+          "color": "#f8ae00",
+          "id": "3",
+          "orderindex": "3",
+          "priority": "normal"
+        },
+        "due_date": "1761868800000",
+        "start_date": null,
+        "team_id": "9012345",
+        "url": "https://app.clickup.com/t/86a1b2c3d",
+        "list": {
+          "id": "901201234567",
+          "name": "Customer follow-ups",
+          "access": true
+        },
+        "folder": {
+          "id": "90120123456",
+          "name": "Sales",
+          "hidden": false,
+          "access": true
+        },
+        "space": {
+          "id": "90120012345"
+        }
+      }
+    ],
+    "last_page": true
+  }
+}

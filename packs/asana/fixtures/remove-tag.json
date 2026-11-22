@@ -1,0 +1,50 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/removetagfortask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210",
+    "tag_gid": "1208807777777777"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210/removeTag",
+  "response": {
+    "data": {}
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210?opt_fields=tags.name",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "resource_type": "task",
+        "tags": [
+          {
+            "gid": "1208807777777001",
+            "resource_type": "tag",
+            "name": "billing"
+          }
+        ]
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "resource_type": "task",
+        "tags": [
+          {
+            "gid": "1208807777777001",
+            "resource_type": "tag",
+            "name": "billing"
+          },
+          {
+            "gid": "1208807777777777",
+            "resource_type": "tag",
+            "name": "urgent"
+          }
+        ]
+      }
+    }
+  }
+}

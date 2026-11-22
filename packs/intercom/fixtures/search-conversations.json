@@ -1,0 +1,83 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/searchconversations).",
+  "params": {},
+  "input": {
+    "query": {
+      "operator": "AND",
+      "value": [
+        {
+          "field": "state",
+          "operator": "=",
+          "value": "open"
+        },
+        {
+          "field": "admin_assignee_id",
+          "operator": "=",
+          "value": 991267708
+        }
+      ]
+    }
+  },
+  "expectedUrl": "https://api.intercom.io/conversations/search",
+  "response": {
+    "type": "conversation.list",
+    "conversations": [
+      {
+        "type": "conversation",
+        "id": "1295",
+        "title": null,
+        "created_at": 1734537500,
+        "updated_at": 1734537600,
+        "waiting_since": 1734537500,
+        "snoozed_until": null,
+        "open": true,
+        "state": "open",
+        "read": false,
+        "priority": "not_priority",
+        "admin_assignee_id": 991267708,
+        "team_assignee_id": null,
+        "tags": {
+          "type": "tag.list",
+          "tags": []
+        },
+        "source": {
+          "type": "conversation",
+          "id": "403918330",
+          "delivered_as": "customer_initiated",
+          "subject": "",
+          "body": "<p>My invoice is wrong</p>",
+          "author": {
+            "type": "lead",
+            "id": "6762f0cd1bb69f9f2193bb7f",
+            "name": "Sam Rivera",
+            "email": "sam@example.com"
+          },
+          "attachments": [],
+          "url": null,
+          "redacted": false
+        },
+        "contacts": {
+          "type": "contact.list",
+          "contacts": [
+            {
+              "type": "contact",
+              "id": "6762f0cd1bb69f9f2193bb7f",
+              "external_id": null
+            }
+          ]
+        },
+        "teammates": {
+          "type": "admin.list",
+          "teammates": []
+        }
+      }
+    ],
+    "total_count": 1,
+    "pages": {
+      "type": "pages",
+      "page": 1,
+      "per_page": 10,
+      "total_pages": 1
+    }
+  }
+}

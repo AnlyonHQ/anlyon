@@ -1,0 +1,27 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/message-streams-api).",
+  "params": {},
+  "input": {
+    "type": "Transactional"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/message-streams?MessageStreamType=Transactional&IncludeArchivedStreams=false",
+  "response": {
+    "MessageStreams": [
+      {
+        "ID": "outbound",
+        "ServerID": 123457,
+        "Name": "Transactional Stream",
+        "Description": "Transactional messages",
+        "MessageStreamType": "Transactional",
+        "CreatedAt": "2026-07-01T00:00:00-04:00",
+        "UpdatedAt": null,
+        "ArchivedAt": null,
+        "ExpectedPurgeDate": null,
+        "SubscriptionManagementConfiguration": {
+          "UnsubscribeHandlingType": "none"
+        }
+      }
+    ],
+    "TotalCount": 1
+  }
+}

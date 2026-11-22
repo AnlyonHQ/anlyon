@@ -1,0 +1,609 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/twilio",
+  "version": "0.1.0",
+  "description": "Twilio for an agent: read messages, their media, phone numbers and calls; send an SMS, redact or delete a message, and rename a phone number, with every write governed.",
+  "secrets": [
+    {
+      "name": "TWILIO",
+      "kind": "connection",
+      "integrationId": "twilio",
+      "hosts": [
+        "api.twilio.com"
+      ],
+      "description": "The connected Twilio Account SID and Auth Token (see the pack README)"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-messages",
+      "kind": "read",
+      "description": "List messages sent and received by the account, 20 a page, optionally filtered to those to or from one number or sent on, before or after a date (UTC). Each message has its sid, to, from, body, status, direction, num_segments, price, error_code and dates. When next_page_uri is not null, pass its Page and PageToken values as page and page_token for the next page. A redacted message has an empty body; a deleted one is not listed.",
+      "method": "GET",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages.json?To={{input.to}}&From={{input.from}}&DateSent={{input.date_sent}}&DateSent%3C={{input.date_sent_on_or_before}}&DateSent%3E={{input.date_sent_on_or_after}}&PageSize=20&Page={{input.page}}&PageToken={{input.page_token}}",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^\\+[1-9][0-9]{6,14}$",
+            "description": "Messages sent to this number, E.164 (e.g. +15558675310)."
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^\\+[1-9][0-9]{6,14}$",
+            "description": "Messages sent from this number, E.164 (e.g. +15017122661)."
+          },
+          "date_sent": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Messages sent on this date, YYYY-MM-DD in UTC."
+          },
+          "date_sent_on_or_before": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Messages sent on or before this date, YYYY-MM-DD in UTC."
+          },
+          "date_sent_on_or_after": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Messages sent on or after this date, YYYY-MM-DD in UTC."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The Page value from the previous page's next_page_uri. Give it with page_token."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$",
+            "description": "The PageToken value from the previous page's next_page_uri. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-message",
+      "kind": "read",
+      "description": "Get one message: to, from, body, status (queued, sending, sent, delivered, undelivered, failed, received and others), direction, num_segments, num_media, price and price_unit (filled in after sending), error_code, error_message and dates.",
+      "method": "GET",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages/{{input.message_sid}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid",
+          "message_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "message_sid": {
+            "type": "string",
+            "pattern": "^(SM|MM)[0-9a-f]{32}$",
+            "description": "The message's SID (SM or MM followed by 32 hex characters), from send-sms or list-messages."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-message-media",
+      "kind": "read",
+      "description": "List the media files (images and other MMS attachments) of one message, 20 a page: each with its sid, content_type, dates and uri. The file itself is not returned. When next_page_uri is not null, pass its Page and PageToken values as page and page_token for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages/{{input.message_sid}}/Media.json?PageSize=20&Page={{input.page}}&PageToken={{input.page_token}}",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid",
+          "message_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "message_sid": {
+            "type": "string",
+            "pattern": "^(SM|MM)[0-9a-f]{32}$",
+            "description": "The message's SID (SM or MM followed by 32 hex characters), from send-sms or list-messages."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The Page value from the previous page's next_page_uri. Give it with page_token."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$",
+            "description": "The PageToken value from the previous page's next_page_uri. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-phone-numbers",
+      "kind": "read",
+      "description": "List the phone numbers the account owns, 20 a page, optionally filtered to those matching a number or a friendly name. Each has its sid, phone_number (E.164), friendly_name, capabilities (sms, mms, voice, fax) and the URLs Twilio calls for incoming messages and calls. When next_page_uri is not null, pass its Page and PageToken values as page and page_token for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/IncomingPhoneNumbers.json?PhoneNumber={{input.phone_number}}&FriendlyName={{input.friendly_name}}&PageSize=20&Page={{input.page}}&PageToken={{input.page_token}}",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "phone_number": {
+            "type": "string",
+            "pattern": "^\\+?[0-9*]{1,15}$",
+            "description": "All or part of the number; * matches any digit (e.g. +1415*******)."
+          },
+          "friendly_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,64}$",
+            "description": "Numbers with this friendly name."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The Page value from the previous page's next_page_uri. Give it with page_token."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$",
+            "description": "The PageToken value from the previous page's next_page_uri. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-phone-number",
+      "kind": "read",
+      "description": "Get one phone number the account owns: phone_number, friendly_name, capabilities, status, and the URLs and methods Twilio uses for incoming messages and calls.",
+      "method": "GET",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/IncomingPhoneNumbers/{{input.phone_number_sid}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid",
+          "phone_number_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "phone_number_sid": {
+            "type": "string",
+            "pattern": "^PN[0-9a-f]{32}$",
+            "description": "The phone number's SID (PN followed by 32 hex characters), from list-phone-numbers."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-calls",
+      "kind": "read",
+      "description": "List the account's calls, 20 a page, optionally filtered to those to or from one number, with one status, or started before or on or after a date (UTC). Each call has its sid, to, from, status, direction, start_time, end_time, duration (seconds), price and price_unit. When next_page_uri is not null, pass its Page and PageToken values as page and page_token for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Calls.json?To={{input.to}}&From={{input.from}}&Status={{input.status}}&StartTime%3C={{input.started_before}}&StartTime%3E={{input.started_on_or_after}}&PageSize=20&Page={{input.page}}&PageToken={{input.page_token}}",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^\\+[1-9][0-9]{6,14}$",
+            "description": "Calls made to this number, E.164."
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^\\+[1-9][0-9]{6,14}$",
+            "description": "Calls made from this number, E.164."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "ringing",
+              "in-progress",
+              "canceled",
+              "completed",
+              "failed",
+              "busy",
+              "no-answer"
+            ],
+            "description": "Calls with this status."
+          },
+          "started_before": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Calls that started before this date, YYYY-MM-DD in UTC."
+          },
+          "started_on_or_after": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Calls that started on or after this date, YYYY-MM-DD in UTC."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The Page value from the previous page's next_page_uri. Give it with page_token."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,128}$",
+            "description": "The PageToken value from the previous page's next_page_uri. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-call",
+      "kind": "read",
+      "description": "Get one call: to, from, status, direction, start_time, end_time, duration (seconds), price and price_unit (filled in after the call ends), answered_by and parent_call_sid.",
+      "method": "GET",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Calls/{{input.call_sid}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid",
+          "call_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "call_sid": {
+            "type": "string",
+            "pattern": "^CA[0-9a-f]{32}$",
+            "description": "The call's SID (CA followed by 32 hex characters), from list-calls."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "send-sms",
+      "kind": "write",
+      "description": "Send one SMS to one phone number, from one of the account's numbers (from) or through a Messaging Service (messaging_service_sid); give one of the two, or Twilio refuses it. The message is sent to a person and costs money: Twilio bills each segment (160 GSM-7 or 70 UCS-2 characters) at the destination's rate. Counted as one message, not by segment or price; the price is filled in on the message after it is sent. Read back by the new message's sid; to must match and the body must equal what Twilio stored. The status is not checked, because it moves from queued to sent and delivered. Limitation: no idempotency key, so a retry after an unknown outcome can send it twice. A sent SMS cannot be recalled. A trial account sends only to verified numbers, and Twilio limits what a trial message may say.",
+      "method": "POST",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages.json",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "bodyTemplate": {
+        "To": "{{input.to}}",
+        "From": "{{input.from}}",
+        "MessagingServiceSid": "{{input.messaging_service_sid}}",
+        "Body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid",
+          "to",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "to": {
+            "type": "string",
+            "pattern": "^\\+[1-9][0-9]{6,14}$",
+            "description": "The recipient's phone number, E.164 (e.g. +15558675310)."
+          },
+          "from": {
+            "type": "string",
+            "pattern": "^(\\+[1-9][0-9]{6,14}|[0-9]{5,6}|[A-Za-z0-9 ]{1,11})$",
+            "description": "The sender: one of the account's numbers in E.164 (from list-phone-numbers), a short code, or an alphanumeric sender ID where the destination country allows it."
+          },
+          "messaging_service_sid": {
+            "type": "string",
+            "pattern": "^MG[0-9a-f]{32}$",
+            "description": "A Messaging Service SID (MG followed by 32 hex characters). Twilio picks the sender from the service's pool when from is left out."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,1600}$",
+            "description": "The text, up to 1,600 characters. Longer than one segment is split and billed per segment."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "messages",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages/{{response.sid}}.json",
+        "status": 200,
+        "match": [
+          {
+            "path": "to",
+            "equals": "{{input.to}}"
+          },
+          {
+            "path": "body",
+            "equals": "{{response.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "redact-message",
+      "kind": "write",
+      "description": "Remove the text of one message and keep its record (to, from, status, price, dates). This cannot be undone. Read back by sid; the body must be empty. Limitation: the Twilio reference does not say in which statuses a message can be redacted; redact a message once it is sent, delivered, failed or received.",
+      "method": "POST",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages/{{input.message_sid}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "bodyTemplate": {
+        "Body": ""
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid",
+          "message_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "message_sid": {
+            "type": "string",
+            "pattern": "^(SM|MM)[0-9a-f]{32}$",
+            "description": "The message's SID (SM or MM followed by 32 hex characters), from send-sms or list-messages."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages/{{input.message_sid}}.json",
+        "status": 200,
+        "match": [
+          {
+            "path": "sid",
+            "equals": "{{input.message_sid}}"
+          },
+          {
+            "path": "body",
+            "equals": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-message",
+      "kind": "write",
+      "description": "Delete one message record and its body from the account's logs. This cannot be undone. Read back: getting the message must answer 404. Limitation: Twilio refuses to delete a message that is still being sent or received (error 20009); wait a few minutes after it is sent and try again.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages/{{input.message_sid}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid",
+          "message_sid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "message_sid": {
+            "type": "string",
+            "pattern": "^(SM|MM)[0-9a-f]{32}$",
+            "description": "The message's SID (SM or MM followed by 32 hex characters), from send-sms or list-messages."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/Messages/{{input.message_sid}}.json",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "rename-phone-number",
+      "kind": "write",
+      "description": "Change the friendly name of one of the account's phone numbers, the label shown in the Twilio Console and lists. Nothing else on the number changes. Read back by sid; friendly_name must match.",
+      "method": "POST",
+      "urlTemplate": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/IncomingPhoneNumbers/{{input.phone_number_sid}}.json",
+      "headers": {
+        "Authorization": "Basic {{connection:twilio}}",
+        "Accept": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      "bodyTemplate": {
+        "FriendlyName": "{{input.friendly_name}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "account_sid",
+          "phone_number_sid",
+          "friendly_name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "account_sid": {
+            "type": "string",
+            "pattern": "^AC[0-9a-f]{32}$",
+            "description": "The Account SID (AC followed by 32 hex characters) of the connected Twilio account, or of one of its subaccounts."
+          },
+          "phone_number_sid": {
+            "type": "string",
+            "pattern": "^PN[0-9a-f]{32}$",
+            "description": "The phone number's SID (PN followed by 32 hex characters), from list-phone-numbers."
+          },
+          "friendly_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,64}$",
+            "description": "The new friendly name, up to 64 characters."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.twilio.com/2010-04-01/Accounts/{{input.account_sid}}/IncomingPhoneNumbers/{{input.phone_number_sid}}.json",
+        "status": 200,
+        "match": [
+          {
+            "path": "friendly_name",
+            "equals": "{{input.friendly_name}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "twilio: approve sending an SMS",
+      "matchKind": "action",
+      "matchActionName": "send-sms",
+      "effect": "require_approval"
+    },
+    {
+      "name": "twilio: approve redacting a message",
+      "matchKind": "action",
+      "matchActionName": "redact-message",
+      "effect": "require_approval"
+    },
+    {
+      "name": "twilio: approve deleting a message",
+      "matchKind": "action",
+      "matchActionName": "delete-message",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "twilio: SMS sent per day",
+      "dimension": "messages",
+      "period": "day",
+      "amount": 100,
+      "actionName": "send-sms"
+    },
+    {
+      "name": "twilio: messages redacted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "redact-message"
+    },
+    {
+      "name": "twilio: messages deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "delete-message"
+    },
+    {
+      "name": "twilio: phone numbers renamed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "rename-phone-number"
+    }
+  ]
+}

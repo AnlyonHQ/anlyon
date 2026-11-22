@@ -1,0 +1,1161 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/asana",
+  "version": "0.3.0",
+  "description": "Asana tools an agent can be given: read workspaces, projects, sections, tasks, subtasks, stories and tags; create, update, complete, reopen and delete tasks and subtasks, comment, move a task into a section, add and remove followers and tags, and create and delete sections, each write governed and read back where Asana allows.",
+  "secrets": [
+    {
+      "name": "ASANA",
+      "kind": "connection",
+      "integrationId": "asana",
+      "hosts": [
+        "app.asana.com"
+      ],
+      "description": "The connected Asana credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-workspaces",
+      "kind": "read",
+      "description": "List the workspaces and organizations the token can reach, 25 per page, with each one's gid and name. Asana returns next_page.offset when there are more; pass it as offset for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/workspaces?limit=25&offset={{input.offset}}&opt_fields=name,is_organization",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,1024}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-projects",
+      "kind": "read",
+      "description": "List the projects in one workspace, 25 per page, with name, archived, team and permalink. Pass archived=false to leave archived projects out. Asana returns next_page.offset when there are more; pass it as offset for the next page. Asana warns this can time out in very large organizations.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/workspaces/{{input.workspace_gid}}/projects?limit=25&offset={{input.offset}}&archived={{input.archived}}&opt_fields=name,archived,team.name,permalink_url",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "workspace_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "workspace_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "archived": {
+            "type": "boolean"
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,1024}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-project",
+      "kind": "read",
+      "description": "Get one project: name, notes, owner, team, workspace, dates, archived and completed state, the latest status update's title, and its permalink.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/projects/{{input.project_gid}}?opt_fields=name,notes,archived,completed,owner.name,team.name,workspace.name,start_on,due_on,current_status_update.title,created_at,modified_at,permalink_url",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-sections",
+      "kind": "read",
+      "description": "List the sections of one project, 50 per page, with each one's gid and name, in project order. Asana returns next_page.offset when there are more; pass it as offset for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/projects/{{input.project_gid}}/sections?limit=50&offset={{input.offset}}&opt_fields=name",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,1024}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-project-tasks",
+      "kind": "read",
+      "description": "List the tasks in one project, 25 per page, with name, completed, assignee, due date and permalink. Pass completed_since=now for incomplete tasks only (or an ISO 8601 date-time for tasks incomplete or completed since then). Asana returns next_page.offset when there are more; pass it as offset for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/projects/{{input.project_gid}}/tasks?limit=25&offset={{input.offset}}&completed_since={{input.completed_since}}&opt_fields=name,completed,assignee.name,due_on,permalink_url",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "completed_since": {
+            "type": "string",
+            "pattern": "^(now|[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,6})?)?(Z|[+-][0-9]{2}:[0-9]{2}))?)$"
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,1024}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-section-tasks",
+      "kind": "read",
+      "description": "List the tasks in one section, 25 per page, with name, completed, assignee, due date and permalink. Pass completed_since=now for incomplete tasks only. Asana returns next_page.offset when there are more; pass it as offset for the next page. Asana's reference labels this endpoint \"board view only\"; if it fails for a list-view project, use list-project-tasks.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/sections/{{input.section_gid}}/tasks?limit=25&offset={{input.offset}}&completed_since={{input.completed_since}}&opt_fields=name,completed,assignee.name,due_on,permalink_url",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "section_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "section_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "completed_since": {
+            "type": "string",
+            "pattern": "^(now|[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,6})?)?(Z|[+-][0-9]{2}:[0-9]{2}))?)$"
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,1024}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-task",
+      "kind": "read",
+      "description": "Get one task: name, notes, completed state, assignee, dates, parent, projects and sections, tags, followers, number of subtasks and permalink. Notes are returned in full; a very long task can be cut at 64 KB.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}?opt_fields=name,resource_subtype,notes,completed,completed_at,assignee.name,start_on,due_on,due_at,created_at,modified_at,parent.name,memberships.project.name,memberships.section.name,tags.name,followers.name,num_subtasks,permalink_url",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-subtasks",
+      "kind": "read",
+      "description": "List the subtasks of one task, 25 per page, with name, completed, assignee, due date and permalink. Asana returns next_page.offset when there are more; pass it as offset for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}/subtasks?limit=25&offset={{input.offset}}&opt_fields=name,completed,assignee.name,due_on,permalink_url",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,1024}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-task-stories",
+      "kind": "read",
+      "description": "List a task's stories (comments and activity such as assignments and due-date changes), 20 per page, oldest first, with text, author, type and time. Pass resource_subtype=comment_added for comments only, and sort_ascending=false for newest first. Asana returns next_page.offset when there are more; pass it as offset for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}/stories?limit=20&offset={{input.offset}}&resource_subtype={{input.resource_subtype}}&sort_ascending={{input.sort_ascending}}&opt_fields=created_at,created_by.name,resource_subtype,type,text",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "resource_subtype": {
+            "type": "string",
+            "enum": [
+              "comment_added"
+            ]
+          },
+          "sort_ascending": {
+            "type": "boolean"
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,1024}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-tags",
+      "kind": "read",
+      "description": "List the tags in one workspace, 50 per page, with each one's gid, name and color. Asana returns next_page.offset when there are more; pass it as offset for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://app.asana.com/api/1.0/workspaces/{{input.workspace_gid}}/tags?limit=50&offset={{input.offset}}&opt_fields=name,color",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "workspace_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "workspace_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,1024}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-task",
+      "kind": "write",
+      "description": "Create one task in a project, with a name and notes. Read back by task id; the name must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second task.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "name": "{{input.name}}",
+          "notes": "{{input.notes}}",
+          "projects": [
+            "{{input.project_gid}}"
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_gid",
+          "name",
+          "notes"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$"
+          },
+          "notes": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/tasks/{{response.data.gid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "comment-on-task",
+      "kind": "write",
+      "description": "Add one comment to a task. Read back by the comment's id; the text must match. Limitation: no provider idempotency, so a retry after an unknown outcome can post the comment twice.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}/stories",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "text": "{{input.text}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/stories/{{response.data.gid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.text",
+            "equals": "{{input.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "complete-task",
+      "kind": "write",
+      "description": "Mark one task complete. Read back from the task; it must be completed. Limitation: the read-back can match a task that was already complete.",
+      "method": "PUT",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "completed": true
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.completed",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "reopen-task",
+      "kind": "write",
+      "description": "Mark one completed task incomplete. Read back from the task; it must not be completed. Limitation: the read-back can match a task that was already incomplete.",
+      "method": "PUT",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "completed": false
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}?opt_fields=completed",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.completed",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-task",
+      "kind": "write",
+      "description": "Change one task's name, notes, due date (YYYY-MM-DD) or assignee (\"me\", a user gid or an email); only the fields given change. Read back from the task; its name, notes, due date and last-modified time must equal what Asana returned for this update. Limitations: it cannot clear a due date or unassign a task, and the read-back fails if someone else edits the task in between.",
+      "method": "PUT",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}?opt_fields=name,notes,due_on,assignee.name,modified_at",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "name": "{{input.name}}",
+          "notes": "{{input.notes}}",
+          "due_on": "{{input.due_on}}",
+          "assignee": "{{input.assignee}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$"
+          },
+          "notes": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$"
+          },
+          "due_on": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          },
+          "assignee": {
+            "type": "string",
+            "pattern": "^(me|[0-9]{1,24}|[^@\\s]{1,64}@[^@\\s]{1,190})$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}?opt_fields=name,notes,due_on,modified_at",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.modified_at",
+            "equals": "{{response.data.modified_at}}"
+          },
+          {
+            "path": "data.name",
+            "equals": "{{response.data.name}}"
+          },
+          {
+            "path": "data.notes",
+            "equals": "{{response.data.notes}}"
+          },
+          {
+            "path": "data.due_on",
+            "equals": "{{response.data.due_on}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-subtask",
+      "kind": "write",
+      "description": "Create one subtask under a task, with a name and optional notes, assignee (\"me\", a user gid or an email) and due date. Read back by the new subtask's id; the name and parent must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second subtask.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}/subtasks",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "name": "{{input.name}}",
+          "notes": "{{input.notes}}",
+          "assignee": "{{input.assignee}}",
+          "due_on": "{{input.due_on}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$"
+          },
+          "notes": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$"
+          },
+          "assignee": {
+            "type": "string",
+            "pattern": "^(me|[0-9]{1,24}|[^@\\s]{1,64}@[^@\\s]{1,190})$"
+          },
+          "due_on": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/tasks/{{response.data.gid}}?opt_fields=name,parent",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.name",
+            "equals": "{{input.name}}"
+          },
+          {
+            "path": "data.parent.gid",
+            "equals": "{{input.task_gid}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-task-to-section",
+      "kind": "write",
+      "description": "Move one task into a section of a project it is already in, at the top of the section; Asana removes it from the project's other sections. Read back from the task; its first project membership must be in this section. Limitation: for a task in more than one project the read-back can report a mismatch even though the move happened.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/sections/{{input.section_gid}}/addTask",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "task": "{{input.task_gid}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "section_gid",
+          "task_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "section_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}?opt_fields=memberships.section.name",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.memberships.0.section.gid",
+            "equals": "{{input.section_gid}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-follower",
+      "kind": "write",
+      "description": "Add one follower (\"me\", a user gid or an email) to a task. A follower is notified of changes and can see the task even outside its projects. No read-back: a follower can be named as \"me\", a user gid or an email, while Asana lists followers by gid only, so a read-back cannot compare them.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}/addFollowers?opt_fields=followers.name",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "followers": [
+            "{{input.follower}}"
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid",
+          "follower"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "follower": {
+            "type": "string",
+            "pattern": "^(me|[0-9]{1,24}|[^@\\s]{1,64}@[^@\\s]{1,190})$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "remove-follower",
+      "kind": "write",
+      "description": "Remove one follower (\"me\", a user gid or an email) from a task. No read-back: a follower can be named as \"me\", a user gid or an email, while Asana lists followers by gid only, so a read-back cannot compare them.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}/removeFollowers?opt_fields=followers.name",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "followers": [
+            "{{input.follower}}"
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid",
+          "follower"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "follower": {
+            "type": "string",
+            "pattern": "^(me|[0-9]{1,24}|[^@\\s]{1,64}@[^@\\s]{1,190})$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "add-tag",
+      "kind": "write",
+      "description": "Add one existing tag (by gid, from list-tags) to a task. Read back from the task; the tag must be among its tags.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}/addTag",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "tag": "{{input.tag_gid}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid",
+          "tag_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "tag_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}?opt_fields=tags.name",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.gid",
+            "equals": "{{input.task_gid}}"
+          },
+          {
+            "path": "data.tags.*.gid",
+            "equals": "{{input.tag_gid}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "remove-tag",
+      "kind": "write",
+      "description": "Remove one tag (by gid) from a task. Read back from the task; the tag must no longer be among its tags.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}/removeTag",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "tag": "{{input.tag_gid}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid",
+          "tag_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "tag_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}?opt_fields=tags.name",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.gid",
+            "equals": "{{input.task_gid}}"
+          },
+          {
+            "path": "data.tags.*.gid",
+            "equals": "{{input.tag_gid}}",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-task",
+      "kind": "write",
+      "description": "Delete one task (or subtask). Asana moves it to the deleting user's trash, where it can be restored in the Asana app for 30 days. No read-back: Asana does not document what reading a deleted task returns.",
+      "method": "DELETE",
+      "urlTemplate": "https://app.asana.com/api/1.0/tasks/{{input.task_gid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "create-section",
+      "kind": "write",
+      "description": "Create one section in a project. Read back by the new section's id; the name and project must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second section.",
+      "method": "POST",
+      "urlTemplate": "https://app.asana.com/api/1.0/projects/{{input.project_gid}}/sections",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "data": {
+          "name": "{{input.name}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_gid",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://app.asana.com/api/1.0/sections/{{response.data.gid}}?opt_fields=name,project",
+        "status": 200,
+        "match": [
+          {
+            "path": "data.name",
+            "equals": "{{input.name}}"
+          },
+          {
+            "path": "data.project.gid",
+            "equals": "{{input.project_gid}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-section",
+      "kind": "write",
+      "description": "Delete one empty section. Asana refuses a section that still has tasks, and the last section of a project. No read-back: Asana does not document what reading a deleted section returns.",
+      "method": "DELETE",
+      "urlTemplate": "https://app.asana.com/api/1.0/sections/{{input.section_gid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:asana}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "section_gid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "section_gid": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "asana: approve completing a task",
+      "matchKind": "action",
+      "matchActionName": "complete-task",
+      "effect": "require_approval"
+    },
+    {
+      "name": "asana: approve deleting a task",
+      "matchKind": "action",
+      "matchActionName": "delete-task",
+      "effect": "require_approval"
+    },
+    {
+      "name": "asana: approve deleting a section",
+      "matchKind": "action",
+      "matchActionName": "delete-section",
+      "effect": "require_approval"
+    },
+    {
+      "name": "asana: approve adding a follower",
+      "matchKind": "action",
+      "matchActionName": "add-follower",
+      "effect": "require_approval"
+    },
+    {
+      "name": "asana: approve removing a follower",
+      "matchKind": "action",
+      "matchActionName": "remove-follower",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "asana: tasks created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-task"
+    },
+    {
+      "name": "asana: comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "comment-on-task"
+    },
+    {
+      "name": "asana: tasks completed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "complete-task"
+    },
+    {
+      "name": "asana: tasks reopened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "reopen-task"
+    },
+    {
+      "name": "asana: task updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-task"
+    },
+    {
+      "name": "asana: subtasks created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-subtask"
+    },
+    {
+      "name": "asana: tasks moved to a section per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-task-to-section"
+    },
+    {
+      "name": "asana: followers added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "add-follower"
+    },
+    {
+      "name": "asana: followers removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "remove-follower"
+    },
+    {
+      "name": "asana: tags added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-tag"
+    },
+    {
+      "name": "asana: tags removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "remove-tag"
+    },
+    {
+      "name": "asana: tasks deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-task"
+    },
+    {
+      "name": "asana: sections created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "create-section"
+    },
+    {
+      "name": "asana: sections deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-section"
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.discord.com/developers/resources/channel).",
+  "params": {},
+  "input": {
+    "channel_id": "1100000000000000001"
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1100000000000000001/threads/archived/public?limit=20",
+  "response": {
+    "threads": [
+      {
+        "id": "1290000000000000080",
+        "type": 11,
+        "guild_id": "1100000000000000000",
+        "parent_id": "1100000000000000001",
+        "owner_id": "1200000000000000007",
+        "name": "Old incident",
+        "last_message_id": "1290000000000000120",
+        "message_count": 1,
+        "member_count": 1,
+        "rate_limit_per_user": 0,
+        "flags": 0,
+        "thread_metadata": {
+          "archived": true,
+          "auto_archive_duration": 1440,
+          "archive_timestamp": "2026-10-10T08:00:00.000000+00:00",
+          "locked": false
+        }
+      }
+    ],
+    "members": [],
+    "has_more": false
+  }
+}

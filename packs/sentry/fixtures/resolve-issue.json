@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "organization": "acme",
+    "issue_id": "4509877862"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/",
+  "response": {
+    "id": "4509877862",
+    "status": "resolved"
+  },
+  "expectedReadBackUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "4509877862",
+      "status": "resolved",
+      "assignedTo": null
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "4509877862",
+      "status": "unresolved"
+    }
+  }
+}

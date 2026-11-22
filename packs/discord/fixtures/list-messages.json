@@ -1,0 +1,51 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.discord.com/developers/resources/message).",
+  "params": {},
+  "input": {
+    "channel_id": "1100000000000000001",
+    "before": "1290000000000000042"
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1100000000000000001/messages?limit=20&before=1290000000000000042",
+  "response": [
+    {
+      "id": "1290000000000000041",
+      "type": 0,
+      "channel_id": "1100000000000000001",
+      "author": {
+        "id": "1200000000000000007",
+        "username": "anlyon-bot",
+        "global_name": null,
+        "bot": true
+      },
+      "content": "Deploy started.",
+      "timestamp": "2026-10-15T09:12:00.000000+00:00",
+      "edited_timestamp": null,
+      "tts": false,
+      "mention_everyone": false,
+      "mentions": [],
+      "attachments": [],
+      "embeds": [],
+      "pinned": false
+    },
+    {
+      "id": "1290000000000000040",
+      "type": 0,
+      "channel_id": "1100000000000000001",
+      "author": {
+        "id": "1200000000000000007",
+        "username": "anlyon-bot",
+        "global_name": null,
+        "bot": true
+      },
+      "content": "Build green.",
+      "timestamp": "2026-10-15T09:12:00.000000+00:00",
+      "edited_timestamp": null,
+      "tts": false,
+      "mention_everyone": false,
+      "mentions": [],
+      "attachments": [],
+      "embeds": [],
+      "pinned": false
+    }
+  ]
+}

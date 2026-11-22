@@ -1,0 +1,310 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/slack",
+  "version": "0.2.0",
+  "description": "Slack operations an agent can be allowed to perform in public channels: post, edit, react and set a channel's topic or purpose, each read back from Slack.",
+  "secrets": [
+    {
+      "name": "SLACK",
+      "kind": "connection",
+      "integrationId": "slack",
+      "hosts": [
+        "slack.com"
+      ],
+      "description": "The connected Slack workspace"
+    }
+  ],
+  "actions": [
+    {
+      "name": "post-message",
+      "description": "Post one message to a public channel the app is in. Read back from the channel at the message's timestamp; the text must match. Limitation: Slack answers HTTP 200 with ok:false on most errors, so a refused call is recorded succeeded and graded acknowledged; only the read-back keeps it from confirmed. No provider idempotency: a retry after an unknown outcome can post twice. Limitation: until the Anlyon app is listed in the Slack Marketplace, Slack allows the channel-history call this read-back uses once a minute per workspace; a read-back refused for that reason leaves the effect acknowledged.",
+      "method": "POST",
+      "urlTemplate": "https://slack.com/api/chat.postMessage",
+      "headers": {
+        "Authorization": "Bearer {{connection:slack}}",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "bodyTemplate": {
+        "channel": "{{input.channel}}",
+        "text": "{{input.text}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": "string",
+            "pattern": "^[CG][A-Z0-9]{8,12}$"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,3000}$"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://slack.com/api/conversations.history?channel={{input.channel}}&latest={{response.ts}}&inclusive=true&limit=1",
+        "status": 200,
+        "match": [
+          {
+            "path": "messages.0.text",
+            "equals": "{{input.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-message",
+      "description": "Replace the text of one message the app posted. Read back from the channel at that timestamp; the text must match. Limitation: Slack answers HTTP 200 with ok:false on most errors, so a refused call is recorded succeeded and graded acknowledged; only the read-back keeps it from confirmed. Limitation: until the Anlyon app is listed in the Slack Marketplace, Slack allows the channel-history call this read-back uses once a minute per workspace; a read-back refused for that reason leaves the effect acknowledged.",
+      "method": "POST",
+      "urlTemplate": "https://slack.com/api/chat.update",
+      "headers": {
+        "Authorization": "Bearer {{connection:slack}}",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "bodyTemplate": {
+        "channel": "{{input.channel}}",
+        "ts": "{{input.ts}}",
+        "text": "{{input.text}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel",
+          "ts",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": "string",
+            "pattern": "^[CG][A-Z0-9]{8,12}$"
+          },
+          "ts": {
+            "type": "string",
+            "pattern": "^[0-9]{10}\\.[0-9]{6}$"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,3000}$"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://slack.com/api/conversations.history?channel={{input.channel}}&latest={{input.ts}}&inclusive=true&limit=1",
+        "status": 200,
+        "match": [
+          {
+            "path": "messages.0.text",
+            "equals": "{{input.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-reaction",
+      "description": "Add an emoji reaction to one message. Read back from the message's reactions. Limitation: Slack answers HTTP 200 with ok:false on most errors, so a refused call is recorded succeeded and graded acknowledged; only the read-back keeps it from confirmed. Limitation: the read-back checks the message's first reaction, so a reaction added after another one stays acknowledged.",
+      "method": "POST",
+      "urlTemplate": "https://slack.com/api/reactions.add",
+      "headers": {
+        "Authorization": "Bearer {{connection:slack}}",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "bodyTemplate": {
+        "channel": "{{input.channel}}",
+        "timestamp": "{{input.ts}}",
+        "name": "{{input.emoji}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel",
+          "ts",
+          "emoji"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": "string",
+            "pattern": "^[CG][A-Z0-9]{8,12}$"
+          },
+          "ts": {
+            "type": "string",
+            "pattern": "^[0-9]{10}\\.[0-9]{6}$"
+          },
+          "emoji": {
+            "type": "string",
+            "pattern": "^[a-z0-9_+-]{1,64}$"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://slack.com/api/reactions.get?channel={{input.channel}}&timestamp={{input.ts}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "message.reactions.0.name",
+            "equals": "{{input.emoji}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-channel-topic",
+      "description": "Set the topic of one channel. Read back from the channel; the topic must match. Limitation: Slack answers HTTP 200 with ok:false on most errors, so a refused call is recorded succeeded and graded acknowledged; only the read-back keeps it from confirmed.",
+      "method": "POST",
+      "urlTemplate": "https://slack.com/api/conversations.setTopic",
+      "headers": {
+        "Authorization": "Bearer {{connection:slack}}",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "bodyTemplate": {
+        "channel": "{{input.channel}}",
+        "topic": "{{input.topic}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel",
+          "topic"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": "string",
+            "pattern": "^[CG][A-Z0-9]{8,12}$"
+          },
+          "topic": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,250}$"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://slack.com/api/conversations.info?channel={{input.channel}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "channel.topic.value",
+            "equals": "{{input.topic}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-channel-purpose",
+      "description": "Set the purpose of one channel. Read back from the channel; the purpose must match. Limitation: Slack answers HTTP 200 with ok:false on most errors, so a refused call is recorded succeeded and graded acknowledged; only the read-back keeps it from confirmed.",
+      "method": "POST",
+      "urlTemplate": "https://slack.com/api/conversations.setPurpose",
+      "headers": {
+        "Authorization": "Bearer {{connection:slack}}",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "bodyTemplate": {
+        "channel": "{{input.channel}}",
+        "purpose": "{{input.purpose}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel",
+          "purpose"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel": {
+            "type": "string",
+            "pattern": "^[CG][A-Z0-9]{8,12}$"
+          },
+          "purpose": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,250}$"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://slack.com/api/conversations.info?channel={{input.channel}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "channel.purpose.value",
+            "equals": "{{input.purpose}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "slack: approve editing a message",
+      "matchKind": "action",
+      "matchActionName": "update-message",
+      "effect": "require_approval"
+    },
+    {
+      "name": "slack: approve changing a channel's topic",
+      "matchKind": "action",
+      "matchActionName": "set-channel-topic",
+      "effect": "require_approval"
+    },
+    {
+      "name": "slack: approve changing a channel's purpose",
+      "matchKind": "action",
+      "matchActionName": "set-channel-purpose",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "slack: messages per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "post-message"
+    },
+    {
+      "name": "slack: edits per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-message"
+    },
+    {
+      "name": "slack: reactions per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "add-reaction"
+    }
+  ]
+}

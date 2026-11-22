@@ -1,0 +1,144 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/pulls/pulls#merge-a-pull-request).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "pull_number": "57",
+    "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+    "merge_method": "squash"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/pulls/57/merge",
+  "response": {
+    "sha": "e5bd3914e2e596debea16f433f57875b5b90bcd6",
+    "merged": true,
+    "message": "Pull Request successfully merged"
+  },
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/pulls/57",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 1934882761,
+      "number": 57,
+      "state": "closed",
+      "title": "Retry saved-card checkout once on timeout",
+      "user": {
+        "login": "octo-dev",
+        "id": 583231,
+        "type": "User",
+        "html_url": "https://github.com/octo-dev"
+      },
+      "body": "Fixes #412.",
+      "draft": false,
+      "merged": true,
+      "mergeable": true,
+      "mergeable_state": "clean",
+      "merged_at": "2026-10-15T11:00:00Z",
+      "merge_commit_sha": "e5bd3914e2e596debea16f433f57875b5b90bcd6",
+      "head": {
+        "label": "acme:fix-saved-cards",
+        "ref": "fix-saved-cards",
+        "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+        "repo": {
+          "id": 1296269,
+          "name": "widgets",
+          "full_name": "acme/widgets",
+          "private": true,
+          "owner": {
+            "login": "acme",
+            "id": 9919,
+            "type": "Organization"
+          },
+          "default_branch": "main"
+        }
+      },
+      "base": {
+        "label": "acme:main",
+        "ref": "main",
+        "sha": "c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c",
+        "repo": {
+          "id": 1296269,
+          "name": "widgets",
+          "full_name": "acme/widgets",
+          "private": true,
+          "owner": {
+            "login": "acme",
+            "id": 9919,
+            "type": "Organization"
+          },
+          "default_branch": "main"
+        }
+      },
+      "requested_reviewers": [],
+      "labels": [],
+      "commits": 1,
+      "additions": 14,
+      "deletions": 3,
+      "changed_files": 2,
+      "html_url": "https://github.com/acme/widgets/pull/57"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 1934882761,
+      "number": 57,
+      "state": "open",
+      "title": "Retry saved-card checkout once on timeout",
+      "user": {
+        "login": "octo-dev",
+        "id": 583231,
+        "type": "User",
+        "html_url": "https://github.com/octo-dev"
+      },
+      "body": "Fixes #412.",
+      "draft": false,
+      "merged": false,
+      "mergeable": true,
+      "mergeable_state": "clean",
+      "merged_at": null,
+      "merge_commit_sha": null,
+      "head": {
+        "label": "acme:fix-saved-cards",
+        "ref": "fix-saved-cards",
+        "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+        "repo": {
+          "id": 1296269,
+          "name": "widgets",
+          "full_name": "acme/widgets",
+          "private": true,
+          "owner": {
+            "login": "acme",
+            "id": 9919,
+            "type": "Organization"
+          },
+          "default_branch": "main"
+        }
+      },
+      "base": {
+        "label": "acme:main",
+        "ref": "main",
+        "sha": "c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c",
+        "repo": {
+          "id": 1296269,
+          "name": "widgets",
+          "full_name": "acme/widgets",
+          "private": true,
+          "owner": {
+            "login": "acme",
+            "id": 9919,
+            "type": "Organization"
+          },
+          "default_branch": "main"
+        }
+      },
+      "requested_reviewers": [],
+      "labels": [],
+      "commits": 1,
+      "additions": 14,
+      "deletions": 3,
+      "changed_files": 2,
+      "html_url": "https://github.com/acme/widgets/pull/57"
+    }
+  }
+}

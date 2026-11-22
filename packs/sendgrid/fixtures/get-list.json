@@ -1,0 +1,16 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_mc_lists_v3.json, GetMarketingList).",
+  "params": {},
+  "input": {
+    "list_id": "ca7a3796-e8a8-4029-9ccb-df8937940562"
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/marketing/lists/ca7a3796-e8a8-4029-9ccb-df8937940562",
+  "response": {
+    "id": "ca7a3796-e8a8-4029-9ccb-df8937940562",
+    "name": "Newsletter",
+    "contact_count": 1240,
+    "_metadata": {
+      "self": "https://api.sendgrid.com/v3/marketing/lists/ca7a3796-e8a8-4029-9ccb-df8937940562"
+    }
+  }
+}

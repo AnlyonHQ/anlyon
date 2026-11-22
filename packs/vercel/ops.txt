@@ -1,0 +1,19 @@
+# Vercel catalogue pack allow-list. Spec: https://openapi.vercel.sh/ (fetched 2026-10-24).
+# Jobs: find the team, find a project's deployments, read one and its build log, see which
+# deployment a domain serves and whether a domain is configured; redeploy, promote, roll back,
+# cancel a build, delete a deployment.
+# action                    operation               kind
+list-teams                  getTeams
+list-deployments            getDeployments
+get-deployment              getDeployment
+list-deployment-events      getDeploymentEvents
+list-deployment-aliases     listDeploymentAliases
+list-project-domains        getProjectDomains
+get-domain-config           getDomainConfig
+get-alias                   getAlias
+list-promote-aliases        listPromoteAliases
+redeploy                    createDeployment
+promote-deployment          requestPromote
+rollback-deployment         requestRollback
+cancel-deployment           cancelDeployment
+delete-deployment           deleteDeployment

@@ -1,0 +1,15 @@
+Anlyon enterprise features
+
+Copyright (c) 2026 Anlyon
+
+The code in this directory, and in every subdirectory of it, is licensed under
+the Elastic License 2.0, the same licence as the rest of this repository (see
+LICENSE at the repository root).
+
+These features are protected by licence-key functionality: they stay switched
+off unless a valid Anlyon licence key is configured. The Elastic License 2.0
+does not permit you to move, change, disable or circumvent that functionality,
+or to remove or obscure any functionality it protects.
+
+Licence keys are issued under a separate agreement. To obtain one, contact
+Anlyon at https://anlyon.com.

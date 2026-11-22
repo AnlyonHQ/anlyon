@@ -1,0 +1,11 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.discord.com/developers/resources/message).",
+  "params": {},
+  "input": {
+    "channel_id": "1100000000000000001",
+    "message_id": "1290000000000000042",
+    "emoji": "deploybot:1300000000000000001"
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1100000000000000001/messages/1290000000000000042/reactions/deploybot%3A1300000000000000001/@me",
+  "response": null
+}

@@ -1,0 +1,52 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/pulls/reviews#create-a-review-for-a-pull-request).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "pull_number": "57",
+    "event": "COMMENT",
+    "body": "Two small notes.",
+    "comments": [
+      {
+        "path": "src/checkout/retry.ts",
+        "line": 14,
+        "side": "RIGHT",
+        "body": "Retry only on timeouts?"
+      }
+    ]
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/pulls/57/reviews",
+  "response": {
+    "id": 80,
+    "user": {
+      "login": "octo-bot",
+      "id": 2002,
+      "type": "User",
+      "html_url": "https://github.com/octo-bot"
+    },
+    "body": "Two small notes.",
+    "state": "COMMENTED",
+    "commit_id": "6dcb09b5b57875f334f61aebed695e2e4193db5e",
+    "submitted_at": "2026-10-15T09:00:00Z"
+  },
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/pulls/57/reviews/80",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 80,
+      "body": "Two small notes.",
+      "state": "COMMENTED",
+      "commit_id": "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 80,
+      "body": "Two small notes.",
+      "state": "DISMISSED",
+      "commit_id": "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+    }
+  }
+}

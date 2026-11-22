@@ -1,0 +1,59 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/replyconversation).",
+  "params": {},
+  "input": {
+    "conversation_id": "1295",
+    "admin_id": "991267708",
+    "body": "Thanks Sam, I have corrected the invoice and sent you a new copy."
+  },
+  "expectedUrl": "https://api.intercom.io/conversations/1295/reply",
+  "response": {
+    "type": "conversation",
+    "id": "1295",
+    "title": null,
+    "created_at": 1734537500,
+    "updated_at": 1734537800,
+    "waiting_since": null,
+    "snoozed_until": null,
+    "open": true,
+    "state": "open",
+    "read": false,
+    "priority": "not_priority",
+    "admin_assignee_id": 991267708,
+    "team_assignee_id": null,
+    "tags": {
+      "type": "tag.list",
+      "tags": []
+    },
+    "source": {
+      "type": "conversation",
+      "id": "403918330",
+      "delivered_as": "customer_initiated",
+      "subject": "",
+      "body": "<p>My invoice is wrong</p>",
+      "author": {
+        "type": "lead",
+        "id": "6762f0cd1bb69f9f2193bb7f",
+        "name": "Sam Rivera",
+        "email": "sam@example.com"
+      },
+      "attachments": [],
+      "url": null,
+      "redacted": false
+    },
+    "contacts": {
+      "type": "contact.list",
+      "contacts": [
+        {
+          "type": "contact",
+          "id": "6762f0cd1bb69f9f2193bb7f",
+          "external_id": null
+        }
+      ]
+    },
+    "teammates": {
+      "type": "admin.list",
+      "teammates": []
+    }
+  }
+}

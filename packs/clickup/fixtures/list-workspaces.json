@@ -1,0 +1,25 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/getauthorizedteams).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.clickup.com/api/v2/team",
+  "response": {
+    "teams": [
+      {
+        "id": "9012345",
+        "name": "Acme",
+        "color": "#536cfe",
+        "avatar": null,
+        "members": [
+          {
+            "user": {
+              "id": 4501234,
+              "username": "Sam Rivera",
+              "color": "#827718"
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

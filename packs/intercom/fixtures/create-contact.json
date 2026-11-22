@@ -1,0 +1,34 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "role": "lead",
+    "email": "sam@example.com",
+    "name": "Sam Rivera"
+  },
+  "expectedUrl": "https://api.intercom.io/contacts",
+  "response": {
+    "type": "contact",
+    "id": "6762f0cd1bb69f9f2193bb7f",
+    "role": "lead",
+    "email": "sam@example.com"
+  },
+  "expectedReadBackUrl": "https://api.intercom.io/contacts/6762f0cd1bb69f9f2193bb7f",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "type": "contact",
+      "id": "6762f0cd1bb69f9f2193bb7f",
+      "email": "sam@example.com",
+      "name": "Sam Rivera"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "type": "contact",
+      "id": "6762f0cd1bb69f9f2193bb7f",
+      "email": "other@example.com"
+    }
+  }
+}

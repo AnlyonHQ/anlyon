@@ -1,0 +1,35 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/opportunity-statuses, GET /status/opportunity/).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.close.com/api/v1/status/opportunity/",
+  "response": {
+    "has_more": false,
+    "data": [
+      {
+        "id": "stat_OppDemo01",
+        "organization_id": "orga_Example01",
+        "label": "Demo Completed",
+        "type": "active"
+      },
+      {
+        "id": "stat_OppProposal02",
+        "organization_id": "orga_Example01",
+        "label": "Proposal Sent",
+        "type": "active"
+      },
+      {
+        "id": "stat_OppWon03",
+        "organization_id": "orga_Example01",
+        "label": "Won",
+        "type": "won"
+      },
+      {
+        "id": "stat_OppLost04",
+        "organization_id": "orga_Example01",
+        "label": "Lost",
+        "type": "lost"
+      }
+    ]
+  }
+}

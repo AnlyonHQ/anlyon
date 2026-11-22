@@ -1,0 +1,28 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/notes/search/search-notes).",
+  "params": {},
+  "input": {
+    "objectType": "contact",
+    "objectId": "151"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/notes/search",
+  "response": {
+    "total": 1,
+    "results": [
+      {
+        "id": "84261937151",
+        "properties": {
+          "hs_createdate": "2026-10-12T09:30:01.204Z",
+          "hs_lastmodifieddate": "2026-10-12T09:30:01.204Z",
+          "hs_note_body": "Refunded order 1042 in full.",
+          "hs_object_id": "84261937151",
+          "hs_timestamp": "2026-10-12T09:30:00Z",
+          "hubspot_owner_id": null
+        },
+        "createdAt": "2026-10-12T09:30:01.204Z",
+        "updatedAt": "2026-10-12T09:30:01.204Z",
+        "archived": false
+      }
+    ]
+  }
+}

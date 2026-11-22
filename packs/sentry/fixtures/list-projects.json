@@ -1,0 +1,38 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.sentry.io/api/organizations/list-an-organizations-projects/).",
+  "params": {},
+  "input": {
+    "organization": "acme"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/projects/?per_page=25",
+  "response": [
+    {
+      "id": "4504127832",
+      "slug": "web",
+      "name": "Web",
+      "platform": "javascript-react",
+      "dateCreated": "2025-03-02T10:00:00Z",
+      "isMember": true,
+      "hasAccess": true,
+      "team": {
+        "id": "2",
+        "name": "Frontend",
+        "slug": "frontend"
+      },
+      "teams": [
+        {
+          "id": "2",
+          "name": "Frontend",
+          "slug": "frontend"
+        }
+      ],
+      "environments": [
+        "production",
+        "staging"
+      ],
+      "latestRelease": {
+        "version": "web@2.14.0"
+      }
+    }
+  ]
+}

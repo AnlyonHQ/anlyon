@@ -1,0 +1,960 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/discord",
+  "version": "0.3.0",
+  "description": "Discord as a bot: read a server's channels, messages, pins and threads; post, reply, edit and delete messages; react; pin and unpin; start, join, post in and archive threads. Every write that Discord can show is read back.",
+  "secrets": [
+    {
+      "name": "DISCORD",
+      "kind": "connection",
+      "integrationId": "discord",
+      "hosts": [
+        "discord.com"
+      ],
+      "description": "The connected Discord credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-channels",
+      "description": "List the channels of one server (text, announcement, voice, forum and categories; threads are not included, use list-active-threads). Discord returns every channel in one response and has no paging, so a very large server's list can be cut at 64 KB.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://discord.com/api/v10/guilds/{{input.guild_id}}/channels",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "guild_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "guild_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The server (guild) id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-channel",
+      "description": "Get one channel or thread by id: its name, type, topic, parent and, for a thread, its archived state and whether the bot has joined it.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "A channel or thread id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-messages",
+      "description": "List 20 messages in a channel, newest first. For older messages pass before = the id of the oldest message you have; for newer ones pass after = the id of the newest. Pass at most one of before and after. Discord returns an empty list when the bot lacks Read Message History.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages?limit=20&before={{input.before}}&after={{input.after}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel id"
+          },
+          "before": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "Return messages older than this message id"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "Return messages newer than this message id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-message",
+      "description": "Get one message by id: its text, author, reactions, pinned state, reply reference and the thread started from it, if any.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel or thread id"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The message id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-pinned-messages",
+      "description": "List up to 20 pinned messages in a channel, most recently pinned first, each with its pinned_at time. When has_more is true, pass before = the pinned_at of the last item for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/pins?limit=20&before={{input.before}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel id"
+          },
+          "before": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "ISO 8601 timestamp: return pins pinned before this time"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-active-threads",
+      "description": "List every active (not archived) thread in a server, newest first, with a member entry for each thread the bot has joined. Discord returns them all in one response and has no paging, so a very large server's list can be cut at 64 KB.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://discord.com/api/v10/guilds/{{input.guild_id}}/threads/active",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "guild_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "guild_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The server (guild) id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-archived-threads",
+      "description": "List up to 20 archived public threads of one channel, most recently archived first. When has_more is true, pass before = the thread_metadata.archive_timestamp of the last thread for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/threads/archived/public?limit=20&before={{input.before}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The parent channel id"
+          },
+          "before": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "ISO 8601 timestamp: return threads archived before this time"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-thread-messages",
+      "description": "List 20 messages in a thread, newest first (a thread is a channel, so this is the channel messages call with the thread's id). For older messages pass before = the id of the oldest message you have; for newer ones pass after. Pass at most one of before and after.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.thread_id}}/messages?limit=20&before={{input.before}}&after={{input.after}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "thread_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The thread id"
+          },
+          "before": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "Return messages older than this message id"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "Return messages newer than this message id"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "post-message",
+      "description": "Post one message to a channel the bot can see. Read back by message id; the text must match. Limitation: no provider idempotency, so a retry after an unknown outcome can post twice.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "content": "{{input.content}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$"
+          },
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "content",
+            "equals": "{{input.content}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "edit-message",
+      "description": "Replace the text of one message the bot posted. Read back from the message; the text must match.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "content": "{{input.content}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id",
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$"
+          },
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "content",
+            "equals": "{{input.content}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "start-thread",
+      "description": "Start one thread from a message. Read back by the thread's id; its name must match. Limitation: a message can hold only one thread, so a retry after an unknown outcome is refused by Discord and creates nothing.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}/threads",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reply-to-message",
+      "description": "Post one message as a reply to another message in the same channel. Discord refuses the reply if the original message no longer exists, rather than posting it unattached. Read back by the reply's id; its text and the message it replies to must match. Limitation: no provider idempotency, so a retry after an unknown outcome can post a second reply.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "content": "{{input.content}}",
+        "message_reference": {
+          "message_id": "{{input.message_id}}",
+          "fail_if_not_exists": true
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id",
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel or thread the message is in"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The message to reply to"
+          },
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "content",
+            "equals": "{{input.content}}"
+          },
+          {
+            "path": "message_reference.message_id",
+            "equals": "{{input.message_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "post-thread-message",
+      "description": "Post one message in a thread. Posting in an archived (not locked) thread unarchives it. Needs Send Messages in Threads. Read back by message id; the text must match. Limitation: no provider idempotency, so a retry after an unknown outcome can post twice.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.thread_id}}/messages",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "content": "{{input.content}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "thread_id",
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The thread id"
+          },
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{input.thread_id}}/messages/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "content",
+            "equals": "{{input.content}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-message",
+      "description": "Delete one message. The bot can delete its own messages; deleting anyone else's needs Manage Messages, which Discord otherwise refuses. Deleting a message in an archived thread is refused. No read-back: Discord does not document what reading a deleted message returns, so the receipt is acknowledged, not confirmed.",
+      "kind": "write",
+      "method": "DELETE",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel or thread the message is in"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The message to delete"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "add-reaction",
+      "description": "Add the bot's reaction to a message. Adding an emoji nobody has used on that message yet needs Add Reactions. No read-back: Discord answers with no body; a message's reactions do not tie an emoji to the bot's own reaction, and the list of who reacted names the bot by a user id no input gives, so the receipt is acknowledged, not confirmed. Adding a reaction the bot already has changes nothing.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}/reactions/{{input.emoji}}/@me",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id",
+          "emoji"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel or thread the message is in"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The message to react to"
+          },
+          "emoji": {
+            "type": "string",
+            "pattern": "^([^\\s:/?#]{1,32}|[A-Za-z0-9_]{2,32}:[0-9]{15,22})$",
+            "description": "A Unicode emoji as the character itself (for example 👍), or a custom emoji as name:id"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "remove-reaction",
+      "description": "Remove the bot's own reaction from a message; other people's reactions are left alone. No read-back: Discord answers with no body; a message's reactions do not tie an emoji to the bot's own reaction, and the list of who reacted names the bot by a user id no input gives, so the receipt is acknowledged, not confirmed.",
+      "kind": "write",
+      "method": "DELETE",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}/reactions/{{input.emoji}}/@me",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id",
+          "emoji"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel or thread the message is in"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The message to remove the reaction from"
+          },
+          "emoji": {
+            "type": "string",
+            "pattern": "^([^\\s:/?#]{1,32}|[A-Za-z0-9_]{2,32}:[0-9]{15,22})$",
+            "description": "A Unicode emoji as the character itself (for example 👍), or a custom emoji as name:id"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "pin-message",
+      "description": "Pin one message in its channel. Needs the Pin Messages permission. Read back from the message; it must show as pinned.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/pins/{{input.message_id}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel the message is in"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The message to pin"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.message_id}}"
+          },
+          {
+            "path": "pinned",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "unpin-message",
+      "description": "Unpin one message in its channel. Needs the Pin Messages permission. Read back from the message; it must show as not pinned.",
+      "kind": "write",
+      "method": "DELETE",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/pins/{{input.message_id}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "message_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The channel the message is in"
+          },
+          "message_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The message to unpin"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{input.channel_id}}/messages/{{input.message_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.message_id}}"
+          },
+          {
+            "path": "pinned",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "join-thread",
+      "description": "Add the bot to a thread so it receives the thread's messages. The thread must not be archived. Read back from the thread; it must list the bot as a member.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.thread_id}}/thread-members/@me",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "thread_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The thread id"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{input.thread_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.thread_id}}"
+          },
+          {
+            "path": "member.id",
+            "equals": "{{input.thread_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-thread",
+      "description": "Archive one thread: it leaves the channel's thread list and stays readable. Discord lets the thread's creator archive it; any other thread needs Manage Threads. A later message in the thread unarchives it unless it is locked. Read back from the thread; it must show as archived.",
+      "kind": "write",
+      "method": "PATCH",
+      "urlTemplate": "https://discord.com/api/v10/channels/{{input.thread_id}}",
+      "headers": {
+        "Authorization": "Bot {{connection:discord}}",
+        "User-Agent": "DiscordBot (https://anlyon.com, 1.0)",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "archived": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "thread_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "thread_id": {
+            "type": "string",
+            "pattern": "^[0-9]{15,22}$",
+            "description": "The thread id"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://discord.com/api/v10/channels/{{input.thread_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.thread_id}}"
+          },
+          {
+            "path": "thread_metadata.archived",
+            "equals": true
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "discord: approve editing a message",
+      "matchKind": "action",
+      "matchActionName": "edit-message",
+      "effect": "require_approval"
+    },
+    {
+      "name": "discord: approve deleting a message",
+      "matchKind": "action",
+      "matchActionName": "delete-message",
+      "effect": "require_approval"
+    },
+    {
+      "name": "discord: approve archiving a thread",
+      "matchKind": "action",
+      "matchActionName": "archive-thread",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "discord: messages per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "post-message"
+    },
+    {
+      "name": "discord: edits per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "edit-message"
+    },
+    {
+      "name": "discord: threads started per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "start-thread"
+    },
+    {
+      "name": "discord: replies per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "reply-to-message"
+    },
+    {
+      "name": "discord: thread messages per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "post-thread-message"
+    },
+    {
+      "name": "discord: deletions per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "delete-message"
+    },
+    {
+      "name": "discord: reactions added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-reaction"
+    },
+    {
+      "name": "discord: reactions removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "remove-reaction"
+    },
+    {
+      "name": "discord: pins per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 30,
+      "actionName": "pin-message"
+    },
+    {
+      "name": "discord: unpins per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 30,
+      "actionName": "unpin-message"
+    },
+    {
+      "name": "discord: threads joined per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "join-thread"
+    },
+    {
+      "name": "discord: threads archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 30,
+      "actionName": "archive-thread"
+    }
+  ]
+}

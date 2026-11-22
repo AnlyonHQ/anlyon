@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/refunds/list).",
+  "params": {},
+  "input": {
+    "payment_intent": "pi_3YnXmHyKQWWoIcdMaYjSuQoG"
+  },
+  "expectedUrl": "https://api.stripe.com/v1/refunds?limit=20&payment_intent=pi_3YnXmHyKQWWoIcdMaYjSuQoG",
+  "response": {
+    "object": "list",
+    "url": "/v1/refunds",
+    "has_more": false,
+    "data": [
+      {
+        "id": "re_1NvCL7nmFGUhMW1Bjt34L4Lg",
+        "object": "refund",
+        "amount": 1000,
+        "balance_transaction": "txn_1WNZeCWA2tkjxJRUG5ix1P7u",
+        "charge": "ch_3PLMntMEfrhTi2gaJDvtoyWn",
+        "created": 1692942318,
+        "currency": "usd",
+        "metadata": {},
+        "payment_intent": "pi_3YnXmHyKQWWoIcdMaYjSuQoG",
+        "reason": "requested_by_customer",
+        "receipt_number": null,
+        "status": "succeeded"
+      }
+    ]
+  }
+}

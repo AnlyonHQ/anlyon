@@ -1,0 +1,60 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/gettask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210?opt_fields=name,resource_subtype,notes,completed,completed_at,assignee.name,start_on,due_on,due_at,created_at,modified_at,parent.name,memberships.project.name,memberships.section.name,tags.name,followers.name,num_subtasks,permalink_url",
+  "response": {
+    "data": {
+      "gid": "1208809876543210",
+      "resource_type": "task",
+      "resource_subtype": "default_task",
+      "name": "Follow up with Acme",
+      "notes": "They asked for the security review.",
+      "completed": false,
+      "completed_at": null,
+      "assignee": {
+        "gid": "1208800000000042",
+        "resource_type": "user",
+        "name": "Dana Lee"
+      },
+      "start_on": null,
+      "due_on": "2026-10-20",
+      "due_at": null,
+      "created_at": "2026-10-14T09:12:03.221Z",
+      "modified_at": "2026-10-14T10:01:44.019Z",
+      "parent": null,
+      "memberships": [
+        {
+          "project": {
+            "gid": "1208801234567890",
+            "resource_type": "project",
+            "name": "Customer onboarding"
+          },
+          "section": {
+            "gid": "1208805555555555",
+            "resource_type": "section",
+            "name": "In progress"
+          }
+        }
+      ],
+      "tags": [
+        {
+          "gid": "1208807777777777",
+          "resource_type": "tag",
+          "name": "Waiting on customer"
+        }
+      ],
+      "followers": [
+        {
+          "gid": "1208800000000042",
+          "resource_type": "user",
+          "name": "Dana Lee"
+        }
+      ],
+      "num_subtasks": 1,
+      "permalink_url": "https://app.asana.com/0/1208801234567890/1208809876543210"
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.todoist.com/api/v1/).",
+  "params": {},
+  "input": {
+    "project_id": "6XGgm6PHrGgMpCFX",
+    "label": "waiting"
+  },
+  "expectedUrl": "https://api.todoist.com/api/v1/tasks?project_id=6XGgm6PHrGgMpCFX&label=waiting&limit=25",
+  "response": {
+    "results": [
+      {
+        "user_id": "1234567",
+        "id": "6XGgmFVcrG5RRjVr",
+        "project_id": "6XGgm6PHrGgMpCFX",
+        "section_id": null,
+        "parent_id": null,
+        "added_by_uid": "1234567",
+        "assigned_by_uid": null,
+        "responsible_uid": null,
+        "labels": [
+          "waiting"
+        ],
+        "deadline": null,
+        "duration": null,
+        "is_collapsed": false,
+        "checked": false,
+        "is_deleted": false,
+        "added_at": "2026-10-20T10:30:00Z",
+        "completed_at": null,
+        "completed_by_uid": null,
+        "updated_at": "2026-10-20T10:30:00Z",
+        "due": null,
+        "priority": 1,
+        "child_order": 1,
+        "order_key": "a0",
+        "content": "Send the Acme renewal quote",
+        "description": "",
+        "note_count": 0,
+        "day_order": -1,
+        "completed_count": 0,
+        "postponed_count": 0
+      }
+    ],
+    "next_cursor": "14540000435w8hj8pXXwPQJJch.X9DBH8ya2Xenok55"
+  }
+}

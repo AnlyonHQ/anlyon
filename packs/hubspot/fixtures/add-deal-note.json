@@ -1,0 +1,44 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/activities/notes/create-note).",
+  "params": {},
+  "input": {
+    "dealId": "7701",
+    "body": "Legal asked for a 30-day payment term.",
+    "timestamp": "2026-10-15T09:30:00Z"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/notes",
+  "response": {
+    "id": "84261937201",
+    "properties": {
+      "hs_createdate": "2026-10-15T09:30:01.320Z",
+      "hs_lastmodifieddate": "2026-10-15T09:30:01.320Z",
+      "hs_note_body": "Legal asked for a 30-day payment term.",
+      "hs_object_id": "84261937201",
+      "hs_timestamp": "2026-10-15T09:30:00Z"
+    },
+    "createdAt": "2026-10-15T09:30:01.320Z",
+    "updatedAt": "2026-10-15T09:30:01.320Z",
+    "archived": false
+  },
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/notes/84261937201?properties=hs_note_body",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "84261937201",
+      "properties": {
+        "hs_note_body": "Legal asked for a 30-day payment term.",
+        "hs_object_id": "84261937201"
+      },
+      "archived": false
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "84261937201",
+      "properties": {
+        "hs_note_body": "Something else"
+      }
+    }
+  }
+}

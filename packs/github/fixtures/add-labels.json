@@ -1,0 +1,77 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/labels#add-labels-to-an-issue).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "issue_number": "412",
+    "labels": [
+      "needs-triage"
+    ]
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/issues/412/labels",
+  "response": [
+    {
+      "id": 208045946,
+      "name": "bug",
+      "color": "d73a4a",
+      "default": false,
+      "description": "Something isn't working"
+    },
+    {
+      "id": 208045951,
+      "name": "needs-triage",
+      "color": "fbca04",
+      "default": false,
+      "description": null
+    }
+  ],
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/issues/412",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 2947001122,
+      "number": 412,
+      "title": "Checkout fails for saved cards",
+      "state": "open",
+      "labels": [
+        {
+          "id": 208045946,
+          "name": "bug",
+          "color": "d73a4a",
+          "default": false,
+          "description": "Something isn't working"
+        },
+        {
+          "id": 208045951,
+          "name": "needs-triage",
+          "color": "fbca04",
+          "default": false,
+          "description": null
+        }
+      ],
+      "assignees": [],
+      "html_url": "https://github.com/acme/widgets/issues/412"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 2947001122,
+      "number": 412,
+      "title": "Checkout fails for saved cards",
+      "state": "open",
+      "labels": [
+        {
+          "id": 208045946,
+          "name": "bug",
+          "color": "d73a4a",
+          "default": false,
+          "description": "Something isn't working"
+        }
+      ],
+      "assignees": [],
+      "html_url": "https://github.com/acme/widgets/issues/412"
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "needs": {
+    "project": "A test project on gitlab.com the token can reach with at least the Developer role: its full path (my-group/my-project) or its numeric id",
+    "file_path": "A file on the test project's default branch, such as README.md",
+    "default_branch": "The test project's default branch (default_branch from get-project), such as main",
+    "target_branch": "A scratch branch in the test project that is NOT the default branch and is not protected against merges. The run merges a merge request into it",
+    "source_branch": "A branch with at least one commit that target_branch does not have. The run merges it into target_branch (squash) and keeps it, so create a fresh one for each run",
+    "pipeline_id": "A finished pipeline in the test project with at least one failed or canceled job, from list-pipelines. The run retries it and then cancels it"
+  },
+  "steps": [
+    { "action": "list-projects", "input": {} },
+    { "action": "get-project", "input": { "project": "{{needs.project}}" } },
+    { "action": "list-branches", "input": { "project": "{{needs.project}}" } },
+    { "action": "list-commits", "input": { "project": "{{needs.project}}", "ref_name": "{{needs.default_branch}}" } },
+    { "action": "get-file", "input": { "project": "{{needs.project}}", "file_path": "{{needs.file_path}}", "ref": "{{needs.default_branch}}" } },
+    { "action": "list-labels", "input": { "project": "{{needs.project}}" } },
+    { "action": "create-issue", "input": { "project": "{{needs.project}}", "title": "Anlyon exercise {{run}}", "description": "Created by an Anlyon pack exercise run. It closes this issue at the end.", "labels": "anlyon-exercise" }, "save": { "issue_iid": "iid" } },
+    { "action": "get-issue", "input": { "project": "{{needs.project}}", "issue_iid": "{{saved.issue_iid}}" } },
+    { "action": "list-issues", "input": { "project": "{{needs.project}}", "state": "opened", "labels": "anlyon-exercise" } },
+    { "action": "search-issues", "input": { "scope": "created_by_me", "state": "opened", "search": "Anlyon exercise {{run}}" } },
+    { "action": "update-issue", "input": { "project": "{{needs.project}}", "issue_iid": "{{saved.issue_iid}}", "title": "Anlyon exercise {{run}} (updated)", "due_date": "2026-12-31" } },
+    { "action": "comment-on-issue", "input": { "project": "{{needs.project}}", "issue_iid": "{{saved.issue_iid}}", "body": "Exercise comment {{run}}" } },
+    { "action": "list-issue-notes", "input": { "project": "{{needs.project}}", "issue_iid": "{{saved.issue_iid}}", "activity_filter": "only_comments" } },
+    { "action": "close-issue", "input": { "project": "{{needs.project}}", "issue_iid": "{{saved.issue_iid}}" } },
+    { "action": "reopen-issue", "input": { "project": "{{needs.project}}", "issue_iid": "{{saved.issue_iid}}" } },
+    { "action": "create-merge-request", "input": { "project": "{{needs.project}}", "source_branch": "{{needs.source_branch}}", "target_branch": "{{needs.target_branch}}", "title": "Anlyon exercise {{run}}", "description": "Opened by an Anlyon pack exercise run. It is merged into a scratch branch." }, "save": { "merge_request_iid": "iid" } },
+    { "action": "get-merge-request", "input": { "project": "{{needs.project}}", "merge_request_iid": "{{saved.merge_request_iid}}" }, "save": { "head_sha": "sha" } },
+    { "action": "list-merge-requests", "input": { "project": "{{needs.project}}", "state": "opened", "target_branch": "{{needs.target_branch}}" } },
+    { "action": "list-merge-request-diffs", "input": { "project": "{{needs.project}}", "merge_request_iid": "{{saved.merge_request_iid}}" } },
+    { "action": "comment-on-merge-request", "input": { "project": "{{needs.project}}", "merge_request_iid": "{{saved.merge_request_iid}}", "body": "Exercise comment {{run}}" } },
+    { "action": "list-merge-request-notes", "input": { "project": "{{needs.project}}", "merge_request_iid": "{{saved.merge_request_iid}}" } },
+    { "action": "update-merge-request", "input": { "project": "{{needs.project}}", "merge_request_iid": "{{saved.merge_request_iid}}", "title": "Anlyon exercise {{run}} (updated)" } },
+    { "action": "approve-merge-request", "input": { "project": "{{needs.project}}", "merge_request_iid": "{{saved.merge_request_iid}}", "sha": "{{saved.head_sha}}" } },
+    { "action": "merge-merge-request", "input": { "project": "{{needs.project}}", "merge_request_iid": "{{saved.merge_request_iid}}", "sha": "{{saved.head_sha}}", "squash": true, "should_remove_source_branch": false } },
+    { "action": "list-pipelines", "input": { "project": "{{needs.project}}" } },
+    { "action": "get-pipeline", "input": { "project": "{{needs.project}}", "pipeline_id": "{{needs.pipeline_id}}" } },
+    { "action": "retry-pipeline", "input": { "project": "{{needs.project}}", "pipeline_id": "{{needs.pipeline_id}}" } },
+    { "action": "cancel-pipeline", "input": { "project": "{{needs.project}}", "pipeline_id": "{{needs.pipeline_id}}" } },
+    { "action": "close-issue", "input": { "project": "{{needs.project}}", "issue_iid": "{{saved.issue_iid}}" } }
+  ]
+}

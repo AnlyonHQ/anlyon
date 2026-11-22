@@ -1,0 +1,114 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  dco:
+    name: DCO sign-off
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check sign-off on every commit
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          missing=0
+          for sha in $(git rev-list "$BASE..$HEAD"); do
+            if ! git log -1 --format=%B "$sha" | grep -qE '^Signed-off-by: .+ <.+>$'; then
+              echo "::error::commit $sha has no Signed-off-by line (use git commit -s)"
+              missing=1
+            fi
+          done
+          exit $missing
+
+  typescript:
+    name: Build, typecheck and unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm typecheck
+      - run: pnpm --filter anlyon-scheduler exec vitest run --project unit
+      - run: pnpm --filter "!anlyon-scheduler" -r --if-present test
+
+  integration:
+    name: Server integration tests
+    runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 5
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: anlyon
+          POSTGRES_PASSWORD: anlyon
+          POSTGRES_DB: anlyon_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U anlyon"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://anlyon:anlyon@localhost:5432/anlyon_test
+      TEST_REDIS_URL: redis://localhost:6379
+      TEST_TARGETS_DISPOSABLE: yes-these-are-disposable-test-resources
+      ANLYON_REQUIRE_TEST_TARGETS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter anlyon-scheduler^... build
+      - name: Prepare database
+        working-directory: server
+        env:
+          DATABASE_URL: postgresql://anlyon:anlyon@localhost:5432/anlyon_test
+        run: |
+          pnpm exec tsx src/scripts/setup-pgvector.ts
+          pnpm exec tsx src/db/migrate.ts
+          pnpm exec tsx src/scripts/setup-log-partitions.ts
+      - run: pnpm --filter anlyon-scheduler exec vitest run --project integration
+
+  python:
+    name: Python SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - name: Tests and type check
+        working-directory: sdks/python/packages/anlyon
+        run: |
+          uv run --extra dev pytest tests/ -q
+          uv run --extra dev mypy src/anlyon

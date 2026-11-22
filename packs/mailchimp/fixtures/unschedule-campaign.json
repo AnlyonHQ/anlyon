@@ -1,0 +1,25 @@
+{
+  "params": {},
+  "accountHost": "us21.api.mailchimp.com",
+  "_source": "Shaped after the response documented in Mailchimp's official OpenAPI spec (https://api.mailchimp.com/schema/openapi/OpenAPI.json, postCampaignsIdActionsUnschedule).",
+  "input": {
+    "campaign_id": "42694e9e57"
+  },
+  "expectedUrl": "https://us21.api.mailchimp.com/3.0/campaigns/42694e9e57/actions/unschedule",
+  "response": {},
+  "expectedReadBackUrl": "https://us21.api.mailchimp.com/3.0/campaigns/42694e9e57?fields=id,status",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "42694e9e57",
+      "status": "save"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "42694e9e57",
+      "status": "schedule"
+    }
+  }
+}

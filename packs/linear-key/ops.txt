@@ -1,0 +1,21 @@
+# Linear GraphQL API (https://api.linear.app/graphql). Schema: packages/sdk/src/schema.graphql in
+# https://github.com/linear/linear, fetched 2026-10-24. Written by hand: Linear publishes no OpenAPI spec.
+# Jobs: find the team, its states and labels; find an issue by filter or text, read it and its
+# comments; create an issue, change its title, description, priority or due date, assign it, move it
+# to a state, label and unlabel it, comment on it, archive it.
+# action               operation                          kind
+list-teams             query teams                        read
+list-workflow-states   query team.states                  read
+list-labels            query issueLabels                  read
+list-issues            query issues                       read
+search-issues          query searchIssues                 read
+get-issue              query issue                        read
+list-issue-comments    query issue.comments               read
+create-issue           issueCreate
+update-issue           issueUpdate
+assign-issue           issueUpdate (assigneeId)
+move-issue             issueUpdate (stateId)
+add-issue-label        issueAddLabel
+remove-issue-label     issueRemoveLabel
+add-comment            commentCreate
+archive-issue          issueArchive

@@ -1,0 +1,19 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/contacts/list-contact-segments).",
+  "params": {},
+  "input": {
+    "contact_id": "e169aa45-1ecf-4183-9955-b1499d5701d3"
+  },
+  "expectedUrl": "https://api.resend.com/contacts/e169aa45-1ecf-4183-9955-b1499d5701d3/segments?limit=20",
+  "response": {
+    "object": "list",
+    "data": [
+      {
+        "id": "78261eea-8f8b-4381-83c6-79fa7120f1cf",
+        "name": "Registered Users",
+        "created_at": "2026-10-06 22:59:55.977+00"
+      }
+    ],
+    "has_more": false
+  }
+}

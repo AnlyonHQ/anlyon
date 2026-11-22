@@ -1,0 +1,12 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/associations/associate-records/delete-association).",
+  "params": {},
+  "input": {
+    "objectType": "contacts",
+    "objectId": "151",
+    "toObjectType": "deals",
+    "toObjectId": "7701"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v4/objects/contacts/151/associations/deals/7701",
+  "response": null
+}

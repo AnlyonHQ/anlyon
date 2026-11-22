@@ -1,0 +1,98 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/reference/update-conversation-assignee).",
+  "params": {},
+  "input": {
+    "conversation_id": "cnv_yo1kg5q",
+    "assignee_id": "tea_6r55a"
+  },
+  "expectedUrl": "https://api2.frontapp.com/conversations/cnv_yo1kg5q/assignee",
+  "expectedReadBackUrl": "https://api2.frontapp.com/conversations/cnv_yo1kg5q",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "_links": {
+        "self": "https://api2.frontapp.com/conversations/cnv_yo1kg5q",
+        "related": {}
+      },
+      "id": "cnv_yo1kg5q",
+      "type": "conversation",
+      "subject": "Where is my order?",
+      "status": "assigned",
+      "ticket_ids": [],
+      "assignee": {
+        "_links": {
+          "self": "https://api2.frontapp.com/teammates/tea_6r55a"
+        },
+        "id": "tea_6r55a",
+        "email": "michael@dundermifflin.com",
+        "username": "michael",
+        "first_name": "Michael",
+        "last_name": "Scott",
+        "is_admin": true,
+        "is_available": true,
+        "is_blocked": false,
+        "type": "user",
+        "custom_fields": {}
+      },
+      "recipient": {
+        "_links": {},
+        "name": "Pam Beesly",
+        "handle": "pam@example.com",
+        "role": "from"
+      },
+      "tags": [],
+      "links": [],
+      "custom_fields": {},
+      "created_at": 1729760100,
+      "waiting_since": 1729760100,
+      "is_private": false,
+      "is_closed": false,
+      "scheduled_reminders": [],
+      "metadata": {}
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "_links": {
+        "self": "https://api2.frontapp.com/conversations/cnv_yo1kg5q",
+        "related": {}
+      },
+      "id": "cnv_yo1kg5q",
+      "type": "conversation",
+      "subject": "Where is my order?",
+      "status": "assigned",
+      "ticket_ids": [],
+      "assignee": {
+        "_links": {
+          "self": "https://api2.frontapp.com/teammates/tea_6r55a"
+        },
+        "id": "tea_6r55b",
+        "email": "michael@dundermifflin.com",
+        "username": "michael",
+        "first_name": "Michael",
+        "last_name": "Scott",
+        "is_admin": true,
+        "is_available": true,
+        "is_blocked": false,
+        "type": "user",
+        "custom_fields": {}
+      },
+      "recipient": {
+        "_links": {},
+        "name": "Pam Beesly",
+        "handle": "pam@example.com",
+        "role": "from"
+      },
+      "tags": [],
+      "links": [],
+      "custom_fields": {},
+      "created_at": 1729760100,
+      "waiting_since": 1729760100,
+      "is_private": false,
+      "is_closed": false,
+      "scheduled_reminders": [],
+      "metadata": {}
+    }
+  }
+}

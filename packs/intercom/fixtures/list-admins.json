@@ -1,0 +1,24 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/admins/listadmins).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.intercom.io/admins",
+  "response": {
+    "type": "admin.list",
+    "admins": [
+      {
+        "type": "admin",
+        "id": "991267708",
+        "name": "Ava Chen",
+        "email": "ava@example.com",
+        "job_title": "Support lead",
+        "away_mode_enabled": false,
+        "away_mode_reassign": false,
+        "has_inbox_seat": true,
+        "team_ids": [
+          814865
+        ]
+      }
+    ]
+  }
+}

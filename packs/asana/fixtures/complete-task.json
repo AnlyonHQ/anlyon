@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210",
+  "response": {
+    "data": {
+      "gid": "1208809876543210",
+      "completed": true
+    }
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "completed": true
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "completed": false
+      }
+    }
+  }
+}

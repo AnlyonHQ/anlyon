@@ -1,0 +1,44 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "incident_id": "Q1ABCDEF2GHIJK",
+    "status": "triggered"
+  },
+  "expectedUrl": "https://api.pagerduty.com/incidents/Q1ABCDEF2GHIJK/alerts?limit=10&statuses[]=triggered",
+  "response": {
+    "alerts": [
+      {
+        "id": "PXPGF42ALERT",
+        "type": "alert",
+        "summary": "Checkout error rate above 5%",
+        "created_at": "2026-10-15T09:12:03Z",
+        "status": "triggered",
+        "alert_key": "example-incident-key-0001",
+        "service": {
+          "id": "PWIXJZS",
+          "type": "service_reference",
+          "summary": "Checkout API",
+          "self": "https://api.pagerduty.com/services/PWIXJZS",
+          "html_url": "https://acme.pagerduty.com/services/PWIXJZS"
+        },
+        "incident": {
+          "id": "Q1ABCDEF2GHIJK",
+          "type": "incident_reference"
+        },
+        "severity": "critical",
+        "body": {
+          "type": "alert_body",
+          "details": {
+            "error_rate": "5.4%",
+            "region": "eu-west-1"
+          }
+        }
+      }
+    ],
+    "limit": 10,
+    "offset": 0,
+    "more": false,
+    "total": null
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/updates).",
+  "params": {},
+  "input": {
+    "item_id": "9120000001",
+    "body": "Kickoff confirmed for 2 November."
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "mutation ($item_id: ID!, $body: String!) { create_update(item_id: $item_id, body: $body) { id item_id body } }",
+    "variables": {
+      "item_id": "9120000001",
+      "body": "Kickoff confirmed for 2 November."
+    }
+  },
+  "response": {
+    "data": {
+      "create_update": {
+        "id": "3301000003",
+        "item_id": "9120000001",
+        "body": "<p>Kickoff confirmed for 2 November.</p>"
+      }
+    },
+    "extensions": {
+      "request_id": "req_add_update_1"
+    }
+  },
+  "expectedReadBackUrl": "https://api.monday.com/v2",
+  "expectedReadBackBody": {
+    "query": "query ($update_id: ID!) { updates(ids: [$update_id]) { id item_id body } }",
+    "variables": {
+      "update_id": "3301000003"
+    }
+  },
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "updates": [
+          {
+            "id": "3301000003",
+            "item_id": "9120000001",
+            "body": "<p>Kickoff confirmed for 2 November.</p>"
+          }
+        ]
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "updates": []
+      }
+    }
+  }
+}

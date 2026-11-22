@@ -1,0 +1,20 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/templates-api).",
+  "params": {},
+  "input": {
+    "template": "order-shipped"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/templates/order-shipped",
+  "response": {
+    "Name": "Order shipped",
+    "TemplateId": 1234,
+    "Subject": "Order {{order_id}} has shipped",
+    "HtmlBody": "<p>Hi {{name}}, order {{order_id}} is on its way.</p>",
+    "TextBody": "Hi {{name}}, order {{order_id}} is on its way.",
+    "AssociatedServerId": 1,
+    "Active": true,
+    "Alias": "order-shipped",
+    "TemplateType": "Standard",
+    "LayoutTemplate": null
+  }
+}

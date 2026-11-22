@@ -1,0 +1,38 @@
+{
+  "_source": "Shaped after the provider's documented response (https://cal.com/docs/api-reference/v2/schedules/get-a-schedule).",
+  "params": {},
+  "input": {
+    "schedule_id": 5512
+  },
+  "expectedUrl": "https://api.cal.com/v2/schedules/5512",
+  "response": {
+    "status": "success",
+    "data": {
+      "id": 5512,
+      "ownerId": 1201,
+      "name": "Working hours",
+      "timeZone": "Europe/London",
+      "availability": [
+        {
+          "days": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday"
+          ],
+          "startTime": "09:00",
+          "endTime": "17:00"
+        }
+      ],
+      "isDefault": true,
+      "overrides": [
+        {
+          "date": "2026-12-24",
+          "startTime": "09:00",
+          "endTime": "12:00"
+        }
+      ]
+    }
+  }
+}

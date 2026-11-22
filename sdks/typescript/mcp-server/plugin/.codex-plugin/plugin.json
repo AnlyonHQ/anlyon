@@ -1,0 +1,42 @@
+{
+  "name": "anlyon",
+  "version": "1.0.0",
+  "description": "Governed production actions and human approvals for AI agents.",
+  "author": {
+    "name": "Anlyon",
+    "email": "support@anlyon.com",
+    "url": "https://anlyon.com"
+  },
+  "interface": {
+    "displayName": "Anlyon",
+    "shortDescription": "Governed actions and approvals",
+    "longDescription": "Anlyon executes named production actions on an agent's behalf and routes sensitive ones to a human reviewer first. Connect a workspace to list its actions, invoke one, request approval, and, with the decide permission, approve or deny pending requests. A tool your own code calls directly is not routed through Anlyon and is not governed by it.\n\nUseful from the first minute, before you define any action:\n- Ask a person before a consequential step: the assistant requests an approval that names the step and its consequences, then waits for a reviewer to approve or deny it.\n- Review what is waiting: if you granted \"Approve on your behalf\" when connecting, list pending approvals and approve or deny each one with a reason that is recorded against your name.\nDo not put passwords, API keys, payment card or bank details, health information or government ID numbers in an approval request. Reviewers read it and it is recorded. The assistant is instructed to leave them out. Anlyon does not scan what is sent.\n\nWhen your team defines actions (changing an account setting, updating a support ticket, sending an outbound message):\n- See the actions your workspace has defined and invoke one by name. The model never sees a credential: an action references {{secret:NAME}} and Anlyon resolves it at dispatch. This covers credentials in the Anlyon vault, not a key your own process already holds.\n- When an action requires approval, the request waits for a reviewer. Anlyon executes the approved request snapshot using the credentials bound to that action. A credential revoked since then is not preserved.\n- Anlyon does not retry an action invocation. Where a request may have reached the destination and the outcome cannot be confirmed, the invocation is recorded as unknown and you reconcile before retrying.\n\nLimitations:\n- Anlyon governs only the actions routed through it. It does not govern tools your own code or other apps call directly.\n- Deciding approvals requires the \"Approve on your behalf\" permission, which is off unless you turn it on. Where a rule requires N distinct approvers, your decision counts as one user.\n- Halting an environment stops the agent acting and stops anything leaving the environment. A request an external server already accepted is not recalled.\n- Do not use this plugin to move money, transfer funds or place trades.\n\nConnecting asks you to sign in to Anlyon and choose a workspace and environment. A new account gets a workspace during sign-in. You can disconnect at any time from Anlyon's settings.",
+    "developerName": "Anlyon",
+    "category": "Developer Tools",
+    "capabilities": [
+      "List the actions your Anlyon workspace has defined",
+      "Invoke a named action. Anlyon holds the credentials and makes the request",
+      "Request a human approval before a consequential step",
+      "Wait for a reviewer to decide, in the same conversation",
+      "List approvals waiting for a decision (needs the decide permission)",
+      "Approve or deny with a recorded reason (needs the decide permission)",
+      "Switch the workspace and environment this connection acts in"
+    ],
+    "defaultPrompt": [
+      "What actions can my Anlyon workspace run?",
+      "Get approval before this step",
+      "Show my pending approvals"
+    ],
+    "websiteURL": "https://anlyon.com",
+    "supportURL": "https://docs.anlyon.com",
+    "privacyPolicyURL": "https://anlyon.com/privacy",
+    "termsOfServiceURL": "https://anlyon.com/terms",
+    "brandColor": "#16A34A",
+    "brandColorDark": "#07C983",
+    "composerIcon": "./assets/logo.png",
+    "composerIconDark": "./assets/logo-dark.png",
+    "logo": "./assets/logo.png",
+    "logoDark": "./assets/logo-dark.png",
+    "commerce": false
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/gmail",
+  "version": "0.1.0",
+  "description": "Send email from the connected Gmail account, governed: counted against a limit, held for approval when a policy says so, and receipted. Anlyon can send only; it cannot read the mailbox.",
+  "secrets": [
+    {
+      "name": "GMAIL",
+      "kind": "connection",
+      "integrationId": "gmail",
+      "hosts": [
+        "gmail.googleapis.com"
+      ],
+      "description": "The connected Gmail account the agent sends from"
+    }
+  ],
+  "actions": [
+    {
+      "name": "send-email",
+      "kind": "write",
+      "description": "Send one email from the connected Gmail account. raw is the whole message in RFC 2822 form (From, To, Cc, Subject and the other headers, a blank line, then the body), base64url-encoded. Google sends it to every address in its To, Cc and Bcc headers and keeps a copy in Sent. Returns the message id and thread id. Counted as one email per call, whatever the number of recipients. No read-back: Anlyon asks Google only for permission to send (gmail.send), and every permission that could read a message back would let it read the mailbox, so the receipt is graded acknowledged, the same grade an adopted MCP tool gets. Limitation: an approval shows raw as it was given, so decode it before approving. Limitation: no idempotency, so a retry after an unknown outcome can send the email twice. Limitation: raw is at most 4,096 characters, about 3 KB of message, so no attachments.",
+      "method": "POST",
+      "urlTemplate": "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+      "headers": {
+        "Authorization": "Bearer {{connection:gmail}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "raw": "{{input.raw}}",
+        "threadId": "{{input.thread_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "raw"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "raw": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{16,4094}={0,2}$",
+            "description": "The RFC 2822 message, base64url-encoded (the URL-safe alphabet, - and _, padding optional). Its headers name the recipients and the subject; From may be left out, and Google sets it to the connected account."
+          },
+          "thread_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{1,32}$",
+            "description": "Send as a reply in this thread: a threadId an earlier send-email returned. The message's Subject must match the thread's, and its In-Reply-To and References headers should name the message replied to."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "emails",
+        "amount": "1",
+        "bound": "exact"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "gmail: approve sending an email",
+      "matchKind": "action",
+      "matchActionName": "send-email",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "gmail: emails sent per day",
+      "dimension": "emails",
+      "period": "day",
+      "amount": 20,
+      "actionName": "send-email"
+    }
+  ]
+}

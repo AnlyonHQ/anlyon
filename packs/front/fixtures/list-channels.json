@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/reference/list-channels).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api2.frontapp.com/channels",
+  "response": {
+    "_pagination": {
+      "next": null
+    },
+    "_links": {
+      "self": "https://api2.frontapp.com/x"
+    },
+    "_results": [
+      {
+        "_links": {
+          "self": "https://api2.frontapp.com/channels/cha_14tfp"
+        },
+        "id": "cha_14tfp",
+        "name": "Support email",
+        "address": "support@example.com",
+        "type": "smtp",
+        "send_as": "support@example.com",
+        "settings": {},
+        "is_private": false,
+        "is_valid": true
+      }
+    ]
+  }
+}

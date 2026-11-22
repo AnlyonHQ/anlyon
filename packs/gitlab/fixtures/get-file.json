@@ -1,0 +1,20 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/repository_files/).",
+  "params": {},
+  "input": {
+    "project": "acme/web",
+    "file_path": "src/checkout.ts",
+    "ref": "main"
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/repository/files/src%2Fcheckout.ts?ref=main",
+  "response": {
+    "file_name": "checkout.ts",
+    "file_path": "src/checkout.ts",
+    "size": 19,
+    "encoding": "base64",
+    "content": "Y29uc3QgcGF5ID0gZml4ZWQoKTsK",
+    "ref": "main",
+    "blob_id": "79f7bbd25901e8334750839545a9bd021f0e4c83",
+    "last_commit_id": "8f3a1c2d4e5f60718293a4b5c6d7e8f901234567"
+  }
+}

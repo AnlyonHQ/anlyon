@@ -1,0 +1,25 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/labels#list-labels-for-a-repository).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/labels?per_page=100",
+  "response": [
+    {
+      "id": 208045946,
+      "name": "bug",
+      "color": "d73a4a",
+      "default": false,
+      "description": "Something isn't working"
+    },
+    {
+      "id": 208045947,
+      "name": "enhancement",
+      "color": "a2eeef",
+      "default": false,
+      "description": "New feature or request"
+    }
+  ]
+}

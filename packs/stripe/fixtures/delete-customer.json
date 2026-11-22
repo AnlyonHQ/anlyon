@@ -1,0 +1,55 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/customers/delete).",
+  "params": {},
+  "input": {
+    "customer_id": "cus_PxQ2rT8vLm4NaB"
+  },
+  "expectedUrl": "https://api.stripe.com/v1/customers/cus_PxQ2rT8vLm4NaB",
+  "response": {
+    "id": "cus_PxQ2rT8vLm4NaB",
+    "object": "customer",
+    "deleted": true
+  },
+  "expectedReadBackUrl": "https://api.stripe.com/v1/customers/cus_PxQ2rT8vLm4NaB",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "cus_PxQ2rT8vLm4NaB",
+      "object": "customer",
+      "deleted": true
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "cus_PxQ2rT8vLm4NaB",
+      "object": "customer",
+      "address": null,
+      "balance": 0,
+      "created": 1792050000,
+      "currency": null,
+      "default_source": null,
+      "delinquent": false,
+      "description": null,
+      "email": "anlyon-exercise-a1b2c3@example.com",
+      "invoice_prefix": "HCVXJZAF",
+      "invoice_settings": {
+        "custom_fields": null,
+        "default_payment_method": null,
+        "footer": null,
+        "rendering_options": null
+      },
+      "livemode": false,
+      "metadata": {
+        "anlyon_run": "a1b2c3"
+      },
+      "name": "Anlyon exercise a1b2c3",
+      "next_invoice_sequence": 1,
+      "phone": null,
+      "preferred_locales": [],
+      "shipping": null,
+      "tax_exempt": "none",
+      "test_clock": null
+    }
+  }
+}

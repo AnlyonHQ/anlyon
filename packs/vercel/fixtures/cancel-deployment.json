@@ -1,0 +1,88 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation cancelDeployment).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "deployment_id": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6"
+  },
+  "expectedUrl": "https://api.vercel.com/v12/deployments/dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6/cancel?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "response": {
+    "id": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6",
+    "name": "acme-web",
+    "url": "acme-web-git-main-acme.vercel.app",
+    "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+    "readyState": "CANCELED",
+    "target": "production",
+    "alias": [],
+    "aliasAssigned": false,
+    "createdAt": 1761300000000,
+    "creator": {
+      "uid": "kr1PsOIzqEL5Xg6M4VZcZosf",
+      "username": "dana"
+    },
+    "env": [
+      "DATABASE_URL",
+      "NEXT_PUBLIC_SITE_URL"
+    ],
+    "regions": [
+      "iad1"
+    ],
+    "type": "LAMBDAS",
+    "version": 2
+  },
+  "expectedReadBackUrl": "https://api.vercel.com/v13/deployments/dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6",
+      "name": "acme-web",
+      "url": "acme-web-git-main-acme.vercel.app",
+      "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+      "readyState": "CANCELED",
+      "target": "production",
+      "alias": [],
+      "aliasAssigned": false,
+      "createdAt": 1761300000000,
+      "creator": {
+        "uid": "kr1PsOIzqEL5Xg6M4VZcZosf",
+        "username": "dana"
+      },
+      "env": [
+        "DATABASE_URL",
+        "NEXT_PUBLIC_SITE_URL"
+      ],
+      "regions": [
+        "iad1"
+      ],
+      "type": "LAMBDAS",
+      "version": 2
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6",
+      "name": "acme-web",
+      "url": "acme-web-git-main-acme.vercel.app",
+      "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+      "readyState": "BUILDING",
+      "target": "production",
+      "alias": [],
+      "aliasAssigned": false,
+      "createdAt": 1761300000000,
+      "creator": {
+        "uid": "kr1PsOIzqEL5Xg6M4VZcZosf",
+        "username": "dana"
+      },
+      "env": [
+        "DATABASE_URL",
+        "NEXT_PUBLIC_SITE_URL"
+      ],
+      "regions": [
+        "iad1"
+      ],
+      "type": "LAMBDAS",
+      "version": 2
+    }
+  }
+}

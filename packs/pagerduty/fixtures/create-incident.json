@@ -1,0 +1,39 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "from": "oncall@example.com",
+    "service_id": "PWIXJZS",
+    "title": "Checkout error rate above 5%"
+  },
+  "expectedUrl": "https://api.pagerduty.com/incidents",
+  "response": {
+    "incident": {
+      "id": "Q1ABCDEF2GHIJK",
+      "type": "incident",
+      "title": "Checkout error rate above 5%",
+      "status": "triggered"
+    }
+  },
+  "expectedReadBackUrl": "https://api.pagerduty.com/incidents/Q1ABCDEF2GHIJK",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "incident": {
+        "id": "Q1ABCDEF2GHIJK",
+        "title": "Checkout error rate above 5%",
+        "status": "triggered"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "incident": {
+        "id": "Q1ABCDEF2GHIJK",
+        "title": "Another incident",
+        "status": "triggered"
+      }
+    }
+  }
+}

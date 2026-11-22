@@ -1,0 +1,1109 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/close",
+  "version": "0.1.0",
+  "description": "Close for an agent: search and read leads, contacts, opportunities, tasks, notes and activities; create and update leads, add contacts, create and update opportunities, log notes, create and complete tasks, and delete a lead, with every write governed.",
+  "secrets": [
+    {
+      "name": "CLOSE",
+      "kind": "connection",
+      "integrationId": "close",
+      "hosts": [
+        "api.close.com"
+      ],
+      "description": "The connected Close API key"
+    }
+  ],
+  "actions": [
+    {
+      "name": "search-leads",
+      "kind": "read",
+      "description": "Search leads with Close's search syntax, or list all leads when query is left out. Returns up to 20 leads a page, each with id, display_name, status_id, status_label, url and dates, plus has_more and total_results. Examples: name:\"Acme\", email_address:\"jo@acme.com\", company:\"Acme\". Page with skip while has_more is true. Close makes very deep skips slow or refuses them, so narrow the query instead.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/lead/?query={{input.query}}&_limit=20&_skip={{input.skip}}&_fields=id,display_name,status_id,status_label,url,date_created,date_updated",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "A Close lead search, e.g. name:\"Acme\" or email_address:\"jo@acme.com\". Leave out to list all leads."
+          },
+          "skip": {
+            "type": "integer",
+            "description": "How many results to skip: 20 for the second page, 40 for the third. Use it while has_more is true. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-lead",
+      "kind": "read",
+      "description": "Get one lead: name, description, url, status, its contacts (with emails and phones), its opportunities and addresses, and dates. Custom fields are not returned.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/lead/{{input.lead_id}}/?_fields=id,name,display_name,description,url,status_id,status_label,contacts,opportunities,addresses,date_created,date_updated",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "lead_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-contact",
+      "kind": "read",
+      "description": "Get one contact: name, title, the lead it belongs to (lead_id), emails, phones, urls and dates. A lead's contacts and their ids are listed by get-lead.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/contact/{{input.contact_id}}/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^cont_[A-Za-z0-9]{1,64}$",
+            "description": "The contact's id (cont_...), from get-lead."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-lead-statuses",
+      "kind": "read",
+      "description": "List the organization's lead statuses: id and label. A lead's status_id is one of these.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/status/lead/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-opportunity-statuses",
+      "kind": "read",
+      "description": "List the organization's opportunity statuses: id, label and type (active, won or lost). An opportunity's status_id is one of these.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/status/opportunity/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-opportunities",
+      "kind": "read",
+      "description": "List opportunities, 20 a page, of one lead, of one user or of one status type. Each has its id, lead_id, status_id, status_label, status_type, value (in cents), value_period, value_formatted, confidence, note, owner (user_id) and dates. Page with skip while has_more is true.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/opportunity/?lead_id={{input.lead_id}}&user_id={{input.user_id}}&status_type={{input.status_type}}&_limit=20&_skip={{input.skip}}&_fields=id,lead_id,status_id,status_label,status_type,value,value_period,value_formatted,confidence,note,user_id,date_won,date_created,date_updated",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          },
+          "user_id": {
+            "type": "string",
+            "pattern": "^user_[A-Za-z0-9]{1,64}$",
+            "description": "The owner's Close user id (user_...), e.g. the user_id of an opportunity."
+          },
+          "status_type": {
+            "type": "string",
+            "enum": [
+              "active",
+              "won",
+              "lost"
+            ],
+            "description": "Opportunities whose status has this type."
+          },
+          "skip": {
+            "type": "integer",
+            "description": "How many results to skip: 20 for the second page, 40 for the third. Use it while has_more is true. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-opportunity",
+      "kind": "read",
+      "description": "Get one opportunity: lead, status and its type, value (in cents), value_period, confidence, note, contact, owner and dates.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/opportunity/{{input.opportunity_id}}/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "opportunity_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "opportunity_id": {
+            "type": "string",
+            "pattern": "^oppo_[A-Za-z0-9]{1,64}$",
+            "description": "The opportunity's id (oppo_...), from list-opportunities."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-tasks",
+      "kind": "read",
+      "description": "List lead tasks, 20 a page, of one lead, of one assignee, open or complete. Each has its id, lead_id, text, date (due), is_complete, assigned_to and date_created. Other task types (missed calls, voicemails) are not listed. Page with skip while has_more is true.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/task/?lead_id={{input.lead_id}}&assigned_to={{input.assigned_to}}&is_complete={{input.is_complete}}&_limit=20&_skip={{input.skip}}&_fields=id,_type,lead_id,text,date,is_complete,assigned_to,date_created",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          },
+          "assigned_to": {
+            "type": "string",
+            "pattern": "^user_[A-Za-z0-9]{1,64}$",
+            "description": "The assignee's Close user id (user_...), e.g. the assigned_to of a task."
+          },
+          "is_complete": {
+            "type": "boolean",
+            "description": "true for complete tasks, false for open ones."
+          },
+          "skip": {
+            "type": "integer",
+            "description": "How many results to skip: 20 for the second page, 40 for the third. Use it while has_more is true. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-task",
+      "kind": "read",
+      "description": "Get one task: lead, text, due date, is_complete, assignee and dates.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/task/{{input.task_id}}/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^task_[A-Za-z0-9]{1,64}$",
+            "description": "The task's id (task_...), from list-tasks."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-activities",
+      "kind": "read",
+      "description": "List the activities on one lead, 10 a page: notes, calls, emails and SMS, or one of those types. Each has its _type, id, date_created, contact_id, user_id, and for a call its direction and duration, for a note its text. Email bodies are not returned. Page with skip while has_more is true. A page of long notes can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/activity/?lead_id={{input.lead_id}}&_type={{input.type}}&_limit=10&_skip={{input.skip}}&_fields=_type,id,date_created,lead_id,contact_id,user_id,direction,duration,note",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "lead_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Note",
+              "Call",
+              "Email",
+              "SMS"
+            ],
+            "description": "Activities of this type. Leave out for all types."
+          },
+          "skip": {
+            "type": "integer",
+            "description": "How many results to skip: 20 for the second page, 40 for the third. Use it while has_more is true. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-note",
+      "kind": "read",
+      "description": "Get one note activity: its text (note and note_html), lead, contact, author and dates. Note ids come from list-activities.",
+      "method": "GET",
+      "urlTemplate": "https://api.close.com/api/v1/activity/note/{{input.note_id}}/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "note_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "note_id": {
+            "type": "string",
+            "pattern": "^acti_[A-Za-z0-9]{1,64}$",
+            "description": "The note activity's id (acti_...), from list-activities."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-lead",
+      "kind": "write",
+      "description": "Create one lead with a name, and optionally a url, a description, a status and its contacts (each with emails and phones). Read back by lead id; the name must match. Limitation: Close accepts two leads with the same name, so a retry after an unknown outcome can create a second one. Search with search-leads before you create one.",
+      "method": "POST",
+      "urlTemplate": "https://api.close.com/api/v1/lead/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "url": "{{input.url}}",
+        "description": "{{input.description}}",
+        "status_id": "{{input.status_id}}",
+        "contacts": "{{input.contacts}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The lead's name, usually the company."
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://[^\\s]{1,500}$",
+            "description": "The company's website."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "A description of the lead."
+          },
+          "status_id": {
+            "type": "string",
+            "pattern": "^stat_[A-Za-z0-9]{1,64}$",
+            "description": "The lead status id (stat_...), from list-lead-statuses. Close uses the organization's default when left out."
+          },
+          "contacts": {
+            "type": "array",
+            "description": "The people at the lead, each { name, title, emails, phones }.",
+            "items": {
+              "type": "object",
+              "required": [
+                "name"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[^\\n]{1,255}$",
+                  "description": "The contact's full name."
+                },
+                "title": {
+                  "type": "string",
+                  "pattern": "^[^\\n]{1,255}$",
+                  "description": "Their job title."
+                },
+                "emails": {
+                  "type": "array",
+                  "description": "Email addresses, each { email, type }.",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "email"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "email": {
+                        "type": "string",
+                        "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+                        "description": "The email address."
+                      },
+                      "type": {
+                        "type": "string",
+                        "pattern": "^[a-z_]{1,20}$",
+                        "description": "Close's label for it, e.g. office, home or other."
+                      }
+                    }
+                  }
+                },
+                "phones": {
+                  "type": "array",
+                  "description": "Phone numbers, each { phone, type }.",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "phone"
+                    ],
+                    "additionalProperties": false,
+                    "properties": {
+                      "phone": {
+                        "type": "string",
+                        "pattern": "^[0-9+()./ -]{3,40}$",
+                        "description": "The phone number, best in international format (+14155550100)."
+                      },
+                      "type": {
+                        "type": "string",
+                        "pattern": "^[a-z_]{1,20}$",
+                        "description": "Close's label for it, e.g. office, mobile, home or other."
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/lead/{{response.id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-lead",
+      "kind": "write",
+      "description": "Update one lead's name, url, description or status. Fields you leave out stay as they are. Read back by lead id; the name, description and status must equal what Close returned for the update. Limitation: the url is not part of the read-back.",
+      "method": "PUT",
+      "urlTemplate": "https://api.close.com/api/v1/lead/{{input.lead_id}}/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "url": "{{input.url}}",
+        "description": "{{input.description}}",
+        "status_id": "{{input.status_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "lead_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The new name."
+          },
+          "url": {
+            "type": "string",
+            "pattern": "^https?://[^\\s]{1,500}$",
+            "description": "The company's website."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The new description."
+          },
+          "status_id": {
+            "type": "string",
+            "pattern": "^stat_[A-Za-z0-9]{1,64}$",
+            "description": "The lead status id (stat_...), from list-lead-statuses."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/lead/{{input.lead_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.lead_id}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{response.name}}"
+          },
+          {
+            "path": "description",
+            "equals": "{{response.description}}"
+          },
+          {
+            "path": "status_id",
+            "equals": "{{response.status_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-lead",
+      "kind": "write",
+      "description": "Delete one lead with its contacts, opportunities, tasks and activities. It cannot be undone through the API. Close deletes the lead's records in the background, so the lead can still be found for a short time. Read back: getting the lead must answer 404; while Close is still deleting, the receipt stays acknowledged.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.close.com/api/v1/lead/{{input.lead_id}}/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "lead_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/lead/{{input.lead_id}}/",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "create-contact",
+      "kind": "write",
+      "description": "Create one contact on an existing lead, with a name, and optionally a title, emails and phones. Read back by contact id; the name and the lead must match. Limitation: Close accepts two contacts with the same name or email, so a retry after an unknown outcome can create a second one. Check the lead's contacts with get-lead before you create one.",
+      "method": "POST",
+      "urlTemplate": "https://api.close.com/api/v1/contact/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "lead_id": "{{input.lead_id}}",
+        "name": "{{input.name}}",
+        "title": "{{input.title}}",
+        "emails": "{{input.emails}}",
+        "phones": "{{input.phones}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "lead_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The contact's full name."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "Their job title."
+          },
+          "emails": {
+            "type": "array",
+            "description": "Email addresses, each { email, type }.",
+            "items": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+                  "description": "The email address."
+                },
+                "type": {
+                  "type": "string",
+                  "pattern": "^[a-z_]{1,20}$",
+                  "description": "Close's label for it, e.g. office, home or other."
+                }
+              }
+            }
+          },
+          "phones": {
+            "type": "array",
+            "description": "Phone numbers, each { phone, type }.",
+            "items": {
+              "type": "object",
+              "required": [
+                "phone"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "phone": {
+                  "type": "string",
+                  "pattern": "^[0-9+()./ -]{3,40}$",
+                  "description": "The phone number, best in international format (+14155550100)."
+                },
+                "type": {
+                  "type": "string",
+                  "pattern": "^[a-z_]{1,20}$",
+                  "description": "Close's label for it, e.g. office, mobile, home or other."
+                }
+              }
+            }
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/contact/{{response.id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          },
+          {
+            "path": "lead_id",
+            "equals": "{{input.lead_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-opportunity",
+      "kind": "write",
+      "description": "Create one opportunity on a lead, optionally with a status, a value in cents, a value period, a confidence and a note. The value records what the deal is worth; no money moves. Close uses the organization's default status when it is left out. Read back by opportunity id; the lead must match, and the status must equal what Close returned. Limitation: no idempotency, so a retry after an unknown outcome can create a second opportunity.",
+      "method": "POST",
+      "urlTemplate": "https://api.close.com/api/v1/opportunity/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "lead_id": "{{input.lead_id}}",
+        "contact_id": "{{input.contact_id}}",
+        "status_id": "{{input.status_id}}",
+        "value": "{{input.value}}",
+        "value_period": "{{input.value_period}}",
+        "confidence": "{{input.confidence}}",
+        "note": "{{input.note}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "lead_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          },
+          "contact_id": {
+            "type": "string",
+            "pattern": "^cont_[A-Za-z0-9]{1,64}$",
+            "description": "The contact's id (cont_...), from get-lead, for the person on the deal."
+          },
+          "status_id": {
+            "type": "string",
+            "pattern": "^stat_[A-Za-z0-9]{1,64}$",
+            "description": "The opportunity status id (stat_...), from list-opportunity-statuses."
+          },
+          "value": {
+            "type": "integer",
+            "description": "What the deal is worth, in cents: 500000 is 5,000.00 in the organization's currency."
+          },
+          "value_period": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "monthly",
+              "annual"
+            ],
+            "description": "one_time, or monthly or annual for recurring revenue."
+          },
+          "confidence": {
+            "type": "integer",
+            "description": "How likely the deal is to close, 0 to 100."
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "A note on the opportunity, plain text."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/opportunity/{{response.id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "lead_id",
+            "equals": "{{input.lead_id}}"
+          },
+          {
+            "path": "status_id",
+            "equals": "{{response.status_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-opportunity",
+      "kind": "write",
+      "description": "Update one opportunity's status (to move it or mark it won or lost), value in cents, value period, confidence or note. Fields you leave out stay as they are. The value records what the deal is worth; no money moves. Read back by opportunity id; the status and confidence must equal what Close returned for the update. Limitation: the value, period and note are not part of the read-back.",
+      "method": "PUT",
+      "urlTemplate": "https://api.close.com/api/v1/opportunity/{{input.opportunity_id}}/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status_id": "{{input.status_id}}",
+        "value": "{{input.value}}",
+        "value_period": "{{input.value_period}}",
+        "confidence": "{{input.confidence}}",
+        "note": "{{input.note}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "opportunity_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "opportunity_id": {
+            "type": "string",
+            "pattern": "^oppo_[A-Za-z0-9]{1,64}$",
+            "description": "The opportunity's id (oppo_...), from list-opportunities."
+          },
+          "status_id": {
+            "type": "string",
+            "pattern": "^stat_[A-Za-z0-9]{1,64}$",
+            "description": "The opportunity status id (stat_...), from list-opportunity-statuses."
+          },
+          "value": {
+            "type": "integer",
+            "description": "What the deal is worth, in cents: 500000 is 5,000.00 in the organization's currency."
+          },
+          "value_period": {
+            "type": "string",
+            "enum": [
+              "one_time",
+              "monthly",
+              "annual"
+            ],
+            "description": "one_time, or monthly or annual for recurring revenue."
+          },
+          "confidence": {
+            "type": "integer",
+            "description": "How likely the deal is to close, 0 to 100."
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The note on the opportunity, plain text. Replaces the one there."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/opportunity/{{input.opportunity_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.opportunity_id}}"
+          },
+          {
+            "path": "status_id",
+            "equals": "{{response.status_id}}"
+          },
+          {
+            "path": "confidence",
+            "equals": "{{response.confidence}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-note",
+      "kind": "write",
+      "description": "Log one note activity on a lead, in plain text. Nobody is notified outside Close. Read back by note id; the lead must match, and the text must equal what Close stored. Limitation: no idempotency, so a retry after an unknown outcome can log a second note.",
+      "method": "POST",
+      "urlTemplate": "https://api.close.com/api/v1/activity/note/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "lead_id": "{{input.lead_id}}",
+        "note": "{{input.note}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "lead_id",
+          "note"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The note, plain text."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/activity/note/{{response.id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "lead_id",
+            "equals": "{{input.lead_id}}"
+          },
+          {
+            "path": "note",
+            "equals": "{{response.note}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-task",
+      "kind": "write",
+      "description": "Create one open task on a lead, with its text, and optionally a due date and an assignee. Close assigns it to the key's own user when assigned_to is left out. Read back by task id; the text and the lead must match. Limitation: no idempotency, so a retry after an unknown outcome can create a second task.",
+      "method": "POST",
+      "urlTemplate": "https://api.close.com/api/v1/task/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "lead_id": "{{input.lead_id}}",
+        "text": "{{input.text}}",
+        "date": "{{input.date}}",
+        "assigned_to": "{{input.assigned_to}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "lead_id",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "lead_id": {
+            "type": "string",
+            "pattern": "^lead_[A-Za-z0-9]{1,64}$",
+            "description": "The lead's id (lead_...), from search-leads."
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,1000}$",
+            "description": "What to do, e.g. Call back about the renewal."
+          },
+          "date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Due date, YYYY-MM-DD."
+          },
+          "assigned_to": {
+            "type": "string",
+            "pattern": "^user_[A-Za-z0-9]{1,64}$",
+            "description": "The assignee's Close user id (user_...), e.g. the assigned_to of a task."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/task/{{response.id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "text",
+            "equals": "{{input.text}}"
+          },
+          {
+            "path": "lead_id",
+            "equals": "{{input.lead_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "complete-task",
+      "kind": "write",
+      "description": "Mark one task complete. Read back by task id; is_complete must be true.",
+      "method": "PUT",
+      "urlTemplate": "https://api.close.com/api/v1/task/{{input.task_id}}/",
+      "headers": {
+        "Authorization": "Basic {{connection:close}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "is_complete": true
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^task_[A-Za-z0-9]{1,64}$",
+            "description": "The task's id (task_...), from list-tasks."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.close.com/api/v1/task/{{input.task_id}}/",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "is_complete",
+            "equals": true
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "close: approve deleting a lead",
+      "matchKind": "action",
+      "matchActionName": "delete-lead",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "close: leads created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-lead"
+    },
+    {
+      "name": "close: leads updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-lead"
+    },
+    {
+      "name": "close: leads deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-lead"
+    },
+    {
+      "name": "close: contacts created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-contact"
+    },
+    {
+      "name": "close: opportunities created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-opportunity"
+    },
+    {
+      "name": "close: opportunities updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-opportunity"
+    },
+    {
+      "name": "close: notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-note"
+    },
+    {
+      "name": "close: tasks created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "create-task"
+    },
+    {
+      "name": "close: tasks completed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "complete-task"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "needs": {},
+  "steps": [
+    { "action": "list-pipelines", "input": {}, "save": { "pipeline_id": "data.0.id" } },
+    { "action": "list-stages", "input": { "pipeline_id": "{{saved.pipeline_id}}" }, "save": { "stage_a": "data.0.id", "stage_b": "data.1.id" } },
+    { "action": "create-organization", "input": { "name": "Anlyon exercise {{run}}" }, "save": { "org_id": "data.id" } },
+    { "action": "get-organization", "input": { "org_id": "{{saved.org_id}}" } },
+    { "action": "search-organizations", "input": { "term": "Anlyon exercise {{run}}" } },
+    { "action": "create-person", "input": { "name": "Anlyon Exercise {{run}}", "email": "anlyon-exercise-{{run}}@example.com", "org_id": "{{saved.org_id}}" }, "save": { "person_id": "data.id" } },
+    { "action": "update-person", "input": { "person_id": "{{saved.person_id}}", "name": "Anlyon Exercise {{run}} (renamed)" } },
+    { "action": "get-person", "input": { "person_id": "{{saved.person_id}}" } },
+    { "action": "search-persons", "input": { "term": "anlyon-exercise-{{run}}@example.com", "exact_match": true } },
+    { "action": "create-deal", "input": { "title": "Anlyon exercise {{run}}", "person_id": "{{saved.person_id}}", "org_id": "{{saved.org_id}}", "pipeline_id": "{{saved.pipeline_id}}", "stage_id": "{{saved.stage_a}}", "value": 100, "currency": "USD" }, "save": { "deal_id": "data.id" } },
+    { "action": "get-deal", "input": { "deal_id": "{{saved.deal_id}}" } },
+    { "action": "update-deal", "input": { "deal_id": "{{saved.deal_id}}", "title": "Anlyon exercise {{run}} (updated)", "value": 200 } },
+    { "action": "move-deal-stage", "input": { "deal_id": "{{saved.deal_id}}", "stage_id": "{{saved.stage_b}}" } },
+    { "action": "list-deals", "input": { "person_id": "{{saved.person_id}}" } },
+    { "action": "search-deals", "input": { "term": "Anlyon exercise {{run}}" } },
+    { "action": "add-note", "input": { "content": "Anlyon exercise {{run}} note", "deal_id": "{{saved.deal_id}}" }, "save": { "note_id": "data.id" } },
+    { "action": "list-notes", "input": { "deal_id": "{{saved.deal_id}}" } },
+    { "action": "get-note", "input": { "note_id": "{{saved.note_id}}" } },
+    { "action": "create-activity", "input": { "subject": "Anlyon exercise {{run}} task", "type": "task", "deal_id": "{{saved.deal_id}}" }, "save": { "activity_id": "data.id" } },
+    { "action": "complete-activity", "input": { "activity_id": "{{saved.activity_id}}" } },
+    { "action": "get-activity", "input": { "activity_id": "{{saved.activity_id}}" } },
+    { "action": "list-activities", "input": { "deal_id": "{{saved.deal_id}}" } },
+    { "action": "set-deal-status", "input": { "deal_id": "{{saved.deal_id}}", "status": "lost", "lost_reason": "Anlyon exercise" } },
+    { "action": "delete-deal", "input": { "deal_id": "{{saved.deal_id}}" } },
+    { "action": "delete-person", "input": { "person_id": "{{saved.person_id}}" } }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/tags/listtags).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.intercom.io/tags",
+  "response": {
+    "type": "list",
+    "data": [
+      {
+        "type": "tag",
+        "id": "7522907",
+        "name": "billing"
+      },
+      {
+        "type": "tag",
+        "id": "7522908",
+        "name": "vip"
+      }
+    ]
+  }
+}

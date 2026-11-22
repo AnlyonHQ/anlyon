@@ -1,0 +1,21 @@
+{
+  "needs": {
+    "account_sid": "The Account SID (AC...) of the connected Twilio account or subaccount",
+    "from_number": "A phone number the account owns that can send SMS, E.164 (+15017122661)",
+    "to_number": "A phone you hold that can receive SMS, E.164; on a trial account it must be a verified number"
+  },
+  "steps": [
+    { "action": "list-phone-numbers", "input": { "account_sid": "{{needs.account_sid}}", "phone_number": "{{needs.from_number}}" }, "save": { "phone_number_sid": "incoming_phone_numbers.0.sid", "old_friendly_name": "incoming_phone_numbers.0.friendly_name" } },
+    { "action": "get-phone-number", "input": { "account_sid": "{{needs.account_sid}}", "phone_number_sid": "{{saved.phone_number_sid}}" } },
+    { "action": "rename-phone-number", "input": { "account_sid": "{{needs.account_sid}}", "phone_number_sid": "{{saved.phone_number_sid}}", "friendly_name": "Anlyon exercise {{run}}" } },
+    { "action": "rename-phone-number", "input": { "account_sid": "{{needs.account_sid}}", "phone_number_sid": "{{saved.phone_number_sid}}", "friendly_name": "{{saved.old_friendly_name}}" } },
+    { "action": "send-sms", "input": { "account_sid": "{{needs.account_sid}}", "to": "{{needs.to_number}}", "from": "{{needs.from_number}}", "body": "Anlyon exercise {{run}}: a test message, no reply needed." }, "save": { "message_sid": "sid" } },
+    { "action": "get-message", "input": { "account_sid": "{{needs.account_sid}}", "message_sid": "{{saved.message_sid}}" } },
+    { "action": "list-messages", "input": { "account_sid": "{{needs.account_sid}}", "to": "{{needs.to_number}}", "from": "{{needs.from_number}}" } },
+    { "action": "list-message-media", "input": { "account_sid": "{{needs.account_sid}}", "message_sid": "{{saved.message_sid}}" } },
+    { "action": "list-calls", "input": { "account_sid": "{{needs.account_sid}}" }, "save": { "call_sid": "calls.0.sid" } },
+    { "action": "get-call", "input": { "account_sid": "{{needs.account_sid}}", "call_sid": "{{saved.call_sid}}" } },
+    { "action": "redact-message", "input": { "account_sid": "{{needs.account_sid}}", "message_sid": "{{saved.message_sid}}" } },
+    { "action": "delete-message", "input": { "account_sid": "{{needs.account_sid}}", "message_sid": "{{saved.message_sid}}" } }
+  ]
+}

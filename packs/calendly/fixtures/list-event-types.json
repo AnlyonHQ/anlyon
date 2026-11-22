@@ -1,0 +1,54 @@
+{
+  "_source": "Shaped after the provider's documented response (Calendly API v2 OpenAPI document, list-event-types).",
+  "params": {},
+  "input": {
+    "user": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+    "active": true
+  },
+  "expectedUrl": "https://api.calendly.com/event_types?user=https%3A%2F%2Fapi.calendly.com%2Fusers%2FBDHFGIJ2KLMNOPQR&active=true&sort=name:asc&count=10",
+  "response": {
+    "collection": [
+      {
+        "uri": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+        "name": "30 Minute Meeting",
+        "active": true,
+        "slug": "30min",
+        "scheduling_url": "https://calendly.com/sam-rivera/30min",
+        "duration": 30,
+        "kind": "solo",
+        "pooling_type": null,
+        "type": "StandardEventType",
+        "secret": false,
+        "booking_method": "instant",
+        "locations": [
+          {
+            "kind": "google_conference"
+          }
+        ],
+        "custom_questions": [
+          {
+            "name": "What would you like to discuss?",
+            "type": "text",
+            "position": 0,
+            "enabled": true,
+            "required": true,
+            "answer_choices": [],
+            "include_other": false
+          }
+        ],
+        "profile": {
+          "type": "User",
+          "name": "Sam Rivera",
+          "owner": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR"
+        }
+      }
+    ],
+    "pagination": {
+      "count": 1,
+      "next_page": null,
+      "previous_page": null,
+      "next_page_token": null,
+      "previous_page_token": null
+    }
+  }
+}

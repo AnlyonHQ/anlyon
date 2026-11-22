@@ -1,0 +1,80 @@
+{
+  "name": "@anlyonhq/ai-sdk",
+  "version": "3.0.0",
+  "description": "Vercel AI SDK integration for Anlyon: expose hosted actions as tools the model can call without holding a credential, and wait for human approval inside the turn.",
+  "author": "Anlyon <support@anlyon.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnlyonHQ/anlyon.git",
+    "directory": "sdks/typescript/adapter-ai-sdk"
+  },
+  "homepage": "https://docs.anlyon.com/guides/typescript-sdk",
+  "bugs": {
+    "url": "https://docs.anlyon.com",
+    "email": "support@anlyon.com"
+  },
+  "keywords": [
+    "anlyon",
+    "ai",
+    "ai-sdk",
+    "vercel-ai-sdk",
+    "agent-tools",
+    "agent-actions",
+    "approvals",
+    "human-in-the-loop",
+    "llm"
+  ],
+  "type": "module",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit -p tsconfig.test.json",
+    "test": "vitest run",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@anlyonhq/sdk": "workspace:*"
+  },
+  "peerDependencies": {
+    "ai": "^7.0.0",
+    "zod": "^3.25.76 || ^4.1.8"
+  },
+  "peerDependenciesMeta": {
+    "ai": {
+      "optional": false
+    },
+    "zod": {
+      "optional": false
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "ai": "^7.0.0",
+    "rimraf": "^5.0.10",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12",
+    "zod": "^4.6.6"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

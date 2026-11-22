@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/activities, GET /activity/).",
+  "params": {},
+  "input": {
+    "lead_id": "lead_Acme01",
+    "skip": 10
+  },
+  "expectedUrl": "https://api.close.com/api/v1/activity/?lead_id=lead_Acme01&_limit=10&_skip=10&_fields=_type,id,date_created,lead_id,contact_id,user_id,direction,duration,note",
+  "response": {
+    "has_more": false,
+    "data": [
+      {
+        "_type": "Note",
+        "id": "acti_NoteAcme01",
+        "date_created": "2026-10-24T08:20:00.000000+00:00",
+        "lead_id": "lead_Acme01",
+        "contact_id": null,
+        "user_id": "user_Alice01",
+        "note": "Jo asked for the 2027 price list."
+      },
+      {
+        "_type": "Call",
+        "id": "acti_CallAcme02",
+        "date_created": "2026-10-23T16:05:00.000000+00:00",
+        "lead_id": "lead_Acme01",
+        "contact_id": "cont_JoAcme01",
+        "user_id": "user_Alice01",
+        "direction": "outbound",
+        "duration": 312
+      }
+    ]
+  }
+}

@@ -1,0 +1,1178 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/pagerduty",
+  "version": "0.3.0",
+  "description": "PagerDuty incident response for an agent: list, read and search incidents, their notes, log entries and alerts, services, on-calls, escalation policies, schedules, users and maintenance windows; open, acknowledge, resolve, reassign, re-prioritise, snooze, merge and annotate incidents and schedule maintenance, each write read back from PagerDuty where it can be.",
+  "secrets": [
+    {
+      "name": "PAGERDUTY",
+      "kind": "connection",
+      "integrationId": "pagerduty",
+      "hosts": [
+        "api.pagerduty.com"
+      ],
+      "description": "The connected PagerDuty API key"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-incidents",
+      "description": "List incidents, newest first, 25 per page: title, status, urgency, service and assignees. Without since/until PagerDuty searches the last month, and date_range all searches every date; filter by up to two statuses (pass triggered and acknowledged for every open incident), a service, an assigned user or an urgency. When the response says more is true, pass offset 25, 50 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/incidents?limit=25&offset={{input.offset}}&statuses[]={{input.status}}&statuses[]={{input.second_status}}&service_ids[]={{input.service_id}}&user_ids[]={{input.user_id}}&urgencies[]={{input.urgency}}&since={{input.since}}&until={{input.until}}&date_range={{input.date_range}}&sort_by=created_at:desc",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 25, 50 and so on while `more` is true. offset plus the page size may not exceed 10000."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "triggered",
+              "acknowledged",
+              "resolved"
+            ],
+            "description": "Only incidents with this status."
+          },
+          "second_status": {
+            "type": "string",
+            "enum": [
+              "triggered",
+              "acknowledged",
+              "resolved"
+            ],
+            "description": "A second status to include alongside status."
+          },
+          "service_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "Only incidents on this service."
+          },
+          "user_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "Only incidents currently assigned to this user (open incidents only)."
+          },
+          "urgency": {
+            "type": "string",
+            "enum": [
+              "high",
+              "low"
+            ],
+            "description": "Only incidents of this urgency."
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,6})?)?(Z|[+-][0-9]{2}:?[0-9]{2})?)?$",
+            "description": "Start of the date range, ISO 8601. The range may span at most 6 months."
+          },
+          "until": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,6})?)?(Z|[+-][0-9]{2}:?[0-9]{2})?)?$",
+            "description": "End of the date range, ISO 8601."
+          },
+          "date_range": {
+            "type": "string",
+            "enum": [
+              "all"
+            ],
+            "description": "all ignores since and until and searches every date."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-incident",
+      "description": "Get one incident by its id or incident number: title, status, urgency, service, assignees, acknowledgements, pending actions and alert counts.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "incident_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident's id (such as Q1ABCDEF2GHIJK) or its number."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-incident-notes",
+      "description": "List the notes on one incident, newest first, with their author and time. PagerDuty returns every note in one response and has no pagination for notes, so a very long notes history is cut at 64 KB.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}/notes",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "incident_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident's id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-incident-log-entries",
+      "description": "List one incident's log entries (triggered, notified, acknowledged, assigned, annotated, snoozed, resolved and so on), 25 per page. is_overview true keeps only the most important changes. When more is true, pass offset 25, 50 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}/log_entries?limit=25&offset={{input.offset}}&is_overview={{input.is_overview}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "incident_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident's id."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 25, 50 and so on while `more` is true. offset plus the page size may not exceed 10000."
+          },
+          "is_overview": {
+            "type": "boolean",
+            "description": "true returns only the most important changes."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-incident-alerts",
+      "description": "List the alerts grouped into one incident, 10 per page, including each alert's body and details from the monitoring tool that raised it. Incidents opened by hand have no alerts. When more is true, pass offset 10, 20 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}/alerts?limit=10&offset={{input.offset}}&statuses[]={{input.status}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "incident_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident's id."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 10, 20 and so on while `more` is true."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "triggered",
+              "resolved"
+            ],
+            "description": "Only alerts with this status."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-services",
+      "description": "List services, by name, 25 per page: name, status, escalation policy and teams. Use it to find the service_id an incident is opened on. When more is true, pass offset 25, 50 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/services?limit=25&offset={{input.offset}}&query={{input.query}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 25, 50 and so on while `more` is true. offset plus the page size may not exceed 10000."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Only services whose name matches this text."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-service",
+      "description": "Get one service: name, description, status (active, warning, critical, maintenance or disabled), escalation policy, urgency rule and timeouts.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/services/{{input.service_id}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "service_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "service_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The service's id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-oncalls",
+      "description": "List who is on call, 25 per page: each entry is a user, the escalation policy and level, the schedule, and the start and end of the shift. Without since/until it shows who is on call now; filter by escalation policy, schedule or user, and earliest true keeps only the next shift per user and level. When more is true, pass offset 25, 50 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/oncalls?limit=25&offset={{input.offset}}&escalation_policy_ids[]={{input.escalation_policy_id}}&schedule_ids[]={{input.schedule_id}}&user_ids[]={{input.user_id}}&since={{input.since}}&until={{input.until}}&earliest={{input.earliest}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 25, 50 and so on while `more` is true. offset plus the page size may not exceed 10000."
+          },
+          "escalation_policy_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "Only on-calls for this escalation policy."
+          },
+          "schedule_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "Only on-calls from this schedule."
+          },
+          "user_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "Only on-calls for this user."
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,6})?)?(Z|[+-][0-9]{2}:?[0-9]{2})?)?$",
+            "description": "Start of the time range, ISO 8601. Defaults to now."
+          },
+          "until": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}(T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,6})?)?(Z|[+-][0-9]{2}:?[0-9]{2})?)?$",
+            "description": "End of the time range, ISO 8601. Defaults to now; at most 90 days after since."
+          },
+          "earliest": {
+            "type": "boolean",
+            "description": "true returns only the earliest on-call per escalation policy, level and user."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-escalation-policies",
+      "description": "List escalation policies, by name, 25 per page, each with its escalation rules and targets and the services that use it. When more is true, pass offset 25, 50 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/escalation_policies?limit=25&offset={{input.offset}}&query={{input.query}}&user_ids[]={{input.user_id}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 25, 50 and so on while `more` is true. offset plus the page size may not exceed 10000."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Only escalation policies whose name matches this text."
+          },
+          "user_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "Only policies that target this user."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-schedules",
+      "description": "List on-call schedules, by name, 25 per page, with their time zone, users and escalation policies. When more is true, pass offset 25, 50 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/schedules?limit=25&offset={{input.offset}}&query={{input.query}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 25, 50 and so on while `more` is true. offset plus the page size may not exceed 10000."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Only schedules whose name matches this text."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-users",
+      "description": "List users in the account, 25 per page, to find the user id to reassign an incident to: name, email, role, time zone. When more is true, pass offset 25, 50 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/users?limit=25&offset={{input.offset}}&query={{input.query}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 25, 50 and so on while `more` is true. offset plus the page size may not exceed 10000."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Only users whose name matches this text."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-maintenance-windows",
+      "description": "List maintenance windows, 25 per page: start and end time, description and the services they cover. filter picks past, future, ongoing, open (ongoing or future) or all. When more is true, pass offset 25, 50 and so on for the next page.",
+      "kind": "read",
+      "method": "GET",
+      "urlTemplate": "https://api.pagerduty.com/maintenance_windows?limit=25&offset={{input.offset}}&filter={{input.filter}}&service_ids[]={{input.service_id}}&query={{input.query}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "Rows to skip: 0 for the first page, then 25, 50 and so on while `more` is true. offset plus the page size may not exceed 10000."
+          },
+          "filter": {
+            "type": "string",
+            "enum": [
+              "past",
+              "future",
+              "ongoing",
+              "open",
+              "all"
+            ],
+            "description": "Which windows to return."
+          },
+          "service_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "Only windows covering this service."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Only windows whose description matches this text."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-incident",
+      "description": "Open one incident on a service, which notifies whoever is on call for it. Read back by incident id; the title must match. Limitation: no provider idempotency, so a retry after an unknown outcome can open a second incident and page someone twice.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.pagerduty.com/incidents",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "incident": {
+          "type": "incident",
+          "title": "{{input.title}}",
+          "service": {
+            "id": "{{input.service_id}}",
+            "type": "service_reference"
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "service_id",
+          "title"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+          },
+          "service_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$"
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/incidents/{{response.incident.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "incident.title",
+            "equals": "{{input.title}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "acknowledge-incident",
+      "description": "Acknowledge one incident. Read back from the incident; its status must be acknowledged. Limitation: the read-back can match an incident someone else acknowledged.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "incident": {
+          "type": "incident_reference",
+          "status": "acknowledged"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "incident_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+          },
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "incident.status",
+            "equals": "acknowledged"
+          }
+        ]
+      }
+    },
+    {
+      "name": "resolve-incident",
+      "description": "Resolve one incident, which stops its notifications. Read back from the incident; its status must be resolved. Limitation: the read-back can match an incident that was already resolved.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "incident": {
+          "type": "incident_reference",
+          "status": "resolved"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "incident_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+          },
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "incident.status",
+            "equals": "resolved"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-note",
+      "description": "Add a note to one incident's timeline, visible to everyone who can see the incident (at most 2000 notes per incident). Read back from the incident's notes, newest first; the newest note must be this one, with this text, so a note added by someone else in between makes the read-back fail. Limitation: no provider idempotency, so a retry after an unknown outcome can add the note twice.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}/notes",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "note": {
+          "content": "{{input.content}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "incident_id",
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "Email address of a PagerDuty user in the account; PagerDuty records the change as made by them."
+          },
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident's id."
+          },
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,5000}$",
+            "description": "The note's text, up to 5000 characters."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/incidents/{{input.incident_id}}/notes",
+        "status": 200,
+        "match": [
+          {
+            "path": "notes.0.id",
+            "equals": "{{response.note.id}}"
+          },
+          {
+            "path": "notes.0.content",
+            "equals": "{{input.content}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reassign-incident",
+      "description": "Reassign one open incident to one user, replacing its current assignees; PagerDuty notifies the new assignee. Read back from the incident; its first assignee must be that user. Limitation: the read-back can match an incident that user was already assigned.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "incident": {
+          "type": "incident_reference",
+          "assignments": [
+            {
+              "assignee": {
+                "id": "{{input.user_id}}",
+                "type": "user_reference"
+              }
+            }
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "incident_id",
+          "user_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "Email address of a PagerDuty user in the account; PagerDuty records the change as made by them."
+          },
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident's id."
+          },
+          "user_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The user to assign (see list-users or list-oncalls)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "incident.assignments.0.assignee.id",
+            "equals": "{{input.user_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "change-incident-urgency",
+      "description": "Change one incident's urgency to high or low, which changes how assignees are notified. Read back from the incident; its urgency must match. Limitation: needs an account plan with configurable urgencies, and the read-back can match an incident that already had that urgency.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "incident": {
+          "type": "incident_reference",
+          "urgency": "{{input.urgency}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "incident_id",
+          "urgency"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "Email address of a PagerDuty user in the account; PagerDuty records the change as made by them."
+          },
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident's id."
+          },
+          "urgency": {
+            "type": "string",
+            "enum": [
+              "high",
+              "low"
+            ],
+            "description": "The new urgency."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "incident.urgency",
+            "equals": "{{input.urgency}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "snooze-incident",
+      "description": "Snooze one acknowledged incident for a fixed time, after which it returns to triggered and notifies again; PagerDuty refuses to snooze an incident that is not acknowledged. Read back from the incident; it must still be acknowledged. Limitation: the incident does not show the snooze length, so the read-back proves the status, not the duration.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}/snooze",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "duration": "{{input.duration}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "incident_id",
+          "duration"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "Email address of a PagerDuty user in the account; PagerDuty records the change as made by them."
+          },
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident's id."
+          },
+          "duration": {
+            "type": "integer",
+            "enum": [
+              300,
+              900,
+              1800,
+              3600,
+              7200,
+              14400,
+              28800,
+              86400
+            ],
+            "description": "How long to snooze, in seconds: 5, 15 or 30 minutes, or 1, 2, 4, 8 or 24 hours."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/incidents/{{input.incident_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "incident.status",
+            "equals": "acknowledged"
+          }
+        ]
+      }
+    },
+    {
+      "name": "merge-incidents",
+      "description": "Merge one source incident into an open target incident: the target takes the source's alerts and the source is resolved. Only incidents with alerts, or opened by hand, can be merged, and the target must be open. Read back from the source incident; it must be resolved with the target as its merge reason. Cannot be undone.",
+      "kind": "write",
+      "method": "PUT",
+      "urlTemplate": "https://api.pagerduty.com/incidents/{{input.incident_id}}/merge",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "source_incidents": [
+          {
+            "id": "{{input.source_incident_id}}",
+            "type": "incident_reference"
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "incident_id",
+          "source_incident_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "Email address of a PagerDuty user in the account; PagerDuty records the change as made by them."
+          },
+          "incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The target incident's id, which stays open."
+          },
+          "source_incident_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The incident to merge in, which is resolved."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/incidents/{{input.source_incident_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "incident.status",
+            "equals": "resolved"
+          },
+          {
+            "path": "incident.resolve_reason.incident.id",
+            "equals": "{{input.incident_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-maintenance-window",
+      "description": "Create a maintenance window on one service: between start_time and end_time PagerDuty opens no incidents on it, so nobody is paged for it. Read back by the window's id; its description and service must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second window.",
+      "kind": "write",
+      "method": "POST",
+      "urlTemplate": "https://api.pagerduty.com/maintenance_windows",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "From": "{{input.from}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "maintenance_window": {
+          "type": "maintenance_window",
+          "start_time": "{{input.start_time}}",
+          "end_time": "{{input.end_time}}",
+          "description": "{{input.description}}",
+          "services": [
+            {
+              "id": "{{input.service_id}}",
+              "type": "service_reference"
+            }
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from",
+          "service_id",
+          "start_time",
+          "end_time",
+          "description"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "Email address of a PagerDuty user in the account; PagerDuty records the change as made by them."
+          },
+          "service_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The service to put in maintenance."
+          },
+          "start_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "When the window starts, ISO 8601 with a time zone, such as 2026-10-16T22:00:00Z."
+          },
+          "end_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "When the window ends, ISO 8601 with a time zone; after start_time."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "Why the service is in maintenance."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.pagerduty.com/maintenance_windows/{{response.maintenance_window.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "maintenance_window.description",
+            "equals": "{{input.description}}"
+          },
+          {
+            "path": "maintenance_window.services.0.id",
+            "equals": "{{input.service_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "end-maintenance-window",
+      "description": "End one maintenance window: PagerDuty deletes a future window and ends an ongoing one now; a window that has already ended cannot be changed. No read-back: a deleted future window is gone but an ended ongoing window stays readable, so no single read-back fits both.",
+      "kind": "write",
+      "method": "DELETE",
+      "urlTemplate": "https://api.pagerduty.com/maintenance_windows/{{input.maintenance_window_id}}",
+      "headers": {
+        "Authorization": "Token token={{connection:pagerduty}}",
+        "Accept": "application/vnd.pagerduty+json;version=2",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "maintenance_window_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "maintenance_window_id": {
+            "type": "string",
+            "pattern": "^[A-Z0-9]{5,20}$",
+            "description": "The maintenance window's id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "pagerduty: approve resolving an incident",
+      "matchKind": "action",
+      "matchActionName": "resolve-incident",
+      "effect": "require_approval"
+    },
+    {
+      "name": "pagerduty: approve merging incidents",
+      "matchKind": "action",
+      "matchActionName": "merge-incidents",
+      "effect": "require_approval"
+    },
+    {
+      "name": "pagerduty: approve a maintenance window",
+      "matchKind": "action",
+      "matchActionName": "create-maintenance-window",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "pagerduty: incidents opened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "create-incident"
+    },
+    {
+      "name": "pagerduty: incidents acknowledged per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "acknowledge-incident"
+    },
+    {
+      "name": "pagerduty: incidents resolved per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "resolve-incident"
+    },
+    {
+      "name": "pagerduty: notes added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-note"
+    },
+    {
+      "name": "pagerduty: incidents reassigned per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "reassign-incident"
+    },
+    {
+      "name": "pagerduty: urgency changes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "change-incident-urgency"
+    },
+    {
+      "name": "pagerduty: incidents snoozed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "snooze-incident"
+    },
+    {
+      "name": "pagerduty: incidents merged per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "merge-incidents"
+    },
+    {
+      "name": "pagerduty: maintenance windows created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 5,
+      "actionName": "create-maintenance-window"
+    },
+    {
+      "name": "pagerduty: maintenance windows ended per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "end-maintenance-window"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "_source": "Shaped after the provider's documented response (https://cal.com/docs/api-reference/v2/schedules/get-all-schedules).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.cal.com/v2/schedules",
+  "response": {
+    "status": "success",
+    "data": [
+      {
+        "id": 5512,
+        "ownerId": 1201,
+        "name": "Working hours",
+        "timeZone": "Europe/London",
+        "availability": [
+          {
+            "days": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday"
+            ],
+            "startTime": "09:00",
+            "endTime": "17:00"
+          }
+        ],
+        "isDefault": true,
+        "overrides": []
+      }
+    ]
+  }
+}

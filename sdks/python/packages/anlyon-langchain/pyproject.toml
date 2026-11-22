@@ -1,0 +1,43 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "anlyon-langchain"
+version = "0.5.0"
+description = "LangChain integration for Anlyon: actions as tools, and chains and agents traced as Anlyon runs"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "Anlyon", email = "support@anlyon.com" }]
+keywords = ["anlyon", "langchain", "ai-agents", "agent-actions", "tools", "tracing", "observability", "runs", "sdk"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Typing :: Typed",
+]
+dependencies = [
+    "anlyon>=0.8.0",
+    "langchain-core>=1.6.6",
+]
+
+[project.urls]
+Homepage = "https://anlyon.com"
+Documentation = "https://docs.anlyon.com"
+Repository = "https://github.com/AnlyonHQ/anlyon"
+Issues = "https://github.com/AnlyonHQ/anlyon/issues"
+
+[project.optional-dependencies]
+dev = ["pytest>=9.2.0", "pytest-asyncio>=1.5.0", "respx>=0.21"]
+
+[tool.uv.sources]
+anlyon = { workspace = true }
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/anlyon_langchain"]

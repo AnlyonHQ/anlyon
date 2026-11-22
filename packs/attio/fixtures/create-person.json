@@ -1,0 +1,65 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.attio.com/rest-api/endpoint-reference/records/create-a-record).",
+  "params": {},
+  "input": {
+    "email": "sam@example.com",
+    "first_name": "Sam",
+    "last_name": "Rivera"
+  },
+  "expectedUrl": "https://api.attio.com/v2/objects/people/records",
+  "response": {
+    "data": {
+      "id": {
+        "workspace_id": "14beef7a-99f7-4534-a87e-70b564330a4c",
+        "object_id": "97052eb9-e65e-443f-a297-f2d9a4a7f795",
+        "record_id": "891dcbfc-9141-415d-9b2a-2238a6cc012d"
+      },
+      "values": {}
+    }
+  },
+  "expectedReadBackUrl": "https://api.attio.com/v2/objects/people/records/891dcbfc-9141-415d-9b2a-2238a6cc012d",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "id": {
+          "record_id": "891dcbfc-9141-415d-9b2a-2238a6cc012d"
+        },
+        "values": {
+          "email_addresses": [
+            {
+              "attribute_type": "email-address",
+              "email_address": "sam@example.com",
+              "email_domain": "example.com"
+            }
+          ],
+          "name": [
+            {
+              "attribute_type": "personal-name",
+              "first_name": "Sam",
+              "last_name": "Rivera",
+              "full_name": "Sam Rivera"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "id": {
+          "record_id": "891dcbfc-9141-415d-9b2a-2238a6cc012d"
+        },
+        "values": {
+          "email_addresses": [
+            {
+              "email_address": "other@example.com"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

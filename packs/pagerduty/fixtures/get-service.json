@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "service_id": "PWIXJZS"
+  },
+  "expectedUrl": "https://api.pagerduty.com/services/PWIXJZS",
+  "response": {
+    "service": {
+      "id": "PWIXJZS",
+      "type": "service",
+      "summary": "Checkout API",
+      "name": "Checkout API",
+      "description": "Checkout and payment API",
+      "status": "active",
+      "acknowledgement_timeout": 1800,
+      "auto_resolve_timeout": 14400,
+      "escalation_policy": {
+        "id": "PT20YPA",
+        "type": "escalation_policy_reference",
+        "summary": "Checkout escalation",
+        "self": "https://api.pagerduty.com/escalation_policies/PT20YPA",
+        "html_url": "https://acme.pagerduty.com/escalation_policies/PT20YPA"
+      },
+      "teams": [],
+      "incident_urgency_rule": {
+        "type": "constant",
+        "urgency": "high"
+      },
+      "last_incident_timestamp": "2026-10-15T09:12:03Z"
+    }
+  }
+}

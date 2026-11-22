@@ -1,0 +1,24 @@
+{
+  "_source": "Shaped after the provider's documented response (https://cal.com/docs/api-reference/v2/me/get-my-profile).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.cal.com/v2/me",
+  "response": {
+    "status": "success",
+    "data": {
+      "id": 1201,
+      "uuid": "3f2504e0-4f89-41d3-9a0c-0305e82c3301",
+      "username": "samlee",
+      "email": "sam@example.com",
+      "name": "Sam Lee",
+      "avatarUrl": "",
+      "bio": "",
+      "timeFormat": 24,
+      "defaultScheduleId": 5512,
+      "weekStart": "Monday",
+      "timeZone": "Europe/London",
+      "locale": "en",
+      "organizationId": null
+    }
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/templates-api). Read-back shaped after https://postmarkapp.com/developer/api/messages-api.",
+  "params": {},
+  "input": {
+    "template_alias": "order-shipped",
+    "template_model": {
+      "name": "Ada",
+      "order_id": "5454"
+    },
+    "from": "support@acme.example",
+    "to": "ada@example.com",
+    "message_stream": "outbound"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/email/withTemplate",
+  "response": {
+    "To": "ada@example.com",
+    "SubmittedAt": "2026-10-24T07:25:01.4178645-04:00",
+    "MessageID": "0a129aee-e1cd-480d-b08d-4f48548ff48d",
+    "ErrorCode": 0,
+    "Message": "OK"
+  },
+  "expectedReadBackUrl": "https://api.postmarkapp.com/messages/outbound/0a129aee-e1cd-480d-b08d-4f48548ff48d/details",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "TextBody": "Your order 5454 has shipped.",
+      "HtmlBody": "",
+      "Body": "SMTP dump data",
+      "Tag": "orders",
+      "MessageID": "0a129aee-e1cd-480d-b08d-4f48548ff48d",
+      "MessageStream": "outbound",
+      "To": [
+        {
+          "Email": "ada@example.com",
+          "Name": null
+        }
+      ],
+      "Cc": [],
+      "Bcc": [],
+      "Recipients": [
+        "ada@example.com"
+      ],
+      "ReceivedAt": "2026-10-24T07:25:02.8782715-04:00",
+      "From": "\"Acme Support\" <support@acme.example>",
+      "Subject": "Order 5454 has shipped",
+      "Attachments": [],
+      "Status": "Sent",
+      "TrackOpens": false,
+      "TrackLinks": "None",
+      "Metadata": {},
+      "Sandboxed": false,
+      "MessageEvents": [
+        {
+          "Recipient": "ada@example.com",
+          "Type": "Delivered",
+          "ReceivedAt": "2026-10-24T07:25:10.8054242-04:00",
+          "Details": {
+            "DeliveryMessage": "smtp;250 2.0.0 OK",
+            "DestinationServer": "mx.example.com",
+            "DestinationIP": "192.0.2.10"
+          }
+        }
+      ]
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "TextBody": "Your order 5454 has shipped.",
+      "HtmlBody": "",
+      "Body": "SMTP dump data",
+      "Tag": "orders",
+      "MessageID": "0a129aee-e1cd-480d-b08d-4f48548ff48d",
+      "MessageStream": "broadcast",
+      "To": [
+        {
+          "Email": "ada@example.com",
+          "Name": null
+        }
+      ],
+      "Cc": [],
+      "Bcc": [],
+      "Recipients": [
+        "ada@example.com"
+      ],
+      "ReceivedAt": "2026-10-24T07:25:02.8782715-04:00",
+      "From": "\"Acme Support\" <support@acme.example>",
+      "Subject": "Your order has shipped",
+      "Attachments": [],
+      "Status": "Sent",
+      "TrackOpens": false,
+      "TrackLinks": "None",
+      "Metadata": {},
+      "Sandboxed": false,
+      "MessageEvents": [
+        {
+          "Recipient": "ada@example.com",
+          "Type": "Delivered",
+          "ReceivedAt": "2026-10-24T07:25:10.8054242-04:00",
+          "Details": {
+            "DeliveryMessage": "smtp;250 2.0.0 OK",
+            "DestinationServer": "mx.example.com",
+            "DestinationIP": "192.0.2.10"
+          }
+        }
+      ]
+    }
+  }
+}

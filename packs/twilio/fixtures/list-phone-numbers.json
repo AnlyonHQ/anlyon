@@ -1,0 +1,63 @@
+{
+  "_source": "Shaped after the provider's documented response (https://www.twilio.com/docs/phone-numbers/api/incomingphonenumber-resource, and https://github.com/twilio/twilio-oai/blob/main/spec/json/twilio_api_v2010.json).",
+  "params": {},
+  "input": {
+    "account_sid": "AC0123456789abcdef0123456789abcdef",
+    "phone_number": "+15017122661"
+  },
+  "expectedUrl": "https://api.twilio.com/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/IncomingPhoneNumbers.json?PhoneNumber=%2B15017122661&PageSize=20",
+  "response": {
+    "incoming_phone_numbers": [
+      {
+        "account_sid": "AC0123456789abcdef0123456789abcdef",
+        "address_requirements": "none",
+        "address_sid": null,
+        "api_version": "2010-04-01",
+        "beta": false,
+        "capabilities": {
+          "voice": true,
+          "sms": true,
+          "mms": true,
+          "fax": false
+        },
+        "date_created": "Mon, 05 Oct 2026 09:00:00 +0000",
+        "date_updated": "Thu, 24 Oct 2026 14:10:00 +0000",
+        "emergency_status": "Inactive",
+        "emergency_address_sid": null,
+        "emergency_address_status": "unregistered",
+        "friendly_name": "(501) 712-2661",
+        "identity_sid": null,
+        "origin": "twilio",
+        "phone_number": "+15017122661",
+        "sid": "PNabcdef0123456789abcdef0123456789",
+        "sms_application_sid": null,
+        "sms_fallback_method": "POST",
+        "sms_fallback_url": "",
+        "sms_method": "POST",
+        "sms_url": "https://demo.twilio.com/welcome/sms/reply",
+        "status_callback": "",
+        "status_callback_method": "POST",
+        "trunk_sid": null,
+        "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/IncomingPhoneNumbers/PNabcdef0123456789abcdef0123456789.json",
+        "voice_receive_mode": "voice",
+        "voice_application_sid": null,
+        "voice_caller_id_lookup": false,
+        "voice_fallback_method": "POST",
+        "voice_fallback_url": null,
+        "voice_method": "POST",
+        "voice_url": "https://demo.twilio.com/welcome/voice",
+        "bundle_sid": null,
+        "status": "in-use",
+        "type": "local"
+      }
+    ],
+    "end": 0,
+    "first_page_uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/IncomingPhoneNumbers.json?PhoneNumber=%2B15017122661&PageSize=20&Page=0",
+    "next_page_uri": null,
+    "page": 0,
+    "page_size": 20,
+    "previous_page_uri": null,
+    "start": 0,
+    "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/IncomingPhoneNumbers.json?PhoneNumber=%2B15017122661&PageSize=20&Page=0"
+  }
+}

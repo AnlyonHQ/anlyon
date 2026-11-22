@@ -1,0 +1,11 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/deletetask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876549999"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876549999",
+  "response": {
+    "data": {}
+  }
+}

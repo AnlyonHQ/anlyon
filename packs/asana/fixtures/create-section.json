@@ -1,0 +1,47 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/createsectionforproject).",
+  "params": {},
+  "input": {
+    "project_gid": "1208801234567890",
+    "name": "Waiting on customer"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/projects/1208801234567890/sections",
+  "response": {
+    "data": {
+      "gid": "1208805555555555",
+      "resource_type": "section",
+      "name": "Waiting on customer"
+    }
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/sections/1208805555555555?opt_fields=name,project",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208805555555555",
+        "resource_type": "section",
+        "name": "Waiting on customer",
+        "project": {
+          "gid": "1208801234567890",
+          "resource_type": "project",
+          "name": "Customer onboarding"
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208805555555555",
+        "resource_type": "section",
+        "name": "Waiting on customer",
+        "project": {
+          "gid": "1208801234567000",
+          "resource_type": "project",
+          "name": "Another project"
+        }
+      }
+    }
+  }
+}

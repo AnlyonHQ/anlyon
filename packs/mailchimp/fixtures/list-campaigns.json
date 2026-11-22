@@ -1,0 +1,31 @@
+{
+  "params": {},
+  "accountHost": "us21.api.mailchimp.com",
+  "_source": "Shaped after the response documented in Mailchimp's official OpenAPI spec (https://api.mailchimp.com/schema/openapi/OpenAPI.json, getCampaigns).",
+  "input": {
+    "status": "save"
+  },
+  "expectedUrl": "https://us21.api.mailchimp.com/3.0/campaigns?count=10&status=save&sort_field=create_time&sort_dir=DESC&fields=campaigns.id,campaigns.type,campaigns.status,campaigns.create_time,campaigns.send_time,campaigns.emails_sent,campaigns.settings.title,campaigns.settings.subject_line,campaigns.recipients.list_id,campaigns.recipients.list_name,campaigns.recipients.recipient_count,total_items",
+  "response": {
+    "campaigns": [
+      {
+        "id": "42694e9e57",
+        "type": "regular",
+        "status": "save",
+        "create_time": "2026-10-23T14:00:00+00:00",
+        "send_time": "",
+        "emails_sent": 0,
+        "settings": {
+          "title": "November news",
+          "subject_line": "What's new in November"
+        },
+        "recipients": {
+          "list_id": "4ca5becb8d",
+          "list_name": "Newsletter",
+          "recipient_count": 1209
+        }
+      }
+    ],
+    "total_items": 1
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "needs": {
+    "channel": "The id of a public test channel the app has been added to (open the channel's details; the id is at the bottom, it starts with C)"
+  },
+  "steps": [
+    { "action": "post-message", "input": { "channel": "{{needs.channel}}", "text": "Anlyon exercise {{run}}" }, "save": { "ts": "ts" } },
+    { "action": "update-message", "input": { "channel": "{{needs.channel}}", "ts": "{{saved.ts}}", "text": "Anlyon exercise {{run}} (edited)" } },
+    { "action": "add-reaction", "input": { "channel": "{{needs.channel}}", "ts": "{{saved.ts}}", "emoji": "white_check_mark" } },
+    { "action": "set-channel-topic", "input": { "channel": "{{needs.channel}}", "topic": "Anlyon exercise {{run}}" } },
+    { "action": "set-channel-purpose", "input": { "channel": "{{needs.channel}}", "purpose": "Anlyon exercise {{run}}" } }
+  ]
+}

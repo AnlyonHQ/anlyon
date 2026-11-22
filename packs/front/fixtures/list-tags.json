@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/reference/list-tags).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api2.frontapp.com/tags?limit=50",
+  "response": {
+    "_pagination": {
+      "next": null
+    },
+    "_links": {
+      "self": "https://api2.frontapp.com/x"
+    },
+    "_results": [
+      {
+        "_links": {
+          "self": "https://api2.frontapp.com/tags/tag_2oxhvy"
+        },
+        "id": "tag_2oxhvy",
+        "name": "Refund",
+        "description": "Asked for a refund",
+        "highlight": null,
+        "is_private": false,
+        "is_visible_in_conversation_lists": true,
+        "created_at": 1729760000,
+        "updated_at": 1729760000
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-createmeta-projectidorkey-issuetypes-get).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {
+    "project_key": "OPS"
+  },
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/issue/createmeta/OPS/issuetypes?maxResults=50",
+  "response": {
+    "maxResults": 50,
+    "startAt": 0,
+    "total": 2,
+    "issueTypes": [
+      {
+        "self": "https://acme.atlassian.net/rest/api/3/issuetype/10001",
+        "id": "10001",
+        "description": "A small, distinct piece of work.",
+        "iconUrl": "https://acme.atlassian.net/images/icons/task.svg",
+        "name": "Task",
+        "subtask": false
+      },
+      {
+        "self": "https://acme.atlassian.net/rest/api/3/issuetype/10002",
+        "id": "10002",
+        "description": "A problem which impairs or prevents the functions of the product.",
+        "iconUrl": "https://acme.atlassian.net/images/icons/bug.svg",
+        "name": "Bug",
+        "subtask": false
+      }
+    ]
+  }
+}

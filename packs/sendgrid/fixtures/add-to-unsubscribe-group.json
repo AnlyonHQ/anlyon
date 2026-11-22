@@ -1,0 +1,28 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_suppressions_v3.json, AddSuppressionToAsmGroup and ListSuppressionFromAsmGroup).",
+  "params": {},
+  "input": {
+    "group_id": "10871",
+    "email": "ada@example.com"
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/asm/groups/10871/suppressions",
+  "response": {
+    "recipient_emails": [
+      "ada@example.com"
+    ]
+  },
+  "expectedReadBackUrl": "https://api.sendgrid.com/v3/asm/groups/10871/suppressions",
+  "readBack": {
+    "status": 200,
+    "json": [
+      "grace@example.com",
+      "ada@example.com"
+    ]
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": [
+      "grace@example.com"
+    ]
+  }
+}

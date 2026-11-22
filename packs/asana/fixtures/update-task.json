@@ -1,0 +1,51 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/updatetask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210",
+    "name": "Follow up with Acme on the review",
+    "due_on": "2026-10-24",
+    "assignee": "me"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210?opt_fields=name,notes,due_on,assignee.name,modified_at",
+  "response": {
+    "data": {
+      "gid": "1208809876543210",
+      "resource_type": "task",
+      "name": "Follow up with Acme on the review",
+      "notes": "They asked for the security review.",
+      "due_on": "2026-10-24",
+      "assignee": {
+        "gid": "1208800000000042",
+        "resource_type": "user",
+        "name": "Dana Lee"
+      },
+      "modified_at": "2026-10-15T08:30:12.345Z"
+    }
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210?opt_fields=name,notes,due_on,modified_at",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "name": "Follow up with Acme on the review",
+        "notes": "They asked for the security review.",
+        "due_on": "2026-10-24",
+        "modified_at": "2026-10-15T08:30:12.345Z"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "name": "Follow up with Acme",
+        "notes": "They asked for the security review.",
+        "due_on": "2026-10-20",
+        "modified_at": "2026-10-14T10:01:44.019Z"
+      }
+    }
+  }
+}

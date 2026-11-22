@@ -1,0 +1,28 @@
+{
+  "params": {},
+  "accountHost": "us21.api.mailchimp.com",
+  "_source": "Shaped after the response documented in Mailchimp's official OpenAPI spec (https://api.mailchimp.com/schema/openapi/OpenAPI.json, postCampaignsIdActionsSchedule).",
+  "input": {
+    "campaign_id": "42694e9e57",
+    "schedule_time": "2026-11-03T15:30:00Z"
+  },
+  "expectedUrl": "https://us21.api.mailchimp.com/3.0/campaigns/42694e9e57/actions/schedule",
+  "response": {},
+  "expectedReadBackUrl": "https://us21.api.mailchimp.com/3.0/campaigns/42694e9e57?fields=id,status,send_time",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "42694e9e57",
+      "status": "schedule",
+      "send_time": "2026-11-03T15:30:00+00:00"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "42694e9e57",
+      "status": "save",
+      "send_time": ""
+    }
+  }
+}

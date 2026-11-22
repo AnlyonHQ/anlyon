@@ -1,0 +1,83 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/columns).",
+  "params": {},
+  "input": {
+    "board_id": "5091234567",
+    "item_id": "9120000001",
+    "column_id": "status",
+    "value": "Done"
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "mutation ($board_id: ID!, $item_id: ID!, $column_id: String!, $value: String!) { change_simple_column_value(board_id: $board_id, item_id: $item_id, column_id: $column_id, value: $value) { id column_values(ids: [$column_id]) { id text value } } }",
+    "variables": {
+      "board_id": "5091234567",
+      "item_id": "9120000001",
+      "column_id": "status",
+      "value": "Done"
+    }
+  },
+  "response": {
+    "data": {
+      "change_simple_column_value": {
+        "id": "9120000001",
+        "column_values": [
+          {
+            "id": "status",
+            "text": "Done",
+            "value": "{\"index\":1,\"post_id\":null,\"changed_at\":\"2026-10-24T08:20:00.000Z\"}"
+          }
+        ]
+      }
+    },
+    "extensions": {
+      "request_id": "req_set_column_value_1"
+    }
+  },
+  "expectedReadBackUrl": "https://api.monday.com/v2",
+  "expectedReadBackBody": {
+    "query": "query ($item_id: ID!, $column_id: String!) { items(ids: [$item_id]) { id column_values(ids: [$column_id]) { id text value } } }",
+    "variables": {
+      "item_id": "9120000001",
+      "column_id": "status"
+    }
+  },
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000001",
+            "column_values": [
+              {
+                "id": "status",
+                "text": "Done",
+                "value": "{\"index\":1,\"post_id\":null,\"changed_at\":\"2026-10-24T08:20:00.000Z\"}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000001",
+            "column_values": [
+              {
+                "id": "status",
+                "text": "Working on it",
+                "value": "{\"index\":0,\"post_id\":null,\"changed_at\":\"2026-10-23T14:02:11.000Z\"}"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

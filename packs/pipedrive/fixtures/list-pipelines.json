@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.pipedrive.com/docs/api/v1/openapi-v2.yaml, GET /pipelines).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.pipedrive.com/api/v2/pipelines?limit=50",
+  "response": {
+    "success": true,
+    "data": [
+      {
+        "id": 1,
+        "name": "Sales",
+        "order_nr": 1,
+        "is_deleted": false,
+        "is_deal_probability_enabled": false,
+        "add_time": "2026-01-12T10:00:00Z",
+        "update_time": "2026-01-12T10:00:00Z"
+      }
+    ],
+    "additional_data": {
+      "next_cursor": null
+    }
+  }
+}

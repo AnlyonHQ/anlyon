@@ -1,0 +1,68 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/trello/rest/api-group-cards/, GET /1/cards/{id}/actions).",
+  "params": {},
+  "input": {
+    "card_id": "6720a1b2c3d4e5f6a7b8c9c1"
+  },
+  "expectedUrl": "https://api.trello.com/1/cards/6720a1b2c3d4e5f6a7b8c9c1/actions?filter=commentCard",
+  "response": [
+    {
+      "id": "6720a1b2c3d4e5f6a7b8c9d5",
+      "idMemberCreator": "6720a1b2c3d4e5f6a7b8c9f1",
+      "type": "commentCard",
+      "date": "2026-10-24T09:14:22.103Z",
+      "data": {
+        "text": "Sent the corrected invoice this morning.",
+        "card": {
+          "id": "6720a1b2c3d4e5f6a7b8c9c1",
+          "name": "Re-send invoice to Acme",
+          "idShort": 42,
+          "shortLink": "aB3dE5fG"
+        },
+        "board": {
+          "id": "6720a1b2c3d4e5f6a7b8c9d0",
+          "name": "Customer requests",
+          "shortLink": "Qw3rTy12"
+        },
+        "list": {
+          "id": "6720a1b2c3d4e5f6a7b8c9a1",
+          "name": "To do"
+        }
+      },
+      "memberCreator": {
+        "id": "6720a1b2c3d4e5f6a7b8c9f1",
+        "fullName": "Dana Whitfield",
+        "username": "danawhitfield"
+      }
+    },
+    {
+      "id": "6720a1b2c3d4e5f6a7b8c9d4",
+      "idMemberCreator": "6720a1b2c3d4e5f6a7b8c9f1",
+      "type": "commentCard",
+      "date": "2026-10-23T15:40:01.220Z",
+      "data": {
+        "text": "Waiting on the new billing address.",
+        "card": {
+          "id": "6720a1b2c3d4e5f6a7b8c9c1",
+          "name": "Re-send invoice to Acme",
+          "idShort": 42,
+          "shortLink": "aB3dE5fG"
+        },
+        "board": {
+          "id": "6720a1b2c3d4e5f6a7b8c9d0",
+          "name": "Customer requests",
+          "shortLink": "Qw3rTy12"
+        },
+        "list": {
+          "id": "6720a1b2c3d4e5f6a7b8c9a1",
+          "name": "To do"
+        }
+      },
+      "memberCreator": {
+        "id": "6720a1b2c3d4e5f6a7b8c9f1",
+        "fullName": "Dana Whitfield",
+        "username": "danawhitfield"
+      }
+    }
+  ]
+}

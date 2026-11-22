@@ -1,0 +1,158 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/support-refunds",
+  "version": "0.2.0",
+  "description": "Refund a payment, leave a note on the customer's HubSpot record and tell the support channel in Slack, each under a shared limit, with the refund and the note read back.",
+  "parameters": [
+    {
+      "name": "stripe_account",
+      "description": "The Stripe account refunds are made from (acct_...).",
+      "pattern": "^acct_[A-Za-z0-9]{1,64}$"
+    },
+    {
+      "name": "stripe_mode",
+      "description": "test or live. The key in STRIPE_KEY must be of this mode.",
+      "default": "test",
+      "enum": [
+        "test",
+        "live"
+      ]
+    },
+    {
+      "name": "currency",
+      "description": "The one currency refunds are made in, lowercase ISO code.",
+      "default": "usd",
+      "pattern": "^[a-z]{3}$"
+    },
+    {
+      "name": "slack_channel",
+      "description": "The Slack channel id support posts go to, e.g. C0123456789. Fixed at install, not chosen by the agent.",
+      "pattern": "^[CG][A-Z0-9]{8,12}$"
+    }
+  ],
+  "secrets": [
+    {
+      "name": "STRIPE_KEY",
+      "kind": "static",
+      "hosts": [
+        "api.stripe.com"
+      ],
+      "description": "Stripe restricted key with refund write access, in the mode chosen above"
+    },
+    {
+      "name": "HUBSPOT",
+      "kind": "connection",
+      "integrationId": "hubspot",
+      "hosts": [
+        "api.hubapi.com"
+      ],
+      "description": "HubSpot account whose contacts get the refund note"
+    },
+    {
+      "name": "SLACK",
+      "kind": "connection",
+      "integrationId": "slack",
+      "hosts": [
+        "slack.com"
+      ],
+      "description": "Slack workspace with the support channel"
+    }
+  ],
+  "actions": [
+    {
+      "name": "refund-payment",
+      "description": "Refund part or all of one Stripe payment, in minor units of the pack's currency. Stripe's own idempotency and the refund's read-back grade the receipt.",
+      "requiresApproval": false,
+      "adapter": {
+        "type": "stripe.refund",
+        "config": {
+          "account": "{{param:stripe_account}}",
+          "mode": "{{param:stripe_mode}}",
+          "currency": "{{param:currency}}"
+        },
+        "credentialSecret": "STRIPE_KEY"
+      }
+    },
+    {
+      "name": "note-customer",
+      "ref": "anlyon/hubspot#add-note"
+    },
+    {
+      "name": "post-to-support",
+      "description": "Post one message to the support channel fixed at install. Limitation: Slack answers HTTP 200 with ok:false on most errors, so a refused post is recorded succeeded and acknowledged; only the read-back, which finds no message, keeps it from confirmed.",
+      "method": "POST",
+      "urlTemplate": "https://slack.com/api/chat.postMessage",
+      "headers": {
+        "Authorization": "Bearer {{connection:slack}}",
+        "Content-Type": "application/json; charset=utf-8"
+      },
+      "bodyTemplate": {
+        "channel": "{{param:slack_channel}}",
+        "text": "{{input.text}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "text"
+        ],
+        "properties": {
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,3000}$"
+          }
+        },
+        "additionalProperties": false
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://slack.com/api/conversations.history?channel={{param:slack_channel}}&latest={{response.ts}}&inclusive=true&limit=1",
+        "status": 200,
+        "match": [
+          {
+            "path": "messages.0.text",
+            "equals": "{{input.text}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "support-refunds: approve refunds over 100.00",
+      "matchKind": "action",
+      "matchActionName": "refund-payment",
+      "condition": "input.amount > 10000",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "support-refunds: refunds per day",
+      "dimension": "money",
+      "currency": "usd",
+      "period": "day",
+      "amount": 50000,
+      "actionName": "refund-payment"
+    },
+    {
+      "name": "support-refunds: customer notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "note-customer"
+    },
+    {
+      "name": "support-refunds: support posts per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "post-to-support"
+    }
+  ]
+}

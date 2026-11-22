@@ -1,0 +1,25 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/branches/branches#list-branches).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/branches?per_page=50",
+  "response": [
+    {
+      "name": "main",
+      "commit": {
+        "sha": "c3d0be41ecbe669545ee3e94d31ed9a4bc91ee3c"
+      },
+      "protected": true
+    },
+    {
+      "name": "fix-saved-cards",
+      "commit": {
+        "sha": "6dcb09b5b57875f334f61aebed695e2e4193db5e"
+      },
+      "protected": false
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/update-multiple-records).",
+  "params": {},
+  "input": {
+    "base_id": "appLkNDICXNqxSDhG",
+    "table": "tblIhd7aUd4H6h2rS",
+    "merge_on": [
+      "Email"
+    ],
+    "records": [
+      {
+        "fields": {
+          "Email": "ops@unionsquare.example",
+          "Status": "Won"
+        }
+      },
+      {
+        "fields": {
+          "Email": "hello@newco.example",
+          "Name": "Newco",
+          "Status": "Open"
+        }
+      }
+    ]
+  },
+  "expectedUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS",
+  "response": {
+    "createdRecords": [
+      "recsHMqsp3GEm3lEi"
+    ],
+    "updatedRecords": [
+      "rec560UJdUtocSouk"
+    ],
+    "records": [
+      {
+        "id": "rec560UJdUtocSouk",
+        "createdTime": "2022-09-12T21:03:48.000Z",
+        "fields": {
+          "Name": "Union Square",
+          "Email": "ops@unionsquare.example",
+          "Status": "Won"
+        }
+      },
+      {
+        "id": "recsHMqsp3GEm3lEi",
+        "createdTime": "2026-10-24T09:12:03.000Z",
+        "fields": {
+          "Name": "Newco",
+          "Email": "hello@newco.example",
+          "Status": "Open"
+        }
+      }
+    ]
+  }
+}

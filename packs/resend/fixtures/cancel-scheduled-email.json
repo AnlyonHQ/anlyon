@@ -1,0 +1,67 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/emails/cancel-email).",
+  "params": {},
+  "input": {
+    "email_id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794"
+  },
+  "expectedUrl": "https://api.resend.com/emails/49a3999c-0ce1-4ea6-ab68-afcd6dc2e794/cancel",
+  "response": {
+    "object": "email",
+    "id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794"
+  },
+  "expectedReadBackUrl": "https://api.resend.com/emails/49a3999c-0ce1-4ea6-ab68-afcd6dc2e794",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "object": "email",
+      "id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794",
+      "message_id": "<111-222-333@email.example.com>",
+      "to": [
+        "delivered@resend.dev"
+      ],
+      "from": "Acme <onboarding@mail.example.com>",
+      "created_at": "2026-10-14 22:13:42.674981+00",
+      "subject": "Hello World",
+      "html": "Congrats on sending your <strong>first email</strong>!",
+      "text": null,
+      "bcc": [],
+      "cc": [],
+      "reply_to": [],
+      "last_event": "canceled",
+      "scheduled_at": "2026-10-20 09:00:00+00",
+      "tags": [
+        {
+          "name": "category",
+          "value": "confirm_email"
+        }
+      ]
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "object": "email",
+      "id": "49a3999c-0ce1-4ea6-ab68-afcd6dc2e794",
+      "message_id": "<111-222-333@email.example.com>",
+      "to": [
+        "delivered@resend.dev"
+      ],
+      "from": "Acme <onboarding@mail.example.com>",
+      "created_at": "2026-10-14 22:13:42.674981+00",
+      "subject": "Hello World",
+      "html": "Congrats on sending your <strong>first email</strong>!",
+      "text": null,
+      "bcc": [],
+      "cc": [],
+      "reply_to": [],
+      "last_event": "scheduled",
+      "scheduled_at": "2026-10-20 09:00:00+00",
+      "tags": [
+        {
+          "name": "category",
+          "value": "confirm_email"
+        }
+      ]
+    }
+  }
+}

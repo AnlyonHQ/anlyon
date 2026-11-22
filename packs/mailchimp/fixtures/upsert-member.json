@@ -1,0 +1,57 @@
+{
+  "params": {},
+  "accountHost": "us21.api.mailchimp.com",
+  "_source": "Shaped after the response documented in Mailchimp's official OpenAPI spec (https://api.mailchimp.com/schema/openapi/OpenAPI.json, putListsIdMembersId).",
+  "input": {
+    "list_id": "4ca5becb8d",
+    "email": "ada@example.com",
+    "status_if_new": "pending",
+    "first_name": "Ada",
+    "last_name": "Lovelace"
+  },
+  "expectedUrl": "https://us21.api.mailchimp.com/3.0/lists/4ca5becb8d/members/ada%40example.com",
+  "response": {
+    "id": "3e3417d7ef77d5932a6734b916515ed5",
+    "email_address": "ada@example.com",
+    "unique_email_id": "882e9bec19",
+    "contact_id": "a8b5c9e1f0d2",
+    "full_name": "Ada Lovelace",
+    "web_id": 123456789,
+    "email_type": "html",
+    "status": "pending",
+    "merge_fields": {
+      "FNAME": "Ada",
+      "LNAME": "Lovelace"
+    },
+    "vip": false,
+    "language": "en",
+    "last_changed": "2026-10-24T10:15:00+00:00",
+    "list_id": "4ca5becb8d",
+    "tags_count": 1,
+    "tags": [
+      {
+        "id": 2001,
+        "name": "Customer"
+      }
+    ]
+  },
+  "expectedReadBackUrl": "https://us21.api.mailchimp.com/3.0/lists/4ca5becb8d/members/3e3417d7ef77d5932a6734b916515ed5?fields=id,email_address,status,list_id",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "3e3417d7ef77d5932a6734b916515ed5",
+      "email_address": "ada@example.com",
+      "status": "pending",
+      "list_id": "4ca5becb8d"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "3e3417d7ef77d5932a6734b916515ed5",
+      "email_address": "ada@example.com",
+      "status": "pending",
+      "list_id": "9e67587f52"
+    }
+  }
+}

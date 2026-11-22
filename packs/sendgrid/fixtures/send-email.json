@@ -1,0 +1,25 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_mail_v3.json, SendMail).",
+  "params": {},
+  "input": {
+    "to": [
+      {
+        "email": "ada@example.com",
+        "name": "Ada Lovelace"
+      }
+    ],
+    "from": {
+      "email": "support@example.com",
+      "name": "Example Support"
+    },
+    "subject": "Your order has shipped",
+    "content": [
+      {
+        "type": "text/plain",
+        "value": "Hi Ada, your order left our warehouse today."
+      }
+    ]
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/mail/send",
+  "response": {}
+}

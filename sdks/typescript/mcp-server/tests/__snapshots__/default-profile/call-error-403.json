@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Error: Missing scope approvals:decide"
+    }
+  ],
+  "isError": true
+}

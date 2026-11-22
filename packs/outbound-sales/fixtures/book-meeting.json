@@ -1,0 +1,40 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "summary": "Intro call: Acme and Anlyon",
+    "start": "2026-10-14T15:00:00Z",
+    "end": "2026-10-14T15:30:00Z",
+    "attendees": [
+      {
+        "email": "buyer@example.com"
+      }
+    ]
+  },
+  "expectedUrl": "https://www.googleapis.com/calendar/v3/calendars/primary/events",
+  "response": {
+    "kind": "calendar#event",
+    "id": "4k3j2h1g0f9e8d7c6b5a",
+    "status": "confirmed",
+    "summary": "Intro call: Acme and Anlyon"
+  },
+  "expectedReadBackUrl": "https://www.googleapis.com/calendar/v3/calendars/primary/events/4k3j2h1g0f9e8d7c6b5a",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "kind": "calendar#event",
+      "id": "4k3j2h1g0f9e8d7c6b5a",
+      "status": "confirmed",
+      "summary": "Intro call: Acme and Anlyon"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 404,
+    "json": {
+      "error": {
+        "code": 404,
+        "message": "Not Found"
+      }
+    }
+  }
+}

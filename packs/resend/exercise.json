@@ -1,0 +1,133 @@
+{
+  "needs": {
+    "from_address": "An address on the pack's sending domain, e.g. exercise@mail.example.com",
+    "recipient": "Your own email address. The run sends one email to it.",
+    "scheduled_email_id": "The id of an email to yourself that you scheduled by hand for this run only, at least an hour ahead. The run reschedules it, then cancels it.",
+    "reschedule_at": "An ISO 8601 time later than that email's current schedule and within 30 days, e.g. 2026-10-21T09:00:00.000Z",
+    "segment_id": "A segment made for the exercise (an empty one named 'Anlyon exercise' is enough). The run adds its own contact to it and removes it again."
+  },
+  "steps": [
+    {
+      "action": "list-domains",
+      "input": {},
+      "save": {
+        "domain_id": "data.0.id"
+      }
+    },
+    {
+      "action": "get-domain",
+      "input": {
+        "domain_id": "{{saved.domain_id}}"
+      }
+    },
+    {
+      "action": "send-email",
+      "input": {
+        "from": "{{needs.from_address}}",
+        "to": [
+          "{{needs.recipient}}"
+        ],
+        "subject": "Anlyon exercise {{run}}",
+        "text": "Sent by anlyon packs exercise, run {{run}}."
+      }
+    },
+    {
+      "action": "list-emails",
+      "input": {},
+      "save": {
+        "email_id": "data.0.id"
+      }
+    },
+    {
+      "action": "get-email",
+      "input": {
+        "email_id": "{{saved.email_id}}"
+      }
+    },
+    {
+      "action": "reschedule-email",
+      "input": {
+        "email_id": "{{needs.scheduled_email_id}}",
+        "scheduled_at": "{{needs.reschedule_at}}"
+      }
+    },
+    {
+      "action": "cancel-scheduled-email",
+      "input": {
+        "email_id": "{{needs.scheduled_email_id}}"
+      }
+    },
+    {
+      "action": "create-contact",
+      "input": {
+        "email": "anlyon-exercise-{{run}}@example.com",
+        "first_name": "Anlyon",
+        "last_name": "Exercise"
+      },
+      "save": {
+        "contact_id": "id"
+      }
+    },
+    {
+      "action": "get-contact",
+      "input": {
+        "contact": "{{saved.contact_id}}"
+      }
+    },
+    {
+      "action": "update-contact-name",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "first_name": "Anlyon",
+        "last_name": "Exercise {{run}}"
+      }
+    },
+    {
+      "action": "set-contact-subscription",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "unsubscribed": true
+      }
+    },
+    {
+      "action": "list-contacts",
+      "input": {}
+    },
+    {
+      "action": "list-segments",
+      "input": {}
+    },
+    {
+      "action": "get-segment",
+      "input": {
+        "segment_id": "{{needs.segment_id}}"
+      }
+    },
+    {
+      "action": "add-contact-to-segment",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "segment_id": "{{needs.segment_id}}"
+      }
+    },
+    {
+      "action": "list-contact-segments",
+      "input": {
+        "contact_id": "{{saved.contact_id}}"
+      }
+    },
+    {
+      "action": "remove-contact-from-segment",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "segment_id": "{{needs.segment_id}}"
+      }
+    },
+    {
+      "action": "delete-contact",
+      "input": {
+        "contact_id": "{{saved.contact_id}}"
+      }
+    }
+  ]
+}

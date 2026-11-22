@@ -1,0 +1,34 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/update-contact).",
+  "params": {},
+  "input": {
+    "contactId": "151",
+    "leadStatus": "CONNECTED"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/contacts/151",
+  "response": {
+    "id": "151",
+    "properties": {
+      "hs_lead_status": "CONNECTED"
+    }
+  },
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/contacts/151?properties=hs_lead_status",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "151",
+      "properties": {
+        "hs_lead_status": "CONNECTED"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "151",
+      "properties": {
+        "hs_lead_status": "NEW"
+      }
+    }
+  }
+}

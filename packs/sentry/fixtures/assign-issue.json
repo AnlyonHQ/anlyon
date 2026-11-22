@@ -1,0 +1,40 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "organization": "acme",
+    "issue_id": "4509877862",
+    "assignee_email": "dana@example.com"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/",
+  "response": {
+    "id": "4509877862",
+    "assignedTo": {
+      "type": "user",
+      "id": "2301",
+      "name": "Dana",
+      "email": "dana@example.com"
+    }
+  },
+  "expectedReadBackUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "4509877862",
+      "status": "unresolved",
+      "assignedTo": {
+        "type": "user",
+        "id": "2301",
+        "name": "Dana",
+        "email": "dana@example.com"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "4509877862",
+      "assignedTo": null
+    }
+  }
+}

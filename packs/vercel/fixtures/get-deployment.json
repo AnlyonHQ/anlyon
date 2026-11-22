@@ -1,0 +1,36 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation getDeployment).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "deployment_id": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd"
+  },
+  "expectedUrl": "https://api.vercel.com/v13/deployments/dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "response": {
+    "id": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+    "name": "acme-web",
+    "url": "acme-web-git-main-acme.vercel.app",
+    "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+    "readyState": "READY",
+    "target": "production",
+    "alias": [
+      "acme.com",
+      "www.acme.com"
+    ],
+    "aliasAssigned": true,
+    "createdAt": 1761300000000,
+    "creator": {
+      "uid": "kr1PsOIzqEL5Xg6M4VZcZosf",
+      "username": "dana"
+    },
+    "env": [
+      "DATABASE_URL",
+      "NEXT_PUBLIC_SITE_URL"
+    ],
+    "regions": [
+      "iad1"
+    ],
+    "type": "LAMBDAS",
+    "version": 2
+  }
+}

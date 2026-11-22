@@ -1,0 +1,42 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/getspaces).",
+  "params": {},
+  "input": {
+    "team_id": "9012345",
+    "archived": false
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/team/9012345/space?archived=false",
+  "response": {
+    "spaces": [
+      {
+        "id": "90120012345",
+        "name": "Customers",
+        "private": false,
+        "archived": false,
+        "statuses": [
+          {
+            "status": "to do",
+            "type": "open",
+            "orderindex": 0,
+            "color": "#d3d3d3"
+          },
+          {
+            "status": "complete",
+            "type": "closed",
+            "orderindex": 1,
+            "color": "#6bc950"
+          }
+        ],
+        "multiple_assignees": true,
+        "features": {
+          "tags": {
+            "enabled": true
+          },
+          "checklists": {
+            "enabled": true
+          }
+        }
+      }
+    ]
+  }
+}

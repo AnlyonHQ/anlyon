@@ -1,0 +1,27 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/articles/retrievearticle).",
+  "params": {},
+  "input": {
+    "article_id": "55"
+  },
+  "expectedUrl": "https://api.intercom.io/articles/55",
+  "response": {
+    "type": "article",
+    "id": "55",
+    "workspace_id": "ecahpwf5",
+    "title": "Reset your password",
+    "description": "How to reset a forgotten password",
+    "body": "<p>Open Settings, then choose Reset password.</p>",
+    "author_id": 991267708,
+    "state": "published",
+    "created_at": 1734000000,
+    "updated_at": 1734500000,
+    "url": "https://help.example.com/en/articles/55-reset-your-password",
+    "parent_id": 145,
+    "parent_ids": [
+      145
+    ],
+    "parent_type": "collection",
+    "default_locale": "en"
+  }
+}

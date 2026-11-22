@@ -1,0 +1,43 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/boards).",
+  "params": {},
+  "input": {
+    "page": 1
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "query ($page: Int) { boards(limit: 25, page: $page, state: active) { id name description board_kind workspace_id items_count updated_at url } }",
+    "variables": {
+      "page": 1
+    }
+  },
+  "response": {
+    "data": {
+      "boards": [
+        {
+          "id": "5091234567",
+          "name": "Customer onboarding",
+          "description": "One item per new customer.",
+          "board_kind": "public",
+          "workspace_id": "1288001",
+          "items_count": 42,
+          "updated_at": "2026-10-23T14:02:11Z",
+          "url": "https://acme.monday.com/boards/5091234567"
+        },
+        {
+          "id": "5091234999",
+          "name": "Support escalations",
+          "description": null,
+          "board_kind": "private",
+          "workspace_id": "1288001",
+          "items_count": 7,
+          "updated_at": "2026-10-22T09:40:00Z",
+          "url": "https://acme.monday.com/boards/5091234999"
+        }
+      ]
+    },
+    "extensions": {
+      "request_id": "req_list_boards_1"
+    }
+  }
+}

@@ -1,0 +1,142 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/detachcontactfromacompany).",
+  "params": {},
+  "input": {
+    "contact_id": "6762f0cd1bb69f9f2193bb7f",
+    "company_id": "6762f0e61bb69f9f2193bb80"
+  },
+  "expectedUrl": "https://api.intercom.io/contacts/6762f0cd1bb69f9f2193bb7f/companies/6762f0e61bb69f9f2193bb80",
+  "response": {
+    "type": "company",
+    "id": "6762f0e61bb69f9f2193bb80",
+    "name": "Acme Ltd",
+    "app_id": "ecahpwf5",
+    "company_id": "acme-001",
+    "plan": {
+      "type": "plan",
+      "id": "269315",
+      "name": "Pro"
+    },
+    "remote_created_at": 1734537000,
+    "created_at": 1734537000,
+    "updated_at": 1734537800,
+    "last_request_at": 1734537800,
+    "size": 50,
+    "website": "https://acme.example",
+    "industry": "Software",
+    "monthly_spend": 900,
+    "session_count": 12,
+    "user_count": 3,
+    "custom_attributes": {},
+    "tags": {
+      "type": "tag.list",
+      "tags": []
+    },
+    "segments": {
+      "type": "segment.list",
+      "segments": []
+    }
+  },
+  "expectedReadBackUrl": "https://api.intercom.io/contacts/6762f0cd1bb69f9f2193bb7f/companies?per_page=50",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "type": "list",
+      "data": [
+        {
+          "type": "company",
+          "company_id": "globex-002",
+          "id": "6762f0f21bb69f9f2193bb91",
+          "app_id": "ecahpwf5",
+          "name": "Globex",
+          "remote_created_at": 1734537000,
+          "created_at": 1734537000,
+          "updated_at": 1734537800,
+          "monthly_spend": 900,
+          "session_count": 12,
+          "user_count": 3,
+          "tags": {
+            "type": "tag.list",
+            "tags": []
+          },
+          "segments": {
+            "type": "segment.list",
+            "segments": []
+          },
+          "plan": {},
+          "custom_attributes": {}
+        }
+      ],
+      "pages": {
+        "type": "pages",
+        "next": null,
+        "page": 1,
+        "per_page": 50,
+        "total_pages": 1
+      },
+      "total_count": 1
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "type": "list",
+      "data": [
+        {
+          "type": "company",
+          "company_id": "globex-002",
+          "id": "6762f0f21bb69f9f2193bb91",
+          "app_id": "ecahpwf5",
+          "name": "Globex",
+          "remote_created_at": 1734537000,
+          "created_at": 1734537000,
+          "updated_at": 1734537800,
+          "monthly_spend": 900,
+          "session_count": 12,
+          "user_count": 3,
+          "tags": {
+            "type": "tag.list",
+            "tags": []
+          },
+          "segments": {
+            "type": "segment.list",
+            "segments": []
+          },
+          "plan": {},
+          "custom_attributes": {}
+        },
+        {
+          "type": "company",
+          "company_id": "acme-001",
+          "id": "6762f0e61bb69f9f2193bb80",
+          "app_id": "ecahpwf5",
+          "name": "Acme Ltd",
+          "remote_created_at": 1734537000,
+          "created_at": 1734537000,
+          "updated_at": 1734537800,
+          "monthly_spend": 900,
+          "session_count": 12,
+          "user_count": 3,
+          "tags": {
+            "type": "tag.list",
+            "tags": []
+          },
+          "segments": {
+            "type": "segment.list",
+            "segments": []
+          },
+          "plan": {},
+          "custom_attributes": {}
+        }
+      ],
+      "pages": {
+        "type": "pages",
+        "next": null,
+        "page": 1,
+        "per_page": 50,
+        "total_pages": 1
+      },
+      "total_count": 2
+    }
+  }
+}

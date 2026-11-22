@@ -1,0 +1,26 @@
+{
+  "needs": {
+    "project_key": "The key of a Jira project the account can create, edit, comment on and delete issues in (e.g. OPS)",
+    "issue_type_id": "The id of a standard (not subtask) issue type in that project, from list-issue-types (e.g. the Task type)"
+  },
+  "steps": [
+    { "action": "get-myself", "input": {}, "save": { "account_id": "accountId" } },
+    { "action": "list-projects", "input": { "query": "{{needs.project_key}}" } },
+    { "action": "list-issue-types", "input": { "project_key": "{{needs.project_key}}" } },
+    { "action": "list-priorities", "input": {}, "save": { "priority_id": "values.0.id" } },
+    { "action": "create-issue", "input": { "project_key": "{{needs.project_key}}", "issue_type_id": "{{needs.issue_type_id}}", "summary": "Anlyon exercise {{run}}", "description": "Created by the Anlyon exercise {{run}}.\nIt deletes this issue at the end.", "labels": ["anlyon-exercise"] }, "save": { "issue_key": "key" } },
+    { "action": "get-issue", "input": { "issue_key": "{{saved.issue_key}}" } },
+    { "action": "search-issues", "input": { "jql": "key = {{saved.issue_key}}" } },
+    { "action": "rename-issue", "input": { "issue_key": "{{saved.issue_key}}", "summary": "Anlyon exercise {{run}} (renamed)" } },
+    { "action": "add-issue-label", "input": { "issue_key": "{{saved.issue_key}}", "label": "anlyon-exercise-{{run}}" } },
+    { "action": "set-issue-priority", "input": { "issue_key": "{{saved.issue_key}}", "priority_id": "{{saved.priority_id}}" } },
+    { "action": "assign-issue", "input": { "issue_key": "{{saved.issue_key}}", "account_id": "{{saved.account_id}}" } },
+    { "action": "list-transitions", "input": { "issue_key": "{{saved.issue_key}}" }, "save": { "transition_id": "transitions.0.id", "to_status_id": "transitions.0.to.id" } },
+    { "action": "transition-issue", "input": { "issue_key": "{{saved.issue_key}}", "transition_id": "{{saved.transition_id}}", "to_status_id": "{{saved.to_status_id}}" } },
+    { "action": "add-comment", "input": { "issue_key": "{{saved.issue_key}}", "body": "Anlyon exercise {{run}} comment.\nSecond line." }, "save": { "comment_id": "id" } },
+    { "action": "list-comments", "input": { "issue_key": "{{saved.issue_key}}" } },
+    { "action": "get-comment", "input": { "issue_key": "{{saved.issue_key}}", "comment_id": "{{saved.comment_id}}" } },
+    { "action": "delete-comment", "input": { "issue_key": "{{saved.issue_key}}", "comment_id": "{{saved.comment_id}}" } },
+    { "action": "delete-issue", "input": { "issue_key": "{{saved.issue_key}}" } }
+  ]
+}

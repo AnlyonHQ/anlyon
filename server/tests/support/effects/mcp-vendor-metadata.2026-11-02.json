@@ -1,0 +1,461 @@
+{
+  "capturedOn": "2026-11-02",
+  "note": "What each vendor's hosted MCP endpoint answered an anonymous client. Public metadata; no sign-in was run.",
+  "vendors": {
+    "linear": {
+      "endpoint": "https://mcp.linear.app/mcp",
+      "challenge": "Bearer realm=\"OAuth\", resource_metadata=\"https://mcp.linear.app/.well-known/oauth-protected-resource/mcp\", scope=\"read write\"",
+      "documents": {
+        "https://mcp.linear.app/.well-known/oauth-protected-resource/mcp": {
+          "resource": "https://mcp.linear.app/mcp",
+          "authorization_servers": [
+            "https://mcp.linear.app"
+          ],
+          "scopes_supported": [
+            "read",
+            "write"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ]
+        },
+        "https://mcp.linear.app/.well-known/oauth-authorization-server": {
+          "issuer": "https://mcp.linear.app",
+          "authorization_endpoint": "https://mcp.linear.app/authorize",
+          "token_endpoint": "https://mcp.linear.app/token",
+          "registration_endpoint": "https://mcp.linear.app/register",
+          "scopes_supported": [
+            "read",
+            "write",
+            "openid",
+            "email"
+          ],
+          "response_types_supported": [
+            "code"
+          ],
+          "response_modes_supported": [
+            "query"
+          ],
+          "grant_types_supported": [
+            "authorization_code",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:jwt-bearer"
+          ],
+          "authorization_grant_profiles_supported": [
+            "urn:ietf:params:oauth:grant-profile:id-jag"
+          ],
+          "token_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_post",
+            "none"
+          ],
+          "revocation_endpoint": "https://mcp.linear.app/token",
+          "code_challenge_methods_supported": [
+            "S256"
+          ],
+          "authorization_response_iss_parameter_supported": true,
+          "client_id_metadata_document_supported": true,
+          "resource": "https://mcp.linear.app/mcp",
+          "resource_metadata": "https://mcp.linear.app/.well-known/oauth-protected-resource/mcp"
+        }
+      }
+    },
+    "atlassian": {
+      "endpoint": "https://mcp.atlassian.com/v2/mcp",
+      "challenge": "Bearer resource_metadata=\"https://mcp.atlassian.com/.well-known/oauth-protected-resource/v2/mcp\"",
+      "documents": {
+        "https://mcp.atlassian.com/.well-known/oauth-protected-resource/v2/mcp": {
+          "resource": "https://mcp.atlassian.com/v2/mcp",
+          "authorization_servers": [
+            "https://auth.atlassian.com/VCeDsk8ZHncYF1g234fKtc4lNipbBhu3"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "scopes_supported": [
+            "read:me",
+            "read:account",
+            "offline_access",
+            "email",
+            "read:jira:agent-interface",
+            "write:jira:agent-interface",
+            "search:jira:agent-interface",
+            "delete:jira:agent-interface",
+            "manage:jira:agent-interface",
+            "read:confluence:agent-interface",
+            "write:confluence:agent-interface",
+            "search:confluence:agent-interface",
+            "search:rovo:agent-interface",
+            "search:code:agent-interface",
+            "read:jsm:agent-interface",
+            "write:jsm:agent-interface",
+            "read:all:twg",
+            "write:all:twg",
+            "read:goals:agent-interface",
+            "write:goals:agent-interface",
+            "read:projects:agent-interface",
+            "write:projects:agent-interface",
+            "read:bitbucket:agent-interface",
+            "write:bitbucket:agent-interface",
+            "read:loom:agent-interface",
+            "write:loom:agent-interface",
+            "read:talent:agent-interface",
+            "write:talent:agent-interface",
+            "read:jira-align:agent-interface",
+            "write:jira-align:agent-interface",
+            "read:teams:agent-interface",
+            "write:teams:agent-interface",
+            "read:artifacts:agent-interface",
+            "write:artifacts:agent-interface",
+            "read:capacity-planning:agent-interface",
+            "write:capacity-planning:agent-interface",
+            "read:focus:agent-interface",
+            "write:focus:agent-interface",
+            "read:assets:agent-interface",
+            "write:assets:agent-interface"
+          ],
+          "resource_documentation": "https://www.atlassian.com/platform/remote-mcp-server"
+        },
+        "https://auth.atlassian.com/.well-known/oauth-authorization-server/VCeDsk8ZHncYF1g234fKtc4lNipbBhu3": {
+          "authorization_endpoint": "https://auth.atlassian.com/authorize",
+          "client_id_metadata_document_supported": true,
+          "code_challenge_methods_supported": [
+            "S256"
+          ],
+          "grant_types_supported": [
+            "authorization_code",
+            "client_credentials",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:token-revoke",
+            "urn:ietf:params:oauth:grant-type:jwt-bearer",
+            "urn:ietf:params:oauth:grant-type:token-exchange"
+          ],
+          "issuer": "https://auth.atlassian.com/VCeDsk8ZHncYF1g234fKtc4lNipbBhu3",
+          "jwks_uri": "https://auth.atlassian.com/.well-known/jwks.json",
+          "pushed_authorization_request_endpoint": "https://auth.atlassian.com/oauth/par",
+          "registration_endpoint": "https://auth.atlassian.com/VCeDsk8ZHncYF1g234fKtc4lNipbBhu3/dcr/register",
+          "response_types_supported": [
+            "code",
+            "token"
+          ],
+          "revocation_endpoint": "https://auth.atlassian.com/oauth/revoke",
+          "token_endpoint": "https://auth.atlassian.com/oauth/token",
+          "token_endpoint_auth_methods_supported": [
+            "none",
+            "client_secret_post",
+            "client_secret_basic",
+            "private_key_jwt"
+          ]
+        }
+      }
+    },
+    "notion": {
+      "endpoint": "https://mcp.notion.com/mcp",
+      "challenge": "Bearer realm=\"OAuth\", resource_metadata=\"https://mcp.notion.com/.well-known/oauth-protected-resource/mcp\", scope=\"default\"",
+      "documents": {
+        "https://mcp.notion.com/.well-known/oauth-protected-resource/mcp": {
+          "resource": "https://mcp.notion.com/mcp",
+          "authorization_servers": [
+            "https://mcp.notion.com"
+          ],
+          "scopes_supported": [
+            "default"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "resource_name": "Notion MCP (Beta)"
+        },
+        "https://mcp.notion.com/.well-known/oauth-authorization-server": {
+          "issuer": "https://mcp.notion.com",
+          "authorization_endpoint": "https://mcp.notion.com/authorize",
+          "token_endpoint": "https://mcp.notion.com/token",
+          "protected_resources": [
+            "https://mcp.notion.com",
+            "https://mcp.notion.com/mcp",
+            "https://mcp.notion.com/sse"
+          ],
+          "registration_endpoint": "https://mcp.notion.com/register",
+          "scopes_supported": [
+            "default",
+            "ema_issuer:manage"
+          ],
+          "response_types_supported": [
+            "code"
+          ],
+          "response_modes_supported": [
+            "query"
+          ],
+          "grant_types_supported": [
+            "authorization_code",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:jwt-bearer"
+          ],
+          "authorization_grant_profiles_supported": [
+            "urn:ietf:params:oauth:grant-profile:id-jag"
+          ],
+          "token_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_post",
+            "none",
+            "private_key_jwt"
+          ],
+          "token_endpoint_auth_signing_alg_values_supported": [
+            "RS256",
+            "ES256"
+          ],
+          "revocation_endpoint": "https://mcp.notion.com/token",
+          "code_challenge_methods_supported": [
+            "S256"
+          ],
+          "authorization_response_iss_parameter_supported": true,
+          "client_id_metadata_document_supported": true,
+          "introspection_endpoint": "https://mcp.notion.com/introspect",
+          "introspection_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_post",
+            "none"
+          ]
+        }
+      }
+    },
+    "stripe": {
+      "endpoint": "https://mcp.stripe.com",
+      "challenge": "Bearer resource_metadata=\"https://mcp.stripe.com/.well-known/oauth-protected-resource\"",
+      "documents": {
+        "https://mcp.stripe.com/.well-known/oauth-protected-resource": {
+          "resource": "https://mcp.stripe.com",
+          "scopes_supported": [
+            "mcp"
+          ],
+          "authorization_servers": [
+            "https://access.stripe.com/mcp"
+          ]
+        },
+        "https://access.stripe.com/.well-known/oauth-authorization-server/mcp": {
+          "issuer": "https://access.stripe.com/mcp",
+          "authorization_endpoint": "https://access.stripe.com/mcp/oauth2/authorize",
+          "token_endpoint": "https://access.stripe.com/mcp/oauth2/token",
+          "registration_endpoint": "https://access.stripe.com/mcp/oauth2/register",
+          "revocation_endpoint": "https://access.stripe.com/mcp/oauth2/revoke",
+          "response_types_supported": [
+            "code"
+          ],
+          "scopes_supported": [
+            "mcp"
+          ],
+          "response_modes_supported": [
+            "query"
+          ],
+          "grant_types_supported": [
+            "authorization_code",
+            "refresh_token"
+          ],
+          "token_endpoint_auth_methods_supported": [
+            "none"
+          ],
+          "code_challenge_methods_supported": [
+            "S256"
+          ]
+        }
+      }
+    },
+    "supabase": {
+      "endpoint": "https://mcp.supabase.com/mcp",
+      "challenge": "Bearer resource_metadata=\"https://mcp.supabase.com/.well-known/oauth-protected-resource/mcp\"",
+      "documents": {
+        "https://mcp.supabase.com/.well-known/oauth-protected-resource/mcp": {
+          "resource": "https://mcp.supabase.com/mcp",
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "authorization_servers": [
+            "https://api.supabase.com"
+          ],
+          "resource_documentation": "https://mcp.supabase.com/api/mcp",
+          "resource_name": "Supabase MCP (Beta)",
+          "scopes_supported": [
+            "organizations:read",
+            "projects:read",
+            "projects:write",
+            "database:write",
+            "database:read",
+            "analytics:read",
+            "secrets:read",
+            "edge_functions:read",
+            "edge_functions:write",
+            "environment:read",
+            "environment:write",
+            "storage:read",
+            "storage:write"
+          ]
+        },
+        "https://api.supabase.com/.well-known/oauth-authorization-server": {
+          "issuer": "https://api.supabase.com",
+          "authorization_endpoint": "https://api.supabase.com/v1/oauth/authorize",
+          "token_endpoint": "https://api.supabase.com/v1/oauth/token",
+          "registration_endpoint": "https://api.supabase.com/platform/oauth/apps/register",
+          "response_types_supported": [
+            "code"
+          ],
+          "response_modes_supported": [
+            "query"
+          ],
+          "grant_types_supported": [
+            "authorization_code",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:jwt-bearer"
+          ],
+          "token_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_post"
+          ],
+          "code_challenge_methods_supported": [
+            "S256",
+            "plain"
+          ],
+          "scopes_supported": [
+            "organizations:read",
+            "projects:read",
+            "projects:write",
+            "database:write",
+            "database:read",
+            "analytics:read",
+            "secrets:read",
+            "edge_functions:read",
+            "edge_functions:write",
+            "environment:read",
+            "environment:write",
+            "storage:read",
+            "storage:write"
+          ],
+          "authorization_response_iss_parameter_supported": true,
+          "authorization_grant_profiles_supported": [
+            "urn:ietf:params:oauth:grant-profile:id-jag"
+          ]
+        }
+      }
+    },
+    "ghub": {
+      "endpoint": "https://api.githubcopilot.com/mcp/",
+      "challenge": "Bearer error=\"invalid_request\", error_description=\"No access token was provided in this request\", resource_metadata=\"https://api.githubcopilot.com/.well-known/oauth-protected-resource/mcp/\"",
+      "documents": {
+        "https://api.githubcopilot.com/.well-known/oauth-protected-resource/mcp/": {
+          "resource": "https://api.githubcopilot.com/mcp/",
+          "authorization_servers": [
+            "https://github.com/login/oauth"
+          ],
+          "scopes_supported": [
+            "repo",
+            "read:org",
+            "read:user",
+            "user:email",
+            "read:packages",
+            "write:packages",
+            "read:project",
+            "project",
+            "gist",
+            "notifications"
+          ],
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "resource_name": "GitHub MCP Server"
+        },
+        "https://github.com/.well-known/oauth-authorization-server/login/oauth": {
+          "issuer": "https://github.com/login/oauth",
+          "authorization_endpoint": "https://github.com/login/oauth/authorize",
+          "token_endpoint": "https://github.com/login/oauth/access_token",
+          "response_types_supported": [
+            "code"
+          ],
+          "grant_types_supported": [
+            "authorization_code",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:device_code"
+          ],
+          "service_documentation": "https://docs.github.com/apps/creating-github-apps/registering-a-github-app/registering-a-github-app",
+          "code_challenge_methods_supported": [
+            "S256"
+          ],
+          "device_authorization_endpoint": "https://github.com/login/device/code",
+          "authorization_response_iss_parameter_supported": true,
+          "scopes_supported": [
+            "offline_access"
+          ]
+        }
+      }
+    },
+    "supabaseScoped": {
+      "endpoint": "https://mcp.supabase.com/mcp?project_ref=abcdefghijklmnopqrst&read_only=true",
+      "challenge": "Bearer resource_metadata=\"https://mcp.supabase.com/.well-known/oauth-protected-resource/mcp?project_ref=abcdefghijklmnopqrst&read_only=true\"",
+      "documents": {
+        "https://mcp.supabase.com/.well-known/oauth-protected-resource/mcp?project_ref=abcdefghijklmnopqrst&read_only=true": {
+          "resource": "https://mcp.supabase.com/mcp?project_ref=abcdefghijklmnopqrst&read_only=true",
+          "bearer_methods_supported": [
+            "header"
+          ],
+          "authorization_servers": [
+            "https://api.supabase.com"
+          ],
+          "resource_documentation": "https://mcp.supabase.com/api/mcp",
+          "resource_name": "Supabase MCP (Beta)",
+          "scopes_supported": [
+            "organizations:read",
+            "projects:read",
+            "database:read",
+            "analytics:read",
+            "secrets:read",
+            "edge_functions:read",
+            "environment:read",
+            "storage:read"
+          ]
+        },
+        "https://api.supabase.com/.well-known/oauth-authorization-server": {
+          "issuer": "https://api.supabase.com",
+          "authorization_endpoint": "https://api.supabase.com/v1/oauth/authorize",
+          "token_endpoint": "https://api.supabase.com/v1/oauth/token",
+          "registration_endpoint": "https://api.supabase.com/platform/oauth/apps/register",
+          "response_types_supported": [
+            "code"
+          ],
+          "response_modes_supported": [
+            "query"
+          ],
+          "grant_types_supported": [
+            "authorization_code",
+            "refresh_token",
+            "urn:ietf:params:oauth:grant-type:jwt-bearer"
+          ],
+          "token_endpoint_auth_methods_supported": [
+            "client_secret_basic",
+            "client_secret_post"
+          ],
+          "code_challenge_methods_supported": [
+            "S256",
+            "plain"
+          ],
+          "scopes_supported": [
+            "organizations:read",
+            "projects:read",
+            "projects:write",
+            "database:write",
+            "database:read",
+            "analytics:read",
+            "secrets:read",
+            "edge_functions:read",
+            "edge_functions:write",
+            "environment:read",
+            "environment:write",
+            "storage:read",
+            "storage:write"
+          ],
+          "authorization_response_iss_parameter_supported": true,
+          "authorization_grant_profiles_supported": [
+            "urn:ietf:params:oauth:grant-profile:id-jag"
+          ]
+        }
+      }
+    }
+  }
+}

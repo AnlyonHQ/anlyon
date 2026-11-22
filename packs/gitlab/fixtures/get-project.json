@@ -1,0 +1,24 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/projects/).",
+  "params": {},
+  "input": {
+    "project": "acme/web"
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb",
+  "response": {
+    "id": 5000001,
+    "name": "web",
+    "path_with_namespace": "acme/web",
+    "description": "The storefront",
+    "default_branch": "main",
+    "visibility": "private",
+    "open_issues_count": 12,
+    "web_url": "https://gitlab.com/acme/web",
+    "permissions": {
+      "project_access": {
+        "access_level": 30
+      },
+      "group_access": null
+    }
+  }
+}

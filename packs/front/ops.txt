@@ -1,0 +1,30 @@
+# Front Core API (https://api2.frontapp.com), spec core-api/core-api.json fetched 2026-10-24.
+# Jobs: find a conversation, read it and its messages and comments, reply or draft a reply,
+# leave an internal comment, assign or unassign, archive or reopen, tag; find, create and update
+# a contact and note on it.
+# action                      operation                                              kind
+search-conversations          search-conversations
+get-conversation              get-conversation-by-id
+list-conversation-messages    list-conversation-messages
+get-message                   get-message
+list-conversation-comments    list-conversation-comments
+list-inboxes                  list-inboxes
+list-channels                 list-channels
+list-teammates                list-teammates
+list-tags                     list-tags
+get-contact                   get-contact
+find-contact-by-email         get-contact
+list-contact-conversations    list-contact-conversations
+list-contact-notes            list-notes
+reply-to-conversation         create-message-reply
+create-draft-reply            create-draft-reply
+add-comment                   add-comment
+assign-conversation           update-conversation-assignee
+unassign-conversation         update-conversation-assignee
+archive-conversation          update-conversation
+reopen-conversation           update-conversation
+tag-conversation              add-conversation-tag
+create-contact                create-contact
+rename-contact                update-a-contact
+set-contact-description       update-a-contact
+add-contact-note              add-note

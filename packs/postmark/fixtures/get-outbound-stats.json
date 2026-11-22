@@ -1,0 +1,28 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/stats-api).",
+  "params": {},
+  "input": {
+    "fromdate": "2026-10-01",
+    "todate": "2026-10-24",
+    "message_stream": "outbound"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/stats/outbound?fromdate=2026-10-01&todate=2026-10-24&messagestream=outbound",
+  "response": {
+    "Sent": 615,
+    "Bounced": 64,
+    "SMTPApiErrors": 25,
+    "BounceRate": 10.406,
+    "SpamComplaints": 10,
+    "SpamComplaintsRate": 1.626,
+    "Opens": 166,
+    "UniqueOpens": 26,
+    "Tracked": 111,
+    "WithLinkTracking": 90,
+    "WithOpenTracking": 51,
+    "TotalTrackedLinksSent": 60,
+    "UniqueLinksClicked": 30,
+    "TotalClicks": 72,
+    "WithClientRecorded": 14,
+    "WithPlatformRecorded": 10
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/getsubtasksfortask).",
+  "params": {},
+  "input": {
+    "task_gid": "1208809876543210"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210/subtasks?limit=25&opt_fields=name,completed,assignee.name,due_on,permalink_url",
+  "response": {
+    "data": [
+      {
+        "gid": "1208809876549999",
+        "resource_type": "task",
+        "resource_subtype": "default_task",
+        "name": "Send the questionnaire",
+        "completed": false,
+        "assignee": null,
+        "due_on": null,
+        "permalink_url": "https://app.asana.com/0/0/1208809876549999"
+      }
+    ],
+    "next_page": null
+  }
+}

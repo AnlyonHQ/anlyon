@@ -1,0 +1,169 @@
+{
+  "needs": {
+    "from": "The email address of a PagerDuty user in the test account (the run acts as them)",
+    "service_id": "A test service whose escalation policy pages only you: the id at the end of its URL, such as PWIXJZS"
+  },
+  "steps": [
+    {
+      "action": "list-services",
+      "input": {}
+    },
+    {
+      "action": "get-service",
+      "input": {
+        "service_id": "{{needs.service_id}}"
+      }
+    },
+    {
+      "action": "list-escalation-policies",
+      "input": {}
+    },
+    {
+      "action": "list-schedules",
+      "input": {}
+    },
+    {
+      "action": "list-oncalls",
+      "input": {}
+    },
+    {
+      "action": "list-users",
+      "input": {}
+    },
+    {
+      "action": "create-incident",
+      "input": {
+        "from": "{{needs.from}}",
+        "service_id": "{{needs.service_id}}",
+        "title": "Anlyon exercise {{run}} target"
+      },
+      "save": {
+        "incident_id": "incident.id",
+        "assignee_id": "incident.assignments.0.assignee.id"
+      }
+    },
+    {
+      "action": "create-incident",
+      "input": {
+        "from": "{{needs.from}}",
+        "service_id": "{{needs.service_id}}",
+        "title": "Anlyon exercise {{run}} duplicate"
+      },
+      "save": {
+        "source_incident_id": "incident.id"
+      }
+    },
+    {
+      "action": "list-incidents",
+      "input": {
+        "status": "triggered",
+        "second_status": "acknowledged",
+        "service_id": "{{needs.service_id}}"
+      }
+    },
+    {
+      "action": "get-incident",
+      "input": {
+        "incident_id": "{{saved.incident_id}}"
+      }
+    },
+    {
+      "action": "add-note",
+      "input": {
+        "from": "{{needs.from}}",
+        "incident_id": "{{saved.incident_id}}",
+        "content": "Anlyon exercise {{run}} note"
+      }
+    },
+    {
+      "action": "list-incident-notes",
+      "input": {
+        "incident_id": "{{saved.incident_id}}"
+      }
+    },
+    {
+      "action": "list-incident-alerts",
+      "input": {
+        "incident_id": "{{saved.incident_id}}"
+      }
+    },
+    {
+      "action": "change-incident-urgency",
+      "input": {
+        "from": "{{needs.from}}",
+        "incident_id": "{{saved.incident_id}}",
+        "urgency": "low"
+      }
+    },
+    {
+      "action": "reassign-incident",
+      "input": {
+        "from": "{{needs.from}}",
+        "incident_id": "{{saved.incident_id}}",
+        "user_id": "{{saved.assignee_id}}"
+      }
+    },
+    {
+      "action": "acknowledge-incident",
+      "input": {
+        "from": "{{needs.from}}",
+        "incident_id": "{{saved.incident_id}}"
+      }
+    },
+    {
+      "action": "snooze-incident",
+      "input": {
+        "from": "{{needs.from}}",
+        "incident_id": "{{saved.incident_id}}",
+        "duration": 3600
+      }
+    },
+    {
+      "action": "merge-incidents",
+      "input": {
+        "from": "{{needs.from}}",
+        "incident_id": "{{saved.incident_id}}",
+        "source_incident_id": "{{saved.source_incident_id}}"
+      }
+    },
+    {
+      "action": "list-incident-log-entries",
+      "input": {
+        "incident_id": "{{saved.incident_id}}"
+      }
+    },
+    {
+      "action": "resolve-incident",
+      "input": {
+        "from": "{{needs.from}}",
+        "incident_id": "{{saved.incident_id}}"
+      }
+    },
+    {
+      "action": "create-maintenance-window",
+      "input": {
+        "from": "{{needs.from}}",
+        "service_id": "{{needs.service_id}}",
+        "start_time": "2030-01-01T00:00:00Z",
+        "end_time": "2030-01-01T01:00:00Z",
+        "description": "Anlyon exercise {{run}}"
+      },
+      "save": {
+        "maintenance_window_id": "maintenance_window.id"
+      }
+    },
+    {
+      "action": "list-maintenance-windows",
+      "input": {
+        "filter": "future",
+        "service_id": "{{needs.service_id}}"
+      }
+    },
+    {
+      "action": "end-maintenance-window",
+      "input": {
+        "maintenance_window_id": "{{saved.maintenance_window_id}}"
+      }
+    }
+  ]
+}

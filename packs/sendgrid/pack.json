@@ -1,0 +1,1187 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/sendgrid",
+  "version": "0.1.0",
+  "description": "Twilio SendGrid for an agent: send an email or a template email, find and read Marketing contacts, lists, templates, unsubscribes and bounces; add, update and delete contacts and lists, and honour unsubscribes, with every write governed.",
+  "secrets": [
+    {
+      "name": "SENDGRID",
+      "kind": "connection",
+      "integrationId": "sendgrid",
+      "hosts": [
+        "api.sendgrid.com"
+      ],
+      "description": "The connected SendGrid API key"
+    }
+  ],
+  "actions": [
+    {
+      "requiresApproval": false,
+      "name": "send-email",
+      "description": "Send one email to the addresses in to, from a sender verified in SendGrid, with a plain-text body and, if given, an HTML body. Every recipient is on the To line and sees the others; there is no cc or bcc. Counted in emails, one per recipient. No read-back: SendGrid answers 202 with an empty body and no message id, so there is nothing to read the send back by. Limitations: SendGrid drops a recipient who is on a suppression list without an error, so fewer emails can go out than were counted. No idempotency: a retry after an unknown outcome can send the email twice. Attachments and scheduled sends are not offered.",
+      "method": "POST",
+      "urlTemplate": "https://api.sendgrid.com/v3/mail/send",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "personalizations": [
+          {
+            "to": "{{input.to}}"
+          }
+        ],
+        "from": "{{input.from}}",
+        "reply_to": "{{input.reply_to}}",
+        "subject": "{{input.subject}}",
+        "content": "{{input.content}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "to",
+          "from",
+          "subject",
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "to": {
+            "type": "array",
+            "description": "The recipients, all on the To line: [{\"email\": \"ada@example.com\", \"name\": \"Ada Lovelace\"}]. Every recipient sees the others. One email is counted per recipient.",
+            "items": {
+              "type": "object",
+              "description": "One recipient.",
+              "additionalProperties": false,
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+                  "description": "The email address."
+                },
+                "name": {
+                  "type": "string",
+                  "pattern": "^[^\\r\\n]{1,100}$",
+                  "description": "The display name (optional)."
+                }
+              }
+            }
+          },
+          "from": {
+            "type": "object",
+            "description": "The sender: {\"email\": \"support@example.com\", \"name\": \"Example Support\"}. It must be a verified sender or an address on a domain authenticated in SendGrid.",
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+                "description": "The email address."
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[^\\r\\n]{1,100}$",
+                "description": "The display name (optional)."
+              }
+            }
+          },
+          "reply_to": {
+            "type": "object",
+            "description": "Where replies go, if not to the sender (optional).",
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+                "description": "The email address."
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[^\\r\\n]{1,100}$",
+                "description": "The display name (optional)."
+              }
+            }
+          },
+          "subject": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,998}$",
+            "description": "The subject line, one line."
+          },
+          "content": {
+            "type": "array",
+            "description": "The body: a text/plain item, then an optional text/html item: [{\"type\": \"text/plain\", \"value\": \"Hi Ada\"}].",
+            "items": {
+              "type": "object",
+              "required": [
+                "type",
+                "value"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "text/plain",
+                    "text/html"
+                  ],
+                  "description": "The MIME type of this part."
+                },
+                "value": {
+                  "type": "string",
+                  "pattern": "^[\\s\\S]{1,50000}$",
+                  "description": "The content of this part."
+                }
+              }
+            }
+          }
+        }
+      },
+      "impact": {
+        "dimension": "emails",
+        "amount": "count(input.to)",
+        "bound": "upper_bound"
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "send-template-email",
+      "description": "Send one email built from a SendGrid dynamic template (id starts with d-, from list-templates) to the addresses in to, filling the template with dynamic_template_data. The subject and body come from the template's active version. Every recipient is on the To line and sees the others. Counted in emails, one per recipient. No read-back: SendGrid answers 202 with an empty body and no message id, so there is nothing to read the send back by. Limitations: SendGrid drops a recipient who is on a suppression list without an error, so fewer emails can go out than were counted. No idempotency: a retry after an unknown outcome can send the email twice. Legacy templates are not offered.",
+      "method": "POST",
+      "urlTemplate": "https://api.sendgrid.com/v3/mail/send",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "personalizations": [
+          {
+            "to": "{{input.to}}",
+            "dynamic_template_data": "{{input.dynamic_template_data}}"
+          }
+        ],
+        "from": "{{input.from}}",
+        "reply_to": "{{input.reply_to}}",
+        "template_id": "{{input.template_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "template_id",
+          "to",
+          "from"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "pattern": "^d-[0-9a-f]{32}$",
+            "description": "A dynamic template id, d- and 32 hex characters (list-templates)."
+          },
+          "to": {
+            "type": "array",
+            "description": "The recipients, all on the To line: [{\"email\": \"ada@example.com\", \"name\": \"Ada Lovelace\"}]. Every recipient sees the others. One email is counted per recipient.",
+            "items": {
+              "type": "object",
+              "description": "One recipient.",
+              "additionalProperties": false,
+              "required": [
+                "email"
+              ],
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+                  "description": "The email address."
+                },
+                "name": {
+                  "type": "string",
+                  "pattern": "^[^\\r\\n]{1,100}$",
+                  "description": "The display name (optional)."
+                }
+              }
+            }
+          },
+          "from": {
+            "type": "object",
+            "description": "The sender: {\"email\": \"support@example.com\", \"name\": \"Example Support\"}. It must be a verified sender or an address on a domain authenticated in SendGrid.",
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+                "description": "The email address."
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[^\\r\\n]{1,100}$",
+                "description": "The display name (optional)."
+              }
+            }
+          },
+          "reply_to": {
+            "type": "object",
+            "description": "Where replies go, if not to the sender (optional).",
+            "additionalProperties": false,
+            "required": [
+              "email"
+            ],
+            "properties": {
+              "email": {
+                "type": "string",
+                "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+                "description": "The email address."
+              },
+              "name": {
+                "type": "string",
+                "pattern": "^[^\\r\\n]{1,100}$",
+                "description": "The display name (optional)."
+              }
+            }
+          },
+          "dynamic_template_data": {
+            "type": "object",
+            "description": "The values the template's Handlebars tags use: {\"first_name\": \"Ada\", \"order_id\": \"1042\"}."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "emails",
+        "amount": "count(input.to)",
+        "bound": "upper_bound"
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "search-contacts",
+      "kind": "read",
+      "description": "Find Marketing contacts with a SendGrid SGQL query, for example email LIKE 'ada%' or CONTAINS(list_ids, '<list id>'). Changes nothing (POST search). Returns at most 50 contacts and contact_count, the number that matched. There is no next page: narrow the query instead. Emails are stored in lower case, so write them in lower case. A query that runs over 20 seconds answers 408. A long result can be cut at the response limit.",
+      "method": "POST",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/contacts/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "{{input.query}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$",
+            "description": "An SGQL query: email LIKE 'ada%' AND CONTAINS(list_ids, 'ca7a3796-e8a8-4029-9ccb-df8937940562')."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "get-contacts-by-email",
+      "kind": "read",
+      "description": "Get Marketing contacts by exact email address, primary or alternate. Changes nothing (POST search). Takes up to 100 addresses. Returns result, keyed by each address: the contact, or an error for an address with no contact. Answers 404 when no address matches.",
+      "method": "POST",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/contacts/search/emails",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "emails": "{{input.emails}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "emails"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "emails": {
+            "type": "array",
+            "description": "The addresses to look up, at most 100: [\"ada@example.com\"].",
+            "items": {
+              "type": "string",
+              "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$"
+            }
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "get-contact",
+      "kind": "read",
+      "description": "Get one Marketing contact by id: name, email, alternate emails, address fields, list_ids, segment_ids, custom_fields and timestamps. Answers 404 for a contact that does not exist or was deleted.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The contact's id (search-contacts or get-contacts-by-email)."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "get-contact-job",
+      "kind": "read",
+      "description": "Get the status of a contacts job from upsert-contacts or delete-contact, by its job_id: status (pending, completed, errored or failed), job_type (upsert or delete) and counts of contacts requested, created, updated, deleted and errored.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/contacts/imports/{{input.job_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "job_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9-]{1,64}$",
+            "description": "The job_id that upsert-contacts or delete-contact answered with."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "upsert-contacts",
+      "description": "Add or update Marketing contacts by email, and add each to the lists in list_ids (list-lists); this is how a contact is put on a list. A field left out keeps its value. SendGrid queues the change as a background job and answers with job_id. Counted per contact. Read back as that job: get-contact-job must find it with job_type upsert. Limitations: the read-back shows SendGrid queued the change, not that each contact was saved; get-contact-job shows completed or errored once it has run, and get-contacts-by-email shows the contact. Custom fields are not set by this action.",
+      "method": "PUT",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/contacts",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "list_ids": "{{input.list_ids}}",
+        "contacts": "{{input.contacts}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contacts"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_ids": {
+            "type": "array",
+            "description": "Lists to add every contact to (optional): [\"ca7a3796-e8a8-4029-9ccb-df8937940562\"].",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+            }
+          },
+          "contacts": {
+            "type": "array",
+            "description": "The contacts, each identified by email: [{\"email\": \"ada@example.com\", \"first_name\": \"Ada\"}].",
+            "items": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+                  "description": "The contact's email. SendGrid stores it in lower case."
+                },
+                "first_name": {
+                  "type": "string",
+                  "pattern": "^[^\\r\\n]{1,100}$",
+                  "description": "Given name."
+                },
+                "last_name": {
+                  "type": "string",
+                  "pattern": "^[^\\r\\n]{1,100}$",
+                  "description": "Family name."
+                },
+                "city": {
+                  "type": "string",
+                  "pattern": "^[^\\r\\n]{1,100}$",
+                  "description": "City."
+                },
+                "country": {
+                  "type": "string",
+                  "pattern": "^[^\\r\\n]{1,100}$",
+                  "description": "Country."
+                },
+                "postal_code": {
+                  "type": "string",
+                  "pattern": "^[^\\r\\n]{1,60}$",
+                  "description": "Postal code."
+                }
+              }
+            }
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "count(input.contacts)",
+        "bound": "upper_bound"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/marketing/contacts/imports/{{response.job_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.job_id}}"
+          },
+          {
+            "path": "job_type",
+            "equals": "upsert"
+          }
+        ]
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "delete-contact",
+      "description": "Delete one Marketing contact by id. Deleting every contact is not offered. SendGrid deletes it in a background job and answers with job_id. Read back as that job: get-contact-job must find it with job_type delete. Limitations: the read-back shows the deletion was queued; get-contact answers 404 once it has run. A deleted contact cannot be restored.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/contacts?ids={{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The contact's id (search-contacts or get-contacts-by-email)."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/marketing/contacts/imports/{{response.job_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.job_id}}"
+          },
+          {
+            "path": "job_type",
+            "equals": "delete"
+          }
+        ]
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "list-lists",
+      "kind": "read",
+      "description": "List Marketing contact lists: id, name and contact_count, 50 a page. For the next page, pass the page_token from the _metadata.next URL; with no next, it was the last page.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/lists?page_size=50&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,512}$",
+            "description": "The page_token value from the previous page's _metadata.next URL."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "get-list",
+      "kind": "read",
+      "description": "Get one Marketing contact list by id: its name and contact_count.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/lists/{{input.list_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The list's id (list-lists)."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "create-list",
+      "description": "Create one Marketing contact list with a name. Read back by the new list's id; the name must match. No idempotency: a retry after an unknown outcome can create a second list with the same name.",
+      "method": "POST",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/lists",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "The list's name, up to 100 characters."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/marketing/lists/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "rename-list",
+      "description": "Rename one Marketing contact list. Its contacts are unchanged. Read back by list id; the name must match.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/lists/{{input.list_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The list's id (list-lists)."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "The new name, up to 100 characters."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/marketing/lists/{{input.list_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.list_id}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "delete-list",
+      "description": "Delete one Marketing contact list. The contacts on it are kept. Read back: getting the list must answer 404. A deleted list cannot be restored.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/lists/{{input.list_id}}?delete_contacts=false",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The list's id (list-lists)."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/marketing/lists/{{input.list_id}}",
+        "status": 404,
+        "match": []
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "remove-contact-from-list",
+      "description": "Take one contact off one Marketing list. The contact itself is kept. No read-back: SendGrid removes it in a background job whose status it does not report; get-contact shows the contact's list_ids once the job has run.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.sendgrid.com/v3/marketing/lists/{{input.list_id}}/contacts?contact_ids={{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The list's id (list-lists)."
+          },
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+            "description": "The contact's id (search-contacts or get-contacts-by-email)."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "list-templates",
+      "kind": "read",
+      "description": "List dynamic transactional templates (ids start with d-), 20 a page: id, name, updated_at and each version's id, name, subject and whether it is active. For the next page, pass the page_token from _metadata.next. Legacy templates are not listed.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/templates?generations=dynamic&page_size=20&page_token={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_.=+/-]{1,512}$",
+            "description": "The page_token value from the previous page's _metadata.next URL."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "get-template",
+      "kind": "read",
+      "description": "Get one transactional template by id, with every version: subject, HTML and plain content, and which version is active. A template with large or many versions can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/templates/{{input.template_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "template_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "template_id": {
+            "type": "string",
+            "pattern": "^(d-[0-9a-f]{32}|[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12})$",
+            "description": "The template's id (list-templates)."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "list-unsubscribe-groups",
+      "kind": "read",
+      "description": "List the account's unsubscribe groups (suppression groups): id, name, description, whether it is the default and how many addresses left it. SendGrid returns every group in one response.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/asm/groups",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "get-email-unsubscribe-groups",
+      "kind": "read",
+      "description": "Get every unsubscribe group for one address, each with suppressed true when the address has left that group.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/asm/suppressions/{{input.email}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\sA-Z/?#]{1,64}@[^@\\sA-Z/?#]{1,190}$",
+            "description": "The address to check. Lower case: SendGrid stores addresses that way."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "add-to-unsubscribe-group",
+      "description": "Unsubscribe one address from one unsubscribe group (list-unsubscribe-groups), so mail sent with that group no longer reaches it. Read back from the group's suppressed addresses; the address must be among them. Limitations: the read-back lists every address in the group, so a group with many can pass the response limit and the receipt is then not confirmed. SendGrid adds the address to the global unsubscribe list instead when the group does not exist.",
+      "method": "POST",
+      "urlTemplate": "https://api.sendgrid.com/v3/asm/groups/{{input.group_id}}/suppressions",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "recipient_emails": [
+          "{{input.email}}"
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "group_id",
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}$",
+            "description": "The group's id (list-unsubscribe-groups)."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\sA-Z/?#]{1,64}@[^@\\sA-Z/?#]{1,190}$",
+            "description": "The address to unsubscribe. Lower case: SendGrid stores addresses that way."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/asm/groups/{{input.group_id}}/suppressions",
+        "status": 200,
+        "match": [
+          {
+            "path": "*",
+            "equals": "{{input.email}}"
+          }
+        ]
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "remove-from-unsubscribe-group",
+      "description": "Subscribe one address to one unsubscribe group again, so mail sent with that group reaches it. Do this when the person asked for it, never on your own. Read back from the group's suppressed addresses; the address must no longer be among them. Limitation: a group with many addresses can pass the response limit, and the receipt is then not confirmed.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.sendgrid.com/v3/asm/groups/{{input.group_id}}/suppressions/{{input.email}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "group_id",
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "group_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}$",
+            "description": "The group's id (list-unsubscribe-groups)."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\sA-Z/?#]{1,64}@[^@\\sA-Z/?#]{1,190}$",
+            "description": "The address to subscribe again. Lower case: SendGrid stores addresses that way."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/asm/groups/{{input.group_id}}/suppressions",
+        "status": 200,
+        "match": [
+          {
+            "path": "*",
+            "equals": "{{input.email}}",
+            "absent": true
+          }
+        ]
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "get-global-unsubscribe",
+      "kind": "read",
+      "description": "Check whether one address is on the global unsubscribe list, which stops all mail to it. Returns recipient_email when it is, and an empty object when it is not.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/asm/suppressions/global/{{input.email}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\sA-Z/?#]{1,64}@[^@\\sA-Z/?#]{1,190}$",
+            "description": "The address to check. Lower case: SendGrid stores addresses that way."
+          }
+        }
+      }
+    },
+    {
+      "requiresApproval": false,
+      "name": "add-global-unsubscribe",
+      "description": "Put one address on the global unsubscribe list, so SendGrid sends it no mail at all. Read back by address; recipient_email must match.",
+      "method": "POST",
+      "urlTemplate": "https://api.sendgrid.com/v3/asm/suppressions/global",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "recipient_emails": [
+          "{{input.email}}"
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\sA-Z/?#]{1,64}@[^@\\sA-Z/?#]{1,190}$",
+            "description": "The address to unsubscribe from everything. Lower case: SendGrid stores addresses that way."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/asm/suppressions/global/{{input.email}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "recipient_email",
+            "equals": "{{input.email}}"
+          }
+        ]
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "remove-global-unsubscribe",
+      "description": "Take one address off the global unsubscribe list, so SendGrid sends it mail again. Do this when the person asked for it, never on your own. Read back by address; recipient_email must be gone (SendGrid answers an empty object).",
+      "method": "DELETE",
+      "urlTemplate": "https://api.sendgrid.com/v3/asm/suppressions/global/{{input.email}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\sA-Z/?#]{1,64}@[^@\\sA-Z/?#]{1,190}$",
+            "description": "The address to take off the list. Lower case: SendGrid stores addresses that way."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.sendgrid.com/v3/asm/suppressions/global/{{input.email}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "recipient_email",
+            "equals": "{{input.email}}",
+            "absent": true
+          }
+        ]
+      },
+      "kind": "write"
+    },
+    {
+      "requiresApproval": false,
+      "name": "get-bounce",
+      "kind": "read",
+      "description": "Get the bounce records for one address: when it bounced, the reason and the SMTP status. An empty list means SendGrid has no bounce for it. A bounced address gets no further mail until the bounce is removed in SendGrid.",
+      "method": "GET",
+      "urlTemplate": "https://api.sendgrid.com/v3/suppression/bounces/{{input.email}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:sendgrid}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\sA-Z/?#]{1,64}@[^@\\sA-Z/?#]{1,190}$",
+            "description": "The address to check. Lower case: SendGrid stores addresses that way."
+          }
+        }
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "sendgrid: approve an email to more than 5 recipients",
+      "matchKind": "action",
+      "matchActionName": "send-email",
+      "condition": "size(input.to) > 5",
+      "effect": "require_approval"
+    },
+    {
+      "name": "sendgrid: approve a template email to more than 5 recipients",
+      "matchKind": "action",
+      "matchActionName": "send-template-email",
+      "condition": "size(input.to) > 5",
+      "effect": "require_approval"
+    },
+    {
+      "name": "sendgrid: approve deleting a contact",
+      "matchKind": "action",
+      "matchActionName": "delete-contact",
+      "effect": "require_approval"
+    },
+    {
+      "name": "sendgrid: approve deleting a list",
+      "matchKind": "action",
+      "matchActionName": "delete-list",
+      "effect": "require_approval"
+    },
+    {
+      "name": "sendgrid: approve subscribing an address to a group again",
+      "matchKind": "action",
+      "matchActionName": "remove-from-unsubscribe-group",
+      "effect": "require_approval"
+    },
+    {
+      "name": "sendgrid: approve taking an address off the global unsubscribe list",
+      "matchKind": "action",
+      "matchActionName": "remove-global-unsubscribe",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "sendgrid: emails sent per day",
+      "dimension": "emails",
+      "period": "day",
+      "amount": 100,
+      "actionName": "send-email"
+    },
+    {
+      "name": "sendgrid: template emails sent per day",
+      "dimension": "emails",
+      "period": "day",
+      "amount": 100,
+      "actionName": "send-template-email"
+    },
+    {
+      "name": "sendgrid: contacts added or updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "upsert-contacts"
+    },
+    {
+      "name": "sendgrid: contacts deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-contact"
+    },
+    {
+      "name": "sendgrid: lists created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "create-list"
+    },
+    {
+      "name": "sendgrid: lists renamed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "rename-list"
+    },
+    {
+      "name": "sendgrid: lists deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 5,
+      "actionName": "delete-list"
+    },
+    {
+      "name": "sendgrid: contacts taken off lists per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "remove-contact-from-list"
+    },
+    {
+      "name": "sendgrid: group unsubscribes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "add-to-unsubscribe-group"
+    },
+    {
+      "name": "sendgrid: group resubscribes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "remove-from-unsubscribe-group"
+    },
+    {
+      "name": "sendgrid: global unsubscribes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "add-global-unsubscribe"
+    },
+    {
+      "name": "sendgrid: global resubscribes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "remove-global-unsubscribe"
+    }
+  ]
+}

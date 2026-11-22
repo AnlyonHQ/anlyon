@@ -1,0 +1,19 @@
+# Cal.com API v2 (https://cal.com/docs/api-reference/v2/openapi.json, fetched 2026-10-24)
+# action                 operation                                              kind
+get-me                   MeController_getMe
+list-event-types         EventTypesController_2026_06_12_getEventTypes
+get-event-type           EventTypesController_2026_06_12_getEventTypeById
+find-available-slots     SlotsController_2024_09_04_getAvailableSlots
+list-schedules           SchedulesController_2024_06_11_getSchedules
+get-schedule             SchedulesController_2024_06_11_getSchedule
+list-bookings            BookingsController_2026_05_01_getBookings
+get-booking              BookingsController_2026_02_25_getBooking
+list-booking-attendees   BookingAttendeesController_2024_08_13_getBookingAttendees
+create-booking           BookingsController_2026_02_25_createBooking
+reschedule-booking       BookingsController_2026_02_25_rescheduleBooking
+cancel-booking           BookingsController_2026_02_25_cancelBooking
+confirm-booking          BookingsController_2026_02_25_confirmBooking
+decline-booking          BookingsController_2026_02_25_declineBooking
+mark-attendee-absent     BookingsController_2026_02_25_markNoShow
+mark-host-absent         BookingsController_2026_02_25_markNoShow
+add-guest                BookingGuestsController_2024_08_13_addGuests

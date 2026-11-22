@@ -1,0 +1,35 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/create-company).",
+  "params": {},
+  "input": {
+    "name": "Acme Inc",
+    "domain": "acme.example"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/companies",
+  "response": {
+    "id": "9001",
+    "properties": {
+      "name": "Acme Inc",
+      "domain": "acme.example"
+    }
+  },
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/companies/9001?properties=name",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "9001",
+      "properties": {
+        "name": "Acme Inc"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "9001",
+      "properties": {
+        "name": "Other"
+      }
+    }
+  }
+}

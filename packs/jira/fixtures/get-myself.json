@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-myself/#api-rest-api-3-myself-get).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {},
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/myself",
+  "response": {
+    "self": "https://acme.atlassian.net/rest/api/3/user?accountId=5b10a2844c20165700ede21g",
+    "accountId": "5b10a2844c20165700ede21g",
+    "emailAddress": "mia@acme.example",
+    "avatarUrls": {
+      "48x48": "https://avatar-management.example/mia-48.png"
+    },
+    "displayName": "Mia Krystof",
+    "active": true,
+    "timeZone": "Europe/Berlin",
+    "accountType": "atlassian",
+    "locale": "en_US",
+    "groups": {
+      "size": 2,
+      "items": []
+    },
+    "applicationRoles": {
+      "size": 1,
+      "items": []
+    },
+    "expand": "groups,applicationRoles"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "needs": {
+    "list": "The api_slug of a list whose records are people (Attio: open the list, its slug is in the list settings; list-lists shows it too)"
+  },
+  "steps": [
+    { "action": "list-lists", "input": {} },
+    { "action": "list-attributes", "input": { "target": "objects", "identifier": "people" } },
+    { "action": "create-company", "input": { "name": "Anlyon exercise {{run}}", "domain": "anlyon-exercise-{{run}}.com" }, "save": { "company_id": "data.id.record_id" } },
+    { "action": "create-person", "input": { "email": "anlyon-exercise-{{run}}@example.com", "first_name": "Anlyon", "last_name": "Exercise {{run}}" }, "save": { "person_id": "data.id.record_id" } },
+    { "action": "query-people", "input": { "filter": { "email_addresses": "anlyon-exercise-{{run}}@example.com" } } },
+    { "action": "query-companies", "input": { "filter": { "domains": "anlyon-exercise-{{run}}.com" } } },
+    { "action": "get-record", "input": { "object": "people", "record_id": "{{saved.person_id}}" } },
+    { "action": "update-person-job-title", "input": { "record_id": "{{saved.person_id}}", "job_title": "Exercise lead {{run}}" } },
+    { "action": "set-person-company", "input": { "record_id": "{{saved.person_id}}", "company_record_id": "{{saved.company_id}}" } },
+    { "action": "update-company-description", "input": { "record_id": "{{saved.company_id}}", "description": "Created by the Anlyon pack exercise {{run}}; deleted at the end of the run." } },
+    { "action": "get-record", "input": { "object": "companies", "record_id": "{{saved.company_id}}" } },
+    { "action": "add-note", "input": { "record_id": "{{saved.person_id}}", "title": "Anlyon exercise {{run}}", "content": "A note the exercise adds and then deletes." }, "save": { "note_id": "data.id.note_id" } },
+    { "action": "list-notes", "input": { "parent_object": "people", "parent_record_id": "{{saved.person_id}}" } },
+    { "action": "get-note", "input": { "note_id": "{{saved.note_id}}" } },
+    { "action": "delete-note", "input": { "note_id": "{{saved.note_id}}" } },
+    { "action": "add-to-list", "input": { "list": "{{needs.list}}", "object": "people", "record_id": "{{saved.person_id}}" }, "save": { "entry_id": "data.id.entry_id" } },
+    { "action": "list-entries", "input": { "list": "{{needs.list}}" } },
+    { "action": "update-entry", "input": { "list": "{{needs.list}}", "entry_id": "{{saved.entry_id}}", "entry_values": {} } },
+    { "action": "get-entry", "input": { "list": "{{needs.list}}", "entry_id": "{{saved.entry_id}}" } },
+    { "action": "remove-entry", "input": { "list": "{{needs.list}}", "entry_id": "{{saved.entry_id}}" } },
+    { "action": "create-task", "input": { "content": "Anlyon exercise {{run}}", "deadline_at": "2030-01-15T17:00:00Z", "linked_object": "people", "linked_record_id": "{{saved.person_id}}" }, "save": { "task_id": "data.id.task_id" } },
+    { "action": "list-tasks", "input": { "linked_object": "people", "linked_record_id": "{{saved.person_id}}", "is_completed": false } },
+    { "action": "get-task", "input": { "task_id": "{{saved.task_id}}" } },
+    { "action": "update-task-deadline", "input": { "task_id": "{{saved.task_id}}", "deadline_at": "2030-01-22T17:00:00Z" } },
+    { "action": "complete-task", "input": { "task_id": "{{saved.task_id}}" } },
+    { "action": "delete-task", "input": { "task_id": "{{saved.task_id}}" } },
+    { "action": "delete-record", "input": { "object": "people", "record_id": "{{saved.person_id}}" } },
+    { "action": "delete-record", "input": { "object": "companies", "record_id": "{{saved.company_id}}" } }
+  ]
+}

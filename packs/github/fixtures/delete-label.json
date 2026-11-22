@@ -1,0 +1,29 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/labels#delete-a-label).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "name": "needs triage"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/labels/needs%20triage",
+  "response": null,
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/labels/needs%20triage",
+  "readBack": {
+    "status": 404,
+    "json": {
+      "message": "Not Found",
+      "status": "404"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 208045951,
+      "name": "needs triage",
+      "color": "fbca04",
+      "default": false,
+      "description": "Not yet looked at"
+    }
+  }
+}

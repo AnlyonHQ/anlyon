@@ -1,0 +1,30 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "channel_id": "1100000000000000001",
+    "message_id": "1290000000000000042",
+    "content": "Deploy finished at 14:02."
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1100000000000000001/messages/1290000000000000042",
+  "response": {
+    "id": "1290000000000000042",
+    "content": "Deploy finished at 14:02."
+  },
+  "expectedReadBackUrl": "https://discord.com/api/v10/channels/1100000000000000001/messages/1290000000000000042",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000042",
+      "content": "Deploy finished at 14:02.",
+      "edited_timestamp": "2026-10-13T14:02:11.000000+00:00"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000042",
+      "content": "Deploy finished."
+    }
+  }
+}

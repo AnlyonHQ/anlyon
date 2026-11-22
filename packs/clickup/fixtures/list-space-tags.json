@@ -1,0 +1,22 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/getspacetags).",
+  "params": {},
+  "input": {
+    "space_id": "90120012345"
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/space/90120012345/tag",
+  "response": {
+    "tags": [
+      {
+        "name": "urgent",
+        "tag_fg": "#ffffff",
+        "tag_bg": "#e50000"
+      },
+      {
+        "name": "billing",
+        "tag_fg": "#ffffff",
+        "tag_bg": "#7b68ee"
+      }
+    ]
+  }
+}

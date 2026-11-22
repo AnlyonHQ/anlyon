@@ -1,0 +1,1758 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/hubspot",
+  "version": "0.3.0",
+  "description": "The HubSpot CRM toolset for an agent: search and read contacts, companies, deals, notes, associations and deal pipelines; create and update records, move stages, add and delete notes, associate records and archive them, each write read back from HubSpot where HubSpot can show it.",
+  "secrets": [
+    {
+      "name": "HUBSPOT",
+      "kind": "connection",
+      "integrationId": "hubspot",
+      "hosts": [
+        "api.hubapi.com"
+      ],
+      "description": "The connected HubSpot account"
+    }
+  ],
+  "actions": [
+    {
+      "name": "search-contacts",
+      "kind": "read",
+      "description": "Search HubSpot contacts for words in their name, email, phone or company, or list every contact when query is left out, most recently modified first. Returns 20 contacts a page with their main properties (email, name, phone, company, job title, lifecycle stage, lead status, owner) and paging.next.after; pass it as after for the next page. Changes nothing. Limitation: HubSpot returns at most 10,000 results for one search, and a contact created or changed a moment ago can take a few seconds to appear.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/contacts/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "{{input.query}}",
+        "sorts": [
+          {
+            "propertyName": "lastmodifieddate",
+            "direction": "DESCENDING"
+          }
+        ],
+        "properties": [
+          "email",
+          "firstname",
+          "lastname",
+          "phone",
+          "mobilephone",
+          "company",
+          "jobtitle",
+          "lifecyclestage",
+          "hs_lead_status",
+          "hubspot_owner_id",
+          "city",
+          "country",
+          "createdate",
+          "lastmodifieddate"
+        ],
+        "limit": 20,
+        "after": "{{input.after}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Words to look for in name, email, phone or company; leave out to list all"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9]{1,5}$",
+            "description": "paging.next.after from the previous page; leave out for the first page"
+          }
+        }
+      }
+    },
+    {
+      "name": "get-contact",
+      "kind": "read",
+      "description": "Get one HubSpot contact by id: its main properties (email, name, phone, company, job title, lifecycle stage, lead status, owner, dates) and the ids of the companies and deals it is associated with.",
+      "method": "GET",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.contactId}}?properties=email,firstname,lastname,phone,mobilephone,company,jobtitle,lifecyclestage,hs_lead_status,hubspot_owner_id,city,country,createdate,lastmodifieddate&associations=companies,deals",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contactId"
+        ],
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot contact id (hs_object_id)"
+          }
+        }
+      }
+    },
+    {
+      "name": "get-contact-by-email",
+      "kind": "read",
+      "description": "Get one HubSpot contact by its email address: the same properties and associated company and deal ids as get-contact. HubSpot answers 404 when no contact has that email, which makes this the check to run before create-contact.",
+      "method": "GET",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.email}}?idProperty=email&properties=email,firstname,lastname,phone,mobilephone,company,jobtitle,lifecyclestage,hs_lead_status,hubspot_owner_id,city,country,createdate,lastmodifieddate&associations=companies,deals",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "email"
+        ],
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "The contact's email address"
+          }
+        }
+      }
+    },
+    {
+      "name": "search-companies",
+      "kind": "read",
+      "description": "Search HubSpot companies for words in their name, domain, website or phone, or list every company when query is left out, most recently modified first. Returns 20 companies a page with their main properties (name, domain, industry, location, size, revenue, owner) and paging.next.after; pass it as after for the next page. Changes nothing. Limitation: HubSpot returns at most 10,000 results for one search, and a company created or changed a moment ago can take a few seconds to appear.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/companies/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "{{input.query}}",
+        "sorts": [
+          {
+            "propertyName": "hs_lastmodifieddate",
+            "direction": "DESCENDING"
+          }
+        ],
+        "properties": [
+          "name",
+          "domain",
+          "website",
+          "phone",
+          "industry",
+          "city",
+          "state",
+          "country",
+          "numberofemployees",
+          "annualrevenue",
+          "lifecyclestage",
+          "hubspot_owner_id",
+          "createdate",
+          "hs_lastmodifieddate"
+        ],
+        "limit": 20,
+        "after": "{{input.after}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Words to look for in name, domain, website or phone; leave out to list all"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9]{1,5}$",
+            "description": "paging.next.after from the previous page; leave out for the first page"
+          }
+        }
+      }
+    },
+    {
+      "name": "get-company",
+      "kind": "read",
+      "description": "Get one HubSpot company by id with its main properties (name, domain, website, phone, industry, location, employees, annual revenue, lifecycle stage, owner, dates). Use list-associations for its contacts and deals, which can be many.",
+      "method": "GET",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/companies/{{input.companyId}}?properties=name,domain,website,phone,industry,city,state,country,numberofemployees,annualrevenue,lifecyclestage,hubspot_owner_id,createdate,hs_lastmodifieddate",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "companyId"
+        ],
+        "properties": {
+          "companyId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot company id (hs_object_id)"
+          }
+        }
+      }
+    },
+    {
+      "name": "search-deals",
+      "kind": "read",
+      "description": "Search HubSpot deals for words in their name, description or type, or for a pipeline or stage id (query contractsent finds deals at that stage), or list every deal when query is left out, most recently modified first. Returns 20 deals a page with their main properties (name, amount, stage, pipeline, close date, type, priority, owner) and paging.next.after; pass it as after for the next page. Changes nothing. Limitation: HubSpot returns at most 10,000 results for one search, and a deal created or changed a moment ago can take a few seconds to appear.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/deals/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "{{input.query}}",
+        "sorts": [
+          {
+            "propertyName": "hs_lastmodifieddate",
+            "direction": "DESCENDING"
+          }
+        ],
+        "properties": [
+          "dealname",
+          "amount",
+          "dealstage",
+          "pipeline",
+          "closedate",
+          "dealtype",
+          "hs_priority",
+          "description",
+          "hubspot_owner_id",
+          "createdate",
+          "hs_lastmodifieddate"
+        ],
+        "limit": 20,
+        "after": "{{input.after}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Words to look for in the deal name, description, deal type, pipeline id or stage id; leave out to list all"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9]{1,5}$",
+            "description": "paging.next.after from the previous page; leave out for the first page"
+          }
+        }
+      }
+    },
+    {
+      "name": "get-deal",
+      "kind": "read",
+      "description": "Get one HubSpot deal by id: its main properties (name, amount, stage, pipeline, close date, type, priority, description, owner, dates) and the ids of the contacts and companies it is associated with.",
+      "method": "GET",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/deals/{{input.dealId}}?properties=dealname,amount,dealstage,pipeline,closedate,dealtype,hs_priority,description,hubspot_owner_id,createdate,hs_lastmodifieddate&associations=contacts,companies",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dealId"
+        ],
+        "properties": {
+          "dealId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot deal id (hs_object_id)"
+          }
+        }
+      }
+    },
+    {
+      "name": "list-deal-pipelines",
+      "kind": "read",
+      "description": "List the account's deal pipelines with their stages: each stage's id, label, order, win probability and whether it closes the deal. HubSpot returns every pipeline in one response and does not page it. Stage ids from a custom pipeline are what search-deals and get-deal show in dealstage.",
+      "method": "GET",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/pipelines/deals",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      }
+    },
+    {
+      "name": "get-property",
+      "kind": "read",
+      "description": "Get the definition of one contact, company or deal property: its label, type and, for a dropdown, every option's value and label, such as the account's lifecycle stages (lifecyclestage), lead statuses (hs_lead_status), industries (industry) or deal types (dealtype). Use it to find the values a field takes in this account.",
+      "method": "GET",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/properties/{{input.objectType}}/{{input.propertyName}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectType",
+          "propertyName"
+        ],
+        "properties": {
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "contacts",
+              "companies",
+              "deals"
+            ],
+            "description": "The type of record the property belongs to"
+          },
+          "propertyName": {
+            "type": "string",
+            "pattern": "^[a-z0-9_]{1,100}$",
+            "description": "The property's internal name, e.g. hs_lead_status"
+          }
+        }
+      }
+    },
+    {
+      "name": "list-associations",
+      "kind": "read",
+      "description": "List the records of one type associated with a HubSpot contact, company or deal: each associated record's id (toObjectId) and its association labels. Returns 100 a page and paging.next.after; pass it as after for the next page. Use get-contact, get-company or get-deal on an id for its details.",
+      "method": "GET",
+      "urlTemplate": "https://api.hubapi.com/crm/v4/objects/{{input.objectType}}/{{input.objectId}}/associations/{{input.toObjectType}}?limit=100&after={{input.after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectType",
+          "objectId",
+          "toObjectType"
+        ],
+        "properties": {
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "contacts",
+              "companies",
+              "deals"
+            ],
+            "description": "The type of the record whose associations to list"
+          },
+          "objectId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot record id (hs_object_id)"
+          },
+          "toObjectType": {
+            "type": "string",
+            "enum": [
+              "contacts",
+              "companies",
+              "deals"
+            ],
+            "description": "The type of associated records to list"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=%+/.-]{1,512}$",
+            "description": "paging.next.after from the previous page, as returned; leave out for the first page"
+          }
+        }
+      }
+    },
+    {
+      "name": "list-notes",
+      "kind": "read",
+      "description": "List the notes on one HubSpot contact, company or deal, newest first: each note's id, body (HTML), timestamp and owner. Returns 10 notes a page and paging.next.after; pass it as after for the next page. Changes nothing. Limitation: a note added a moment ago can take a few seconds to appear, and a very long note body can fill the 64 KB a response may carry.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/notes/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "filterGroups": [
+          {
+            "filters": [
+              {
+                "propertyName": "associations.{{input.objectType}}",
+                "operator": "EQ",
+                "value": "{{input.objectId}}"
+              }
+            ]
+          }
+        ],
+        "sorts": [
+          {
+            "propertyName": "hs_timestamp",
+            "direction": "DESCENDING"
+          }
+        ],
+        "properties": [
+          "hs_note_body",
+          "hs_timestamp",
+          "hubspot_owner_id",
+          "hs_lastmodifieddate"
+        ],
+        "limit": 10,
+        "after": "{{input.after}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectType",
+          "objectId"
+        ],
+        "properties": {
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "contact",
+              "company",
+              "deal"
+            ],
+            "description": "The type of record the notes are on"
+          },
+          "objectId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot record id (hs_object_id)"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9]{1,5}$",
+            "description": "paging.next.after from the previous page; leave out for the first page"
+          }
+        }
+      }
+    },
+    {
+      "name": "create-contact",
+      "kind": "write",
+      "description": "Create one HubSpot contact with an email and a name. Read back by id; the email must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second one. HubSpot refuses a second contact with the same email (409).",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/contacts",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "email": "{{input.email}}",
+          "firstname": "{{input.firstname}}",
+          "lastname": "{{input.lastname}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email",
+          "firstname",
+          "lastname"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+          },
+          "firstname": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,100}$"
+          },
+          "lastname": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,100}$"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/{{response.id}}?properties=email",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.email",
+            "equals": "{{input.email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-contact-stage",
+      "kind": "write",
+      "description": "Set the lifecycle stage of one HubSpot contact. Read back from the contact; the stage must match. Limitation: the read-back can match a contact that already had this stage. Limitation: HubSpot only moves a lifecycle stage forward; setting an earlier stage fails until the stage is cleared in HubSpot.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.contactId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "lifecyclestage": "{{input.lifecyclestage}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contactId",
+          "lifecyclestage"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "lifecyclestage": {
+            "type": "string",
+            "enum": [
+              "lead",
+              "marketingqualifiedlead",
+              "salesqualifiedlead",
+              "opportunity",
+              "customer"
+            ]
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.contactId}}?properties=lifecyclestage",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.lifecyclestage",
+            "equals": "{{input.lifecyclestage}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-lead-status",
+      "kind": "write",
+      "description": "Set the lead status of one HubSpot contact. Read back from the contact; the status must match. Limitation: the read-back can match a contact that already had this status.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.contactId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "hs_lead_status": "{{input.leadStatus}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contactId",
+          "leadStatus"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "leadStatus": {
+            "type": "string",
+            "enum": [
+              "NEW",
+              "OPEN",
+              "IN_PROGRESS",
+              "OPEN_DEAL",
+              "UNQUALIFIED",
+              "ATTEMPTED_TO_CONTACT",
+              "CONNECTED",
+              "BAD_TIMING"
+            ]
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.contactId}}?properties=hs_lead_status",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.hs_lead_status",
+            "equals": "{{input.leadStatus}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-note",
+      "kind": "write",
+      "description": "Add a note to one HubSpot contact. Read back by note id; the body must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second note.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "hs_note_body": "{{input.body}}",
+          "hs_timestamp": "{{input.timestamp}}"
+        },
+        "associations": [
+          {
+            "to": {
+              "id": "{{input.contactId}}"
+            },
+            "types": [
+              {
+                "associationCategory": "HUBSPOT_DEFINED",
+                "associationTypeId": 202
+              }
+            ]
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contactId",
+          "body",
+          "timestamp"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,5000}$"
+          },
+          "timestamp": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/notes/{{response.id}}?properties=hs_note_body",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.hs_note_body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-company",
+      "kind": "write",
+      "description": "Create one HubSpot company with a name and domain. Read back by id; the name must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second one.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/companies",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "name": "{{input.name}}",
+          "domain": "{{input.domain}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "name",
+          "domain"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,200}$"
+          },
+          "domain": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/{{response.id}}?properties=name",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-deal",
+      "kind": "write",
+      "description": "Create one HubSpot deal in the default pipeline. The amount is a decimal string in the portal currency. Read back by id; the deal name must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second one. Limitation: the amount is recorded on the deal; no money moves, so it is counted as one mutation, not as money.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/deals",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "dealname": "{{input.dealname}}",
+          "amount": "{{input.amount}}",
+          "pipeline": "default",
+          "dealstage": "{{input.dealstage}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "dealname",
+          "amount",
+          "dealstage"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "dealname": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,200}$"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[0-9]{1,12}(\\.[0-9]{1,2})?$"
+          },
+          "dealstage": {
+            "type": "string",
+            "enum": [
+              "appointmentscheduled",
+              "qualifiedtobuy",
+              "presentationscheduled",
+              "decisionmakerboughtin",
+              "contractsent",
+              "closedwon",
+              "closedlost"
+            ]
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/{{response.id}}?properties=dealname",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.dealname",
+            "equals": "{{input.dealname}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-deal-stage",
+      "kind": "write",
+      "description": "Move one HubSpot deal to a stage of the default pipeline. Read back from the deal; the stage must match. Limitation: the read-back can match a deal already at this stage, and stage ids differ in a portal with custom pipelines.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/deals/{{input.dealId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "dealstage": "{{input.dealstage}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "dealId",
+          "dealstage"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "dealId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "dealstage": {
+            "type": "string",
+            "enum": [
+              "appointmentscheduled",
+              "qualifiedtobuy",
+              "presentationscheduled",
+              "decisionmakerboughtin",
+              "contractsent",
+              "closedwon",
+              "closedlost"
+            ]
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/{{input.dealId}}?properties=dealstage",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.dealstage",
+            "equals": "{{input.dealstage}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-contact",
+      "kind": "write",
+      "description": "Change common properties of one HubSpot contact: name, email, phone, company name, job title, website, address or owner. A property left out keeps its value. It cannot change the lifecycle stage or lead status; update-contact-stage and set-lead-status do, under their own policies. No read-back: every property here is optional, and a read-back can only compare values that each call sets; get-contact shows the result. Limitation: a value cannot be empty, so this cannot clear a property.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.contactId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "email": "{{input.email}}",
+          "firstname": "{{input.firstname}}",
+          "lastname": "{{input.lastname}}",
+          "phone": "{{input.phone}}",
+          "mobilephone": "{{input.mobilephone}}",
+          "company": "{{input.company}}",
+          "jobtitle": "{{input.jobtitle}}",
+          "website": "{{input.website}}",
+          "address": "{{input.address}}",
+          "city": "{{input.city}}",
+          "state": "{{input.state}}",
+          "zip": "{{input.zip}}",
+          "country": "{{input.country}}",
+          "hubspot_owner_id": "{{input.hubspot_owner_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contactId"
+        ],
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot contact id (hs_object_id)"
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$",
+            "description": "New email address"
+          },
+          "firstname": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "First name"
+          },
+          "lastname": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "Last name"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,40}$",
+            "description": "Phone number"
+          },
+          "mobilephone": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,40}$",
+            "description": "Mobile phone number"
+          },
+          "company": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Company name as text (associate-records links a company record)"
+          },
+          "jobtitle": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Job title"
+          },
+          "website": {
+            "type": "string",
+            "pattern": "^https?://[^\\s]{1,300}$",
+            "description": "Full URL, e.g. https://acme.com"
+          },
+          "address": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Street address"
+          },
+          "city": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "City"
+          },
+          "state": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "State or region"
+          },
+          "zip": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,20}$",
+            "description": "Postal code"
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "Country"
+          },
+          "hubspot_owner_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot owner id (hubspot_owner_id, as get-contact, get-company or get-deal show it)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "update-company",
+      "kind": "write",
+      "description": "Change common properties of one HubSpot company: name, domain, website, phone, address, employees, annual revenue, description or owner. A property left out keeps its value. No read-back: every property here is optional, and a read-back can only compare values that each call sets; get-company shows the result. Limitation: a value cannot be empty, so this cannot clear a property.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/companies/{{input.companyId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "name": "{{input.name}}",
+          "domain": "{{input.domain}}",
+          "website": "{{input.website}}",
+          "phone": "{{input.phone}}",
+          "address": "{{input.address}}",
+          "city": "{{input.city}}",
+          "state": "{{input.state}}",
+          "zip": "{{input.zip}}",
+          "country": "{{input.country}}",
+          "numberofemployees": "{{input.numberofemployees}}",
+          "annualrevenue": "{{input.annualrevenue}}",
+          "description": "{{input.description}}",
+          "hubspot_owner_id": "{{input.hubspot_owner_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "companyId"
+        ],
+        "properties": {
+          "companyId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot company id (hs_object_id)"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Company name"
+          },
+          "domain": {
+            "type": "string",
+            "pattern": "^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)+$",
+            "description": "Domain without scheme, e.g. acme.com"
+          },
+          "website": {
+            "type": "string",
+            "pattern": "^https?://[^\\s]{1,300}$",
+            "description": "Full URL, e.g. https://acme.com"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,40}$",
+            "description": "Phone number"
+          },
+          "address": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Street address"
+          },
+          "city": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "City"
+          },
+          "state": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "State or region"
+          },
+          "zip": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,20}$",
+            "description": "Postal code"
+          },
+          "country": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "Country"
+          },
+          "numberofemployees": {
+            "type": "string",
+            "pattern": "^[0-9]{1,9}$",
+            "description": "Number of employees"
+          },
+          "annualrevenue": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}(\\.[0-9]{1,2})?$",
+            "description": "Annual revenue in the account currency, e.g. 2500000"
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$",
+            "description": "Company description"
+          },
+          "hubspot_owner_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot owner id (hubspot_owner_id, as get-contact, get-company or get-deal show it)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "update-deal",
+      "kind": "write",
+      "description": "Change common properties of one HubSpot deal: name, amount, close date, type, priority, description or owner. A property left out keeps its value. It cannot move the deal to another stage or pipeline; update-deal-stage does, under its own policy. No read-back: every property here is optional, and a read-back can only compare values that each call sets; get-deal shows the result. Limitation: the amount is recorded on the deal; no money moves, so it is counted as one mutation, not as money.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/deals/{{input.dealId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "dealname": "{{input.dealname}}",
+          "amount": "{{input.amount}}",
+          "closedate": "{{input.closedate}}",
+          "dealtype": "{{input.dealtype}}",
+          "hs_priority": "{{input.hs_priority}}",
+          "description": "{{input.description}}",
+          "hubspot_owner_id": "{{input.hubspot_owner_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dealId"
+        ],
+        "properties": {
+          "dealId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot deal id (hs_object_id)"
+          },
+          "dealname": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Deal name"
+          },
+          "amount": {
+            "type": "string",
+            "pattern": "^[0-9]{1,15}(\\.[0-9]{1,2})?$",
+            "description": "Amount in the account currency, e.g. 12000.00"
+          },
+          "closedate": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+            "description": "Expected close date, UTC, e.g. 2026-12-31T00:00:00Z"
+          },
+          "dealtype": {
+            "type": "string",
+            "enum": [
+              "newbusiness",
+              "existingbusiness"
+            ],
+            "description": "Deal type"
+          },
+          "hs_priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "description": "Priority"
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,2000}$",
+            "description": "Deal description"
+          },
+          "hubspot_owner_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot owner id (hubspot_owner_id, as get-contact, get-company or get-deal show it)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "associate-records",
+      "kind": "write",
+      "description": "Associate two HubSpot records (a contact, company or deal with another) with HubSpot's default, unlabeled association, for example a contact with its company or a deal with its contact. Associating records that already are associated changes nothing. No read-back: HubSpot has no GET for one pair of records, and list-associations gives record ids as numbers where this action takes them as text, so a read-back cannot compare them; list-associations shows it.",
+      "method": "PUT",
+      "urlTemplate": "https://api.hubapi.com/crm/v4/objects/{{input.fromObjectType}}/{{input.fromObjectId}}/associations/default/{{input.toObjectType}}/{{input.toObjectId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "fromObjectType",
+          "fromObjectId",
+          "toObjectType",
+          "toObjectId"
+        ],
+        "properties": {
+          "fromObjectType": {
+            "type": "string",
+            "enum": [
+              "contacts",
+              "companies",
+              "deals"
+            ],
+            "description": "Type of the first record"
+          },
+          "fromObjectId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot record id (hs_object_id)"
+          },
+          "toObjectType": {
+            "type": "string",
+            "enum": [
+              "contacts",
+              "companies",
+              "deals"
+            ],
+            "description": "Type of the second record"
+          },
+          "toObjectId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot record id (hs_object_id)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "remove-association",
+      "kind": "write",
+      "description": "Remove every association between two HubSpot records (a contact, company or deal and another), labeled or not. Both records stay. No read-back: HubSpot has no GET for one pair of records, and list-associations gives record ids as numbers where this action takes them as text, so a read-back cannot compare them; list-associations shows the result.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.hubapi.com/crm/v4/objects/{{input.objectType}}/{{input.objectId}}/associations/{{input.toObjectType}}/{{input.toObjectId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "objectType",
+          "objectId",
+          "toObjectType",
+          "toObjectId"
+        ],
+        "properties": {
+          "objectType": {
+            "type": "string",
+            "enum": [
+              "contacts",
+              "companies",
+              "deals"
+            ],
+            "description": "Type of the first record"
+          },
+          "objectId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot record id (hs_object_id)"
+          },
+          "toObjectType": {
+            "type": "string",
+            "enum": [
+              "contacts",
+              "companies",
+              "deals"
+            ],
+            "description": "Type of the second record"
+          },
+          "toObjectId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot record id (hs_object_id)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "add-company-note",
+      "kind": "write",
+      "description": "Add a note to one HubSpot company. Read back by note id; the body must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second note.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "hs_note_body": "{{input.body}}",
+          "hs_timestamp": "{{input.timestamp}}"
+        },
+        "associations": [
+          {
+            "to": {
+              "id": "{{input.companyId}}"
+            },
+            "types": [
+              {
+                "associationCategory": "HUBSPOT_DEFINED",
+                "associationTypeId": 190
+              }
+            ]
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "companyId",
+          "body",
+          "timestamp"
+        ],
+        "properties": {
+          "companyId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot company id (hs_object_id)"
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,5000}$",
+            "description": "The note text"
+          },
+          "timestamp": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+            "description": "When the note is dated on the timeline, UTC, e.g. 2026-10-15T09:30:00Z"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/notes/{{response.id}}?properties=hs_note_body",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.hs_note_body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-deal-note",
+      "kind": "write",
+      "description": "Add a note to one HubSpot deal. Read back by note id; the body must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second note.",
+      "method": "POST",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "properties": {
+          "hs_note_body": "{{input.body}}",
+          "hs_timestamp": "{{input.timestamp}}"
+        },
+        "associations": [
+          {
+            "to": {
+              "id": "{{input.dealId}}"
+            },
+            "types": [
+              {
+                "associationCategory": "HUBSPOT_DEFINED",
+                "associationTypeId": 214
+              }
+            ]
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dealId",
+          "body",
+          "timestamp"
+        ],
+        "properties": {
+          "dealId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot deal id (hs_object_id)"
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,5000}$",
+            "description": "The note text"
+          },
+          "timestamp": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z$",
+            "description": "When the note is dated on the timeline, UTC, e.g. 2026-10-15T09:30:00Z"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/notes/{{response.id}}?properties=hs_note_body",
+        "status": 200,
+        "match": [
+          {
+            "path": "properties.hs_note_body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-note",
+      "kind": "write",
+      "description": "Delete one HubSpot note: it moves to HubSpot's recycling bin, where it can be restored within 90 days. Read back with archived=true; the note must show archived.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/notes/{{input.noteId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "noteId"
+        ],
+        "properties": {
+          "noteId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot note id (hs_object_id)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/notes/{{input.noteId}}?archived=true&properties=hs_object_id",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.noteId}}"
+          },
+          {
+            "path": "archived",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-contact",
+      "kind": "write",
+      "description": "Archive (delete) one HubSpot contact: it moves to HubSpot's recycling bin, where it can be restored within 90 days, and drops out of searches. Read back with archived=true; the contact must show archived. Limitation: archiving removes it from every list and report at once.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.contactId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "contactId"
+        ],
+        "properties": {
+          "contactId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot contact id (hs_object_id)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/contacts/{{input.contactId}}?archived=true&properties=hs_object_id",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.contactId}}"
+          },
+          {
+            "path": "archived",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-company",
+      "kind": "write",
+      "description": "Archive (delete) one HubSpot company: it moves to HubSpot's recycling bin, where it can be restored within 90 days, and drops out of searches. Read back with archived=true; the company must show archived. Limitation: archiving removes it from every list and report at once.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/companies/{{input.companyId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "companyId"
+        ],
+        "properties": {
+          "companyId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot company id (hs_object_id)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/{{input.companyId}}?archived=true&properties=hs_object_id",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.companyId}}"
+          },
+          {
+            "path": "archived",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-deal",
+      "kind": "write",
+      "description": "Archive (delete) one HubSpot deal: it moves to HubSpot's recycling bin, where it can be restored within 90 days, and drops out of searches. Read back with archived=true; the deal must show archived. Limitation: archiving removes it from every list and report at once.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.hubapi.com/crm/v3/objects/deals/{{input.dealId}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:hubspot}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dealId"
+        ],
+        "properties": {
+          "dealId": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The HubSpot deal id (hs_object_id)"
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.hubapi.com/crm/v3/objects/deals/{{input.dealId}}?archived=true&properties=hs_object_id",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.dealId}}"
+          },
+          {
+            "path": "archived",
+            "equals": true
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "hubspot: approve a stage change to customer",
+      "matchKind": "action",
+      "matchActionName": "update-contact-stage",
+      "condition": "input.lifecyclestage == 'customer'",
+      "effect": "require_approval"
+    },
+    {
+      "name": "hubspot: approve closing a deal",
+      "matchKind": "action",
+      "matchActionName": "update-deal-stage",
+      "condition": "input.dealstage == 'closedwon' || input.dealstage == 'closedlost'",
+      "effect": "require_approval"
+    },
+    {
+      "name": "hubspot: approve archiving a contact",
+      "matchKind": "action",
+      "matchActionName": "archive-contact",
+      "effect": "require_approval"
+    },
+    {
+      "name": "hubspot: approve archiving a company",
+      "matchKind": "action",
+      "matchActionName": "archive-company",
+      "effect": "require_approval"
+    },
+    {
+      "name": "hubspot: approve archiving a deal",
+      "matchKind": "action",
+      "matchActionName": "archive-deal",
+      "effect": "require_approval"
+    },
+    {
+      "name": "hubspot: approve deleting a note",
+      "matchKind": "action",
+      "matchActionName": "delete-note",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "hubspot: contacts created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-contact"
+    },
+    {
+      "name": "hubspot: contact updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-contact-stage"
+    },
+    {
+      "name": "hubspot: lead status changes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "set-lead-status"
+    },
+    {
+      "name": "hubspot: notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "add-note"
+    },
+    {
+      "name": "hubspot: companies created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-company"
+    },
+    {
+      "name": "hubspot: deals created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-deal"
+    },
+    {
+      "name": "hubspot: deal stage changes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-deal-stage"
+    },
+    {
+      "name": "hubspot: contact property updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-contact"
+    },
+    {
+      "name": "hubspot: company property updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-company"
+    },
+    {
+      "name": "hubspot: deal property updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-deal"
+    },
+    {
+      "name": "hubspot: associations created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "associate-records"
+    },
+    {
+      "name": "hubspot: associations removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "remove-association"
+    },
+    {
+      "name": "hubspot: company notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-company-note"
+    },
+    {
+      "name": "hubspot: deal notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-deal-note"
+    },
+    {
+      "name": "hubspot: notes deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "delete-note"
+    },
+    {
+      "name": "hubspot: contacts archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "archive-contact"
+    },
+    {
+      "name": "hubspot: companies archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "archive-company"
+    },
+    {
+      "name": "hubspot: deals archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "archive-deal"
+    }
+  ]
+}

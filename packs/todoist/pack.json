@@ -1,0 +1,986 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/todoist",
+  "version": "0.1.0",
+  "description": "Todoist tools an agent can be given: read projects, sections, labels, active and completed tasks and comments, filter tasks with a Todoist query; create, update, complete, reopen, move and delete tasks, comment, and create and delete sections, each write governed and read back where Todoist allows.",
+  "secrets": [
+    {
+      "name": "TODOIST",
+      "kind": "connection",
+      "integrationId": "todoist",
+      "hosts": [
+        "api.todoist.com"
+      ],
+      "description": "The connected Todoist credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-projects",
+      "kind": "read",
+      "description": "List the user's active projects, 50 per page, with each one's id, name, parent_id, is_shared, is_archived and inbox_project. Todoist returns next_cursor when there are more; pass it as cursor for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/projects?limit=50&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9A-Za-z_-]{1,512}\\.[0-9A-Za-z_-]{1,512}$",
+            "description": "The next_cursor from the previous page of this same call, with the same other inputs. Leave it out to start at the top."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-project",
+      "kind": "read",
+      "description": "Get one project by id: name, description, parent_id, color, view style, is_shared and is_archived.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/projects/{{input.project_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The project's id, from list-projects or a task's project_id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-sections",
+      "kind": "read",
+      "description": "List active sections, 50 per page, with id, project_id, name and section_order. Give project_id for one project's sections; leave it out for all of them. Todoist returns next_cursor when there are more; pass it as cursor.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/sections?project_id={{input.project_id}}&limit=50&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "Only the sections of this project, from list-projects."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9A-Za-z_-]{1,512}\\.[0-9A-Za-z_-]{1,512}$",
+            "description": "The next_cursor from the previous page of this same call, with the same other inputs. Leave it out to start at the top."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-section",
+      "kind": "read",
+      "description": "Get one section by id: name, description, project_id, section_order and is_archived.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/sections/{{input.section_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "section_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "section_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The section's id, from list-sections or a task's section_id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-labels",
+      "kind": "read",
+      "description": "List the user's personal labels, 100 per page, with id, name, color and is_favorite. Tasks name labels by name, not id. Shared labels that exist only on other people's tasks are not listed. Todoist returns next_cursor when there are more; pass it as cursor.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/labels?limit=100&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9A-Za-z_-]{1,512}\\.[0-9A-Za-z_-]{1,512}$",
+            "description": "The next_cursor from the previous page of this same call, with the same other inputs. Leave it out to start at the top."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-tasks",
+      "kind": "read",
+      "description": "List active (not completed) tasks, 25 per page, with id, content, description, project_id, section_id, parent_id, labels, priority, due and deadline. Narrow by project_id, section_id, parent_id (its subtasks) or one label name; with none, every active task is listed. Todoist returns next_cursor when there are more; pass it as cursor with the same other inputs. Long task descriptions can cut a page at 64 KB.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks?project_id={{input.project_id}}&section_id={{input.section_id}}&parent_id={{input.parent_id}}&label={{input.label}}&limit=25&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "Only tasks in this project."
+          },
+          "section_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "Only tasks in this section."
+          },
+          "parent_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "Only the subtasks of this task."
+          },
+          "label": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,60}$",
+            "description": "Only tasks with this label name."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9A-Za-z_-]{1,512}\\.[0-9A-Za-z_-]{1,512}$",
+            "description": "The next_cursor from the previous page of this same call, with the same other inputs. Leave it out to start at the top."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "filter-tasks",
+      "kind": "read",
+      "description": "List active tasks that match a Todoist filter query, 25 per page, for example \"today | overdue\", \"#Work & p1\" or \"assigned to: me\". One query at a time: the comma operator is not supported. Todoist returns next_cursor when there are more; pass it as cursor with the same query.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/filter?query={{input.query}}&lang={{input.lang}}&limit=25&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,1024}$",
+            "description": "A Todoist filter, as typed in the app's filter bar. No comma operator."
+          },
+          "lang": {
+            "type": "string",
+            "pattern": "^[a-z]{2}(-[A-Za-z]{2,4})?$",
+            "description": "The language the query is written in (en, de, fr), when it is not English."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9A-Za-z_-]{1,512}\\.[0-9A-Za-z_-]{1,512}$",
+            "description": "The next_cursor from the previous page of this same call, with the same other inputs. Leave it out to start at the top."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-task",
+      "kind": "read",
+      "description": "Get one active task by id: content, description, project_id, section_id, parent_id, labels, priority (4 is urgent), due, deadline, duration, responsible_uid, checked and updated_at. A completed or deleted task answers 404; use list-completed-tasks for completed ones.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task's id, from list-tasks, filter-tasks or create-task."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-completed-tasks",
+      "kind": "read",
+      "description": "List tasks completed between since and until, 25 per page, with id, content, project_id and completed_at. The range may be at most 3 months. Narrow by project_id or a filter query. Todoist returns next_cursor when there are more; pass it as cursor with the same other inputs.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/completed/by_completion_date?since={{input.since}}&until={{input.until}}&project_id={{input.project_id}}&filter_query={{input.filter_query}}&limit=25&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "since",
+          "until"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "Start of the completion range, inclusive, as an RFC 3339 date-time (2026-10-01T00:00:00Z)."
+          },
+          "until": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,6})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "End of the completion range, exclusive, at most 3 months after since."
+          },
+          "project_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "Only tasks completed in this project."
+          },
+          "filter_query": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,1024}$",
+            "description": "A Todoist filter that completed tasks must match."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9A-Za-z_-]{1,512}\\.[0-9A-Za-z_-]{1,512}$",
+            "description": "The next_cursor from the previous page of this same call, with the same other inputs. Leave it out to start at the top."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-task-comments",
+      "kind": "read",
+      "description": "List the comments on one task, 20 per page, with id, content, posted_uid, posted_at and file_attachment. Todoist returns next_cursor when there are more; pass it as cursor. A comment can be up to 15,000 characters, so a page of long comments can be cut at 64 KB.",
+      "method": "GET",
+      "urlTemplate": "https://api.todoist.com/api/v1/comments?task_id={{input.task_id}}&limit=20&cursor={{input.cursor}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task whose comments to list."
+          },
+          "cursor": {
+            "type": "string",
+            "pattern": "^[0-9A-Za-z_-]{1,512}\\.[0-9A-Za-z_-]{1,512}$",
+            "description": "The next_cursor from the previous page of this same call, with the same other inputs. Leave it out to start at the top."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-task",
+      "kind": "write",
+      "description": "Create one task. With no project_id it goes to the user's Inbox. A due date can be natural language (due_string: \"tomorrow at 12:00\", \"every monday\") or a date (due_date). Read back by the new task's id; the content must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second task.",
+      "method": "POST",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "content": "{{input.content}}",
+        "description": "{{input.description}}",
+        "project_id": "{{input.project_id}}",
+        "section_id": "{{input.section_id}}",
+        "parent_id": "{{input.parent_id}}",
+        "labels": "{{input.labels}}",
+        "priority": "{{input.priority}}",
+        "due_string": "{{input.due_string}}",
+        "due_date": "{{input.due_date}}",
+        "deadline_date": "{{input.deadline_date}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "content": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "The task's title. Todoist reads Markdown in it."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "Longer notes under the title."
+          },
+          "project_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The project to add it to. Leave out for the Inbox."
+          },
+          "section_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The section to add it to, from list-sections."
+          },
+          "parent_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "Make it a subtask of this task."
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[^\\n]{1,60}$"
+            },
+            "description": "Label names, as list-labels returns them. On update-task this replaces the task's labels."
+          },
+          "priority": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "Priority from 1 (normal) to 4 (urgent). The Todoist app shows 4 as P1 and 1 as P4."
+          },
+          "due_string": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "A due date in words, as typed in the app: \"tomorrow\", \"next friday at 9\", \"every month\". Use this or due_date."
+          },
+          "due_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "A due date as YYYY-MM-DD. Use this or due_string."
+          },
+          "deadline_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "A deadline as YYYY-MM-DD, separate from the due date."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.todoist.com/api/v1/tasks/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "content",
+            "equals": "{{input.content}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-task",
+      "kind": "write",
+      "description": "Change one task's content, description, labels, priority, due date or deadline; only the fields given change. labels replaces the whole list. Read back from the task; its content, description, priority and last-updated time must equal what Todoist returned for this update. Limitations: it cannot clear a due date, and the read-back fails if someone else edits the task in between.",
+      "method": "POST",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "content": "{{input.content}}",
+        "description": "{{input.description}}",
+        "labels": "{{input.labels}}",
+        "priority": "{{input.priority}}",
+        "due_string": "{{input.due_string}}",
+        "due_date": "{{input.due_date}}",
+        "deadline_date": "{{input.deadline_date}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task to change."
+          },
+          "content": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "The new title."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The new notes. Replaces the old ones."
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[^\\n]{1,60}$"
+            },
+            "description": "Label names, as list-labels returns them. On update-task this replaces the task's labels."
+          },
+          "priority": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "Priority from 1 (normal) to 4 (urgent). The Todoist app shows 4 as P1 and 1 as P4."
+          },
+          "due_string": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "A new due date in words (\"tomorrow\", \"every monday\"). Use this or due_date."
+          },
+          "due_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "A new due date as YYYY-MM-DD. Use this or due_string."
+          },
+          "deadline_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "A new deadline as YYYY-MM-DD."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "updated_at",
+            "equals": "{{response.updated_at}}"
+          },
+          {
+            "path": "content",
+            "equals": "{{response.content}}"
+          },
+          {
+            "path": "description",
+            "equals": "{{response.description}}"
+          },
+          {
+            "path": "priority",
+            "equals": "{{response.priority}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "close-task",
+      "kind": "write",
+      "description": "Complete one task, as the Todoist app does. A regular task moves to history with its subtasks; a recurring task moves to its next date and stays active. Undo with reopen-task. No read-back: get-task reads active tasks only, and a recurring task stays active, so neither outcome can be read back.",
+      "method": "POST",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}/close",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task to complete."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "reopen-task",
+      "kind": "write",
+      "description": "Reopen one completed task. Any completed parent tasks and sections come back too, at the end of their list. Read back from the task; it must be active (checked false). Limitation: the read-back also matches a task that was never completed.",
+      "method": "POST",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}/reopen",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The completed task to reopen, from list-completed-tasks."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "checked",
+            "equals": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "move-task-to-project",
+      "kind": "write",
+      "description": "Move one task, with its subtasks, to another project, outside any section. A shared project's members can then see it. Read back from the task; its project must be this one.",
+      "method": "POST",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}/move",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "project_id": "{{input.project_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "project_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task to move."
+          },
+          "project_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The project to move it to, from list-projects."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "project_id",
+            "equals": "{{input.project_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "move-task-to-section",
+      "kind": "write",
+      "description": "Move one task, with its subtasks, into a section. A section in another project moves it to that project too. Read back from the task; its section must be this one.",
+      "method": "POST",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}/move",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "section_id": "{{input.section_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "section_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task to move."
+          },
+          "section_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The section to move it into, from list-sections."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "section_id",
+            "equals": "{{input.section_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-task",
+      "kind": "write",
+      "description": "Delete one task and all of its subtasks. It cannot be restored through the API. No read-back: Todoist answers 404 for a deleted task, the same as for an id that never existed.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.todoist.com/api/v1/tasks/{{input.task_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task to delete."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "add-comment",
+      "kind": "write",
+      "description": "Add one comment to a task, as the token's user. Nobody is notified by the call itself. Read back by the new comment's id; the content must match. Limitation: no provider idempotency, so a retry after an unknown outcome can post a second comment.",
+      "method": "POST",
+      "urlTemplate": "https://api.todoist.com/api/v1/comments",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "task_id": "{{input.task_id}}",
+        "content": "{{input.content}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "content"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task to comment on."
+          },
+          "content": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,15000}$",
+            "description": "The comment. Todoist reads Markdown in it."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.todoist.com/api/v1/comments/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "content",
+            "equals": "{{input.content}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-section",
+      "kind": "write",
+      "description": "Create one section in a project, at the end. Read back by the new section's id; name and project must match.",
+      "method": "POST",
+      "urlTemplate": "https://api.todoist.com/api/v1/sections",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "project_id": "{{input.project_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The project to add the section to."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,120}$",
+            "description": "The section's name."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.todoist.com/api/v1/sections/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          },
+          {
+            "path": "project_id",
+            "equals": "{{input.project_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-section",
+      "kind": "write",
+      "description": "Delete one section and every task in it. The tasks are not counted separately: the impact is one section. No read-back: Todoist answers 404 for a deleted section, the same as for an id that never existed.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.todoist.com/api/v1/sections/{{input.section_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:todoist}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "section_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "section_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The section to delete, with its tasks."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "todoist: approve deleting a task",
+      "matchKind": "action",
+      "matchActionName": "delete-task",
+      "effect": "require_approval"
+    },
+    {
+      "name": "todoist: approve deleting a section",
+      "matchKind": "action",
+      "matchActionName": "delete-section",
+      "effect": "require_approval"
+    },
+    {
+      "name": "todoist: approve moving a task to another project",
+      "matchKind": "action",
+      "matchActionName": "move-task-to-project",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "todoist: tasks created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-task"
+    },
+    {
+      "name": "todoist: task updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-task"
+    },
+    {
+      "name": "todoist: tasks completed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "close-task"
+    },
+    {
+      "name": "todoist: tasks reopened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "reopen-task"
+    },
+    {
+      "name": "todoist: tasks moved to a project per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "move-task-to-project"
+    },
+    {
+      "name": "todoist: tasks moved to a section per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "move-task-to-section"
+    },
+    {
+      "name": "todoist: tasks deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-task"
+    },
+    {
+      "name": "todoist: comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-comment"
+    },
+    {
+      "name": "todoist: sections created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "create-section"
+    },
+    {
+      "name": "todoist: sections deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "delete-section"
+    }
+  ]
+}

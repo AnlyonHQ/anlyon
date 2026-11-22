@@ -1,0 +1,25 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/bounce-api).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.postmarkapp.com/deliverystats",
+  "response": {
+    "InactiveMails": 3,
+    "Bounces": [
+      {
+        "Name": "All",
+        "Count": 5
+      },
+      {
+        "Type": "HardBounce",
+        "Name": "Hard bounce",
+        "Count": 3
+      },
+      {
+        "Type": "SoftBounce",
+        "Name": "Soft bounce",
+        "Count": 2
+      }
+    ]
+  }
+}

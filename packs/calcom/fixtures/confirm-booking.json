@@ -1,0 +1,153 @@
+{
+  "_source": "Shaped after the provider's documented response (https://cal.com/docs/api-reference/v2/bookings/confirm-a-booking).",
+  "params": {},
+  "input": {
+    "booking_uid": "a1B2c3D4e5F6g7H8i9J0kL"
+  },
+  "expectedUrl": "https://api.cal.com/v2/bookings/a1B2c3D4e5F6g7H8i9J0kL/confirm",
+  "response": {
+    "status": "success",
+    "data": {
+      "id": 41872,
+      "uid": "a1B2c3D4e5F6g7H8i9J0kL",
+      "title": "Intro call between Sam Lee and Dana Reyes",
+      "description": "",
+      "hosts": [
+        {
+          "id": 1201,
+          "name": "Sam Lee",
+          "email": "sam@example.com",
+          "username": "samlee",
+          "timeZone": "Europe/London"
+        }
+      ],
+      "status": "accepted",
+      "start": "2026-11-02T14:00:00.000Z",
+      "end": "2026-11-02T14:30:00.000Z",
+      "duration": 30,
+      "eventTypeId": 88231,
+      "eventType": {
+        "id": 88231,
+        "slug": "intro-call"
+      },
+      "location": "https://app.cal.com/video/a1B2c3D4e5F6g7H8i9J0kL",
+      "absentHost": false,
+      "createdAt": "2026-10-24T10:00:00.000Z",
+      "updatedAt": "2026-10-24T10:00:00.000Z",
+      "attendees": [
+        {
+          "name": "Dana Reyes",
+          "email": "dana@example.com",
+          "displayEmail": "dana@example.com",
+          "timeZone": "America/New_York",
+          "language": "en",
+          "absent": false
+        }
+      ],
+      "guests": [],
+      "bookingFieldsResponses": {
+        "name": "Dana Reyes",
+        "email": "dana@example.com"
+      }
+    }
+  },
+  "expectedReadBackUrl": "https://api.cal.com/v2/bookings/a1B2c3D4e5F6g7H8i9J0kL",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "status": "success",
+      "data": {
+        "id": 41872,
+        "uid": "a1B2c3D4e5F6g7H8i9J0kL",
+        "title": "Intro call between Sam Lee and Dana Reyes",
+        "description": "",
+        "hosts": [
+          {
+            "id": 1201,
+            "name": "Sam Lee",
+            "email": "sam@example.com",
+            "username": "samlee",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "status": "accepted",
+        "start": "2026-11-02T14:00:00.000Z",
+        "end": "2026-11-02T14:30:00.000Z",
+        "duration": 30,
+        "eventTypeId": 88231,
+        "eventType": {
+          "id": 88231,
+          "slug": "intro-call"
+        },
+        "location": "https://app.cal.com/video/a1B2c3D4e5F6g7H8i9J0kL",
+        "absentHost": false,
+        "createdAt": "2026-10-24T10:00:00.000Z",
+        "updatedAt": "2026-10-24T10:00:00.000Z",
+        "attendees": [
+          {
+            "name": "Dana Reyes",
+            "email": "dana@example.com",
+            "displayEmail": "dana@example.com",
+            "timeZone": "America/New_York",
+            "language": "en",
+            "absent": false
+          }
+        ],
+        "guests": [],
+        "bookingFieldsResponses": {
+          "name": "Dana Reyes",
+          "email": "dana@example.com"
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "status": "success",
+      "data": {
+        "id": 41872,
+        "uid": "a1B2c3D4e5F6g7H8i9J0kL",
+        "title": "Intro call between Sam Lee and Dana Reyes",
+        "description": "",
+        "hosts": [
+          {
+            "id": 1201,
+            "name": "Sam Lee",
+            "email": "sam@example.com",
+            "username": "samlee",
+            "timeZone": "Europe/London"
+          }
+        ],
+        "status": "pending",
+        "start": "2026-11-02T14:00:00.000Z",
+        "end": "2026-11-02T14:30:00.000Z",
+        "duration": 30,
+        "eventTypeId": 88231,
+        "eventType": {
+          "id": 88231,
+          "slug": "intro-call"
+        },
+        "location": "https://app.cal.com/video/a1B2c3D4e5F6g7H8i9J0kL",
+        "absentHost": false,
+        "createdAt": "2026-10-24T10:00:00.000Z",
+        "updatedAt": "2026-10-24T10:00:00.000Z",
+        "attendees": [
+          {
+            "name": "Dana Reyes",
+            "email": "dana@example.com",
+            "displayEmail": "dana@example.com",
+            "timeZone": "America/New_York",
+            "language": "en",
+            "absent": false
+          }
+        ],
+        "guests": [],
+        "bookingFieldsResponses": {
+          "name": "Dana Reyes",
+          "email": "dana@example.com"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.todoist.com/api/v1/).",
+  "params": {},
+  "input": {
+    "section_id": "6fFPHV272WWk9x01"
+  },
+  "expectedUrl": "https://api.todoist.com/api/v1/sections/6fFPHV272WWk9x01",
+  "response": null
+}

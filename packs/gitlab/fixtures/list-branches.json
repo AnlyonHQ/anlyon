@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/branches/).",
+  "params": {},
+  "input": {
+    "project": "acme/web",
+    "search": "fix"
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/repository/branches?search=fix&per_page=30",
+  "response": [
+    {
+      "name": "fix-safari",
+      "merged": false,
+      "protected": false,
+      "default": false,
+      "web_url": "https://gitlab.com/acme/web/-/tree/fix-safari",
+      "commit": {
+        "id": "8f3a1c2d4e5f60718293a4b5c6d7e8f901234567",
+        "short_id": "8f3a1c2d",
+        "title": "Fix Safari checkout"
+      }
+    }
+  ]
+}

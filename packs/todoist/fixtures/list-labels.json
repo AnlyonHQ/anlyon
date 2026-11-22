@@ -1,0 +1,20 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.todoist.com/api/v1/).",
+  "params": {},
+  "input": {
+    "cursor": "14540000435w8hj8pXXwPQJJch.X9DBH8ya2Xenok55"
+  },
+  "expectedUrl": "https://api.todoist.com/api/v1/labels?limit=100&cursor=14540000435w8hj8pXXwPQJJch.X9DBH8ya2Xenok55",
+  "response": {
+    "results": [
+      {
+        "id": "2147509004",
+        "name": "waiting",
+        "color": "berry_red",
+        "order": 1,
+        "is_favorite": false
+      }
+    ],
+    "next_cursor": null
+  }
+}

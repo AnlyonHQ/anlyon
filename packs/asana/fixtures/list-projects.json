@@ -1,0 +1,30 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/getprojectsforworkspace).",
+  "params": {},
+  "input": {
+    "workspace_gid": "1208800000000001",
+    "archived": false
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/workspaces/1208800000000001/projects?limit=25&archived=false&opt_fields=name,archived,team.name,permalink_url",
+  "response": {
+    "data": [
+      {
+        "gid": "1208801234567890",
+        "resource_type": "project",
+        "name": "Customer onboarding",
+        "archived": false,
+        "team": {
+          "gid": "1208800000000077",
+          "resource_type": "team",
+          "name": "Success"
+        },
+        "permalink_url": "https://app.asana.com/0/1208801234567890/1208801234567890"
+      }
+    ],
+    "next_page": {
+      "offset": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9",
+      "path": "/workspaces/1208800000000001/projects?limit=25&offset=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9",
+      "uri": "https://app.asana.com/api/1.0/workspaces/1208800000000001/projects?limit=25&offset=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9"
+    }
+  }
+}

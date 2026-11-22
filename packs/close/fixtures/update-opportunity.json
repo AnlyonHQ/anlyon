@@ -1,0 +1,90 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/opportunities, PUT /opportunity/{id}/).",
+  "params": {},
+  "input": {
+    "opportunity_id": "oppo_AcmeRenewal01",
+    "status_id": "stat_OppProposal02",
+    "confidence": 60
+  },
+  "expectedUrl": "https://api.close.com/api/v1/opportunity/oppo_AcmeRenewal01/",
+  "expectedBody": {
+    "status_id": "stat_OppProposal02",
+    "confidence": 60
+  },
+  "response": {
+    "id": "oppo_AcmeRenewal01",
+    "organization_id": "orga_Example01",
+    "lead_id": "lead_Acme01",
+    "lead_name": "Acme",
+    "contact_id": "cont_JoAcme01",
+    "status_id": "stat_OppProposal02",
+    "status_label": "Proposal Sent",
+    "status_type": "active",
+    "value": 1200000,
+    "value_period": "one_time",
+    "value_formatted": "$12,000",
+    "value_currency": "USD",
+    "confidence": 60,
+    "note": "Renewal for 2027.",
+    "user_id": "user_Alice01",
+    "user_name": "Alice Example",
+    "date_won": null,
+    "date_created": "2026-10-21T10:00:00.000000+00:00",
+    "date_updated": "2026-10-24T09:00:00.000000+00:00",
+    "created_by": "user_Alice01",
+    "updated_by": "user_Alice01"
+  },
+  "expectedReadBackUrl": "https://api.close.com/api/v1/opportunity/oppo_AcmeRenewal01/",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "oppo_AcmeRenewal01",
+      "organization_id": "orga_Example01",
+      "lead_id": "lead_Acme01",
+      "lead_name": "Acme",
+      "contact_id": "cont_JoAcme01",
+      "status_id": "stat_OppProposal02",
+      "status_label": "Proposal Sent",
+      "status_type": "active",
+      "value": 1200000,
+      "value_period": "one_time",
+      "value_formatted": "$12,000",
+      "value_currency": "USD",
+      "confidence": 60,
+      "note": "Renewal for 2027.",
+      "user_id": "user_Alice01",
+      "user_name": "Alice Example",
+      "date_won": null,
+      "date_created": "2026-10-21T10:00:00.000000+00:00",
+      "date_updated": "2026-10-24T09:00:00.000000+00:00",
+      "created_by": "user_Alice01",
+      "updated_by": "user_Alice01"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "oppo_AcmeRenewal01",
+      "organization_id": "orga_Example01",
+      "lead_id": "lead_Acme01",
+      "lead_name": "Acme",
+      "contact_id": "cont_JoAcme01",
+      "status_id": "stat_OppDemo01",
+      "status_label": "Demo Completed",
+      "status_type": "active",
+      "value": 1200000,
+      "value_period": "one_time",
+      "value_formatted": "$12,000",
+      "value_currency": "USD",
+      "confidence": 40,
+      "note": "Renewal for 2027.",
+      "user_id": "user_Alice01",
+      "user_name": "Alice Example",
+      "date_won": null,
+      "date_created": "2026-10-21T10:00:00.000000+00:00",
+      "date_updated": "2026-10-21T10:00:00.000000+00:00",
+      "created_by": "user_Alice01",
+      "updated_by": "user_Alice01"
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/issues#create-an-issue).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "title": "Checkout fails for saved cards",
+    "body": "Reported by three customers this morning."
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/issues",
+  "response": {
+    "id": 2947001122,
+    "number": 412,
+    "title": "Checkout fails for saved cards",
+    "state": "open"
+  },
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/issues/412",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 2947001122,
+      "number": 412,
+      "title": "Checkout fails for saved cards",
+      "state": "open"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 2947001122,
+      "number": 412,
+      "title": "Another issue",
+      "state": "open"
+    }
+  }
+}

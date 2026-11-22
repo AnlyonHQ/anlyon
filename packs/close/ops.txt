@@ -1,0 +1,23 @@
+# action                     operation                        kind
+# Close REST API v1 (https://api.close.com/api/v1), written by hand from https://developer.close.com/api/
+# (the OpenAPI document at https://api.close.com/api/openapi.json is marked experimental by Close)
+search-leads                 GET /lead/
+get-lead                     GET /lead/{id}/
+get-contact                  GET /contact/{id}/
+list-lead-statuses           GET /status/lead/
+list-opportunity-statuses    GET /status/opportunity/
+list-opportunities           GET /opportunity/
+get-opportunity              GET /opportunity/{id}/
+list-tasks                   GET /task/
+get-task                     GET /task/{id}/
+list-activities              GET /activity/
+get-note                     GET /activity/note/{id}/
+create-lead                  POST /lead/
+update-lead                  PUT /lead/{id}/
+delete-lead                  DELETE /lead/{id}/
+create-contact               POST /contact/
+create-opportunity           POST /opportunity/
+update-opportunity           PUT /opportunity/{id}/
+add-note                     POST /activity/note/
+create-task                  POST /task/
+complete-task                PUT /task/{id}/

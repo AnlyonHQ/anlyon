@@ -1,0 +1,22 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/contacts/list-contacts).",
+  "params": {},
+  "input": {
+    "segment_id": "78261eea-8f8b-4381-83c6-79fa7120f1cf"
+  },
+  "expectedUrl": "https://api.resend.com/contacts?limit=20&segment_id=78261eea-8f8b-4381-83c6-79fa7120f1cf",
+  "response": {
+    "object": "list",
+    "has_more": false,
+    "data": [
+      {
+        "id": "e169aa45-1ecf-4183-9955-b1499d5701d3",
+        "email": "steve.wozniak@example.com",
+        "first_name": "Steve",
+        "last_name": "Wozniak",
+        "created_at": "2026-10-06 23:47:56.678+00",
+        "unsubscribed": false
+      }
+    ]
+  }
+}

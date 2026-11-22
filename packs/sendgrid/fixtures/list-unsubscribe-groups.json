@@ -1,0 +1,22 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_suppressions_v3.json, ListAsmGroup).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.sendgrid.com/v3/asm/groups",
+  "response": [
+    {
+      "id": 10871,
+      "name": "Product updates",
+      "description": "News about new features",
+      "is_default": false,
+      "unsubscribes": 312
+    },
+    {
+      "id": 10872,
+      "name": "Weekly digest",
+      "description": "A summary every Monday",
+      "is_default": true,
+      "unsubscribes": 87
+    }
+  ]
+}

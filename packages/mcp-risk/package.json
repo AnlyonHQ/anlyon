@@ -1,0 +1,23 @@
+{
+  "name": "@anlyon-dev/risk",
+  "license": "Elastic-2.0",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Deterministic risk classes and hashes for MCP tool definitions: the engine Anlyon Radar runs. See README.md.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "test": "vitest run",
+    "lint": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.test.json"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.12"
+  }
+}

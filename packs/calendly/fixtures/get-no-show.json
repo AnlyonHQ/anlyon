@@ -1,0 +1,15 @@
+{
+  "_source": "Shaped after the provider's documented response (Calendly API v2 OpenAPI document, get-invitee-no-show).",
+  "params": {},
+  "input": {
+    "no_show_uuid": "BCDEF5GHIJKLMNOP"
+  },
+  "expectedUrl": "https://api.calendly.com/invitee_no_shows/BCDEF5GHIJKLMNOP",
+  "response": {
+    "resource": {
+      "uri": "https://api.calendly.com/invitee_no_shows/BCDEF5GHIJKLMNOP",
+      "invitee": "https://api.calendly.com/scheduled_events/FGHAB3CDEJKLMNOP/invitees/AHCDE4FGHIJKLMNO",
+      "created_at": "2026-11-03T15:45:00.000000Z"
+    }
+  }
+}

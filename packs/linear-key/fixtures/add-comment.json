@@ -1,0 +1,70 @@
+{
+  "_source": "Shaped after the provider's documented response (https://github.com/linear/linear/blob/master/packages/sdk/src/schema.graphql, Mutation.commentCreate, CommentPayload, Query.comment; https://linear.app/developers/graphql).",
+  "params": {},
+  "input": {
+    "issue_id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+    "body": "Reproduced with a 45 item cart. The payment call takes 31 seconds."
+  },
+  "expectedUrl": "https://api.linear.app/graphql",
+  "expectedBody": {
+    "query": "mutation AddComment($input: CommentCreateInput!) { commentCreate(input: $input) { success comment { id body url createdAt issue { id identifier } } } }",
+    "variables": {
+      "input": {
+        "issueId": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+        "body": "Reproduced with a 45 item cart. The payment call takes 31 seconds."
+      }
+    }
+  },
+  "response": {
+    "data": {
+      "commentCreate": {
+        "success": true,
+        "comment": {
+          "id": "f2a4c6e8-0b1d-4f3a-8c5e-7d9b1f3a5c62",
+          "body": "Reproduced with a 45 item cart. The payment call takes 31 seconds.",
+          "url": "https://linear.app/acme/issue/ENG-412#comment-f2a4c6e8",
+          "createdAt": "2026-10-24T09:05:00.000Z",
+          "issue": {
+            "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+            "identifier": "ENG-412"
+          }
+        }
+      }
+    }
+  },
+  "expectedReadBackUrl": "https://api.linear.app/graphql",
+  "expectedReadBackBody": {
+    "query": "query CommentReadBack($id: String!) { comment(id: $id) { id body issue { id } } }",
+    "variables": {
+      "id": "f2a4c6e8-0b1d-4f3a-8c5e-7d9b1f3a5c62"
+    }
+  },
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "comment": {
+          "id": "f2a4c6e8-0b1d-4f3a-8c5e-7d9b1f3a5c62",
+          "body": "Reproduced with a 45 item cart. The payment call takes 31 seconds.",
+          "issue": {
+            "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90"
+          }
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": null,
+      "errors": [
+        {
+          "message": "Entity not found: Comment",
+          "extensions": {
+            "type": "invalid input"
+          }
+        }
+      ]
+    }
+  }
+}

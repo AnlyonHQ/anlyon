@@ -1,0 +1,29 @@
+# action               operation                          kind
+# Pipedrive API v2 (https://developers.pipedrive.com/docs/api/v1/openapi-v2.yaml)
+search-deals           GET /deals/search
+search-persons         GET /persons/search
+search-organizations   GET /organizations/search
+list-deals             GET /deals
+get-deal               GET /deals/{id}
+get-person             GET /persons/{id}
+get-organization       GET /organizations/{id}
+list-activities        GET /activities
+get-activity           GET /activities/{id}
+list-pipelines         GET /pipelines
+list-stages            GET /stages
+create-person          POST /persons
+update-person          PATCH /persons/{id}
+delete-person          DELETE /persons/{id}
+create-organization    POST /organizations
+create-deal            POST /deals
+update-deal            PATCH /deals/{id}
+move-deal-stage        PATCH /deals/{id}
+set-deal-status        PATCH /deals/{id}
+delete-deal            DELETE /deals/{id}
+create-activity        POST /activities
+complete-activity      PATCH /activities/{id}
+# Pipedrive API v1 (https://developers.pipedrive.com/docs/api/v1/openapi.yaml): notes have no v2 endpoint
+list-notes             GET /notes
+get-note               GET /notes/{id}
+# add-note is written by hand: the spec's body is an allOf, which the draft does not translate
+add-note               POST /notes

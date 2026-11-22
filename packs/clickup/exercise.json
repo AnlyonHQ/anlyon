@@ -1,0 +1,185 @@
+{
+  "needs": {
+    "team_id": "The workspace of the test account: its id from list-workspaces, or the number after app.clickup.com/ in a ClickUp URL",
+    "space_id": "A test space in that workspace, with tags turned on: its id from list-spaces",
+    "folder_id": "Any folder in that space: its id from list-folders",
+    "list_id": "A test list the token's user can edit: its id from list-lists, or from the list's URL",
+    "status": "A status of that list other than the one new tasks start in, exactly as get-list returns it (for example \"in progress\")",
+    "tag_name": "A tag of that space that may be put on and taken off a test task, exactly as list-space-tags returns it",
+    "user_id": "The token user's own ClickUp user id: their id among the members in list-workspaces"
+  },
+  "steps": [
+    {
+      "action": "list-workspaces",
+      "input": {}
+    },
+    {
+      "action": "list-spaces",
+      "input": {
+        "team_id": "{{needs.team_id}}",
+        "archived": false
+      }
+    },
+    {
+      "action": "list-folders",
+      "input": {
+        "space_id": "{{needs.space_id}}"
+      }
+    },
+    {
+      "action": "list-lists",
+      "input": {
+        "folder_id": "{{needs.folder_id}}"
+      }
+    },
+    {
+      "action": "list-folderless-lists",
+      "input": {
+        "space_id": "{{needs.space_id}}"
+      }
+    },
+    {
+      "action": "get-list",
+      "input": {
+        "list_id": "{{needs.list_id}}"
+      }
+    },
+    {
+      "action": "list-space-tags",
+      "input": {
+        "space_id": "{{needs.space_id}}"
+      }
+    },
+    {
+      "action": "create-task",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "name": "Anlyon exercise {{run}}",
+        "description": "Created by an Anlyon pack exercise run; it deletes this task at the end."
+      },
+      "save": {
+        "task_id": "id"
+      }
+    },
+    {
+      "action": "get-task",
+      "input": {
+        "task_id": "{{saved.task_id}}"
+      }
+    },
+    {
+      "action": "list-tasks",
+      "input": {
+        "list_id": "{{needs.list_id}}",
+        "page": 0
+      }
+    },
+    {
+      "action": "search-tasks",
+      "input": {
+        "team_id": "{{needs.team_id}}",
+        "list_id": "{{needs.list_id}}"
+      }
+    },
+    {
+      "action": "update-task",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "name": "Anlyon exercise {{run}} (updated)",
+        "description": "Updated by the exercise run.",
+        "priority": 3
+      }
+    },
+    {
+      "action": "set-task-status",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "status": "{{needs.status}}"
+      }
+    },
+    {
+      "action": "add-assignee",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "user_id": "{{needs.user_id}}"
+      }
+    },
+    {
+      "action": "remove-assignee",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "user_id": "{{needs.user_id}}"
+      }
+    },
+    {
+      "action": "comment-on-task",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "text": "Exercise comment {{run}}"
+      },
+      "save": {
+        "comment_id": "id"
+      }
+    },
+    {
+      "action": "list-task-comments",
+      "input": {
+        "task_id": "{{saved.task_id}}"
+      }
+    },
+    {
+      "action": "list-comment-replies",
+      "input": {
+        "comment_id": "{{saved.comment_id}}"
+      }
+    },
+    {
+      "action": "add-tag",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "tag_name": "{{needs.tag_name}}"
+      }
+    },
+    {
+      "action": "remove-tag",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "tag_name": "{{needs.tag_name}}"
+      }
+    },
+    {
+      "action": "create-checklist",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "name": "Exercise checklist {{run}}"
+      },
+      "save": {
+        "checklist_id": "checklist.id"
+      }
+    },
+    {
+      "action": "add-checklist-item",
+      "input": {
+        "checklist_id": "{{saved.checklist_id}}",
+        "name": "Exercise item {{run}}"
+      },
+      "save": {
+        "checklist_item_id": "checklist.items.0.id"
+      }
+    },
+    {
+      "action": "resolve-checklist-item",
+      "input": {
+        "checklist_id": "{{saved.checklist_id}}",
+        "checklist_item_id": "{{saved.checklist_item_id}}",
+        "resolved": true
+      }
+    },
+    {
+      "action": "delete-task",
+      "input": {
+        "task_id": "{{saved.task_id}}"
+      }
+    }
+  ]
+}

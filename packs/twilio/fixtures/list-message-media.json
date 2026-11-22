@@ -1,0 +1,30 @@
+{
+  "_source": "Shaped after the provider's documented response (https://www.twilio.com/docs/messaging/api/media-resource, and https://github.com/twilio/twilio-oai/blob/main/spec/json/twilio_api_v2010.json).",
+  "params": {},
+  "input": {
+    "account_sid": "AC0123456789abcdef0123456789abcdef",
+    "message_sid": "SM0123456789abcdef0123456789abcdef"
+  },
+  "expectedUrl": "https://api.twilio.com/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SM0123456789abcdef0123456789abcdef/Media.json?PageSize=20",
+  "response": {
+    "media_list": [
+      {
+        "account_sid": "AC0123456789abcdef0123456789abcdef",
+        "content_type": "image/jpeg",
+        "date_created": "Thu, 24 Oct 2026 10:00:01 +0000",
+        "date_updated": "Thu, 24 Oct 2026 10:00:01 +0000",
+        "parent_sid": "SM0123456789abcdef0123456789abcdef",
+        "sid": "MEabcdef0123456789abcdef0123456789",
+        "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SM0123456789abcdef0123456789abcdef/Media/MEabcdef0123456789abcdef0123456789.json"
+      }
+    ],
+    "end": 0,
+    "first_page_uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SM0123456789abcdef0123456789abcdef/Media.json?PageSize=20&Page=0",
+    "next_page_uri": null,
+    "page": 0,
+    "page_size": 20,
+    "previous_page_uri": null,
+    "start": 0,
+    "uri": "/2010-04-01/Accounts/AC0123456789abcdef0123456789abcdef/Messages/SM0123456789abcdef0123456789abcdef/Media.json?PageSize=20&Page=0"
+  }
+}

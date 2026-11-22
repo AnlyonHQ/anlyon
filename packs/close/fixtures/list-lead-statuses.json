@@ -1,0 +1,21 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/lead-statuses, GET /status/lead/).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.close.com/api/v1/status/lead/",
+  "response": {
+    "has_more": false,
+    "data": [
+      {
+        "id": "stat_LeadQualified01",
+        "organization_id": "orga_Example01",
+        "label": "Qualified"
+      },
+      {
+        "id": "stat_LeadCustomer02",
+        "organization_id": "orga_Example01",
+        "label": "Customer"
+      }
+    ]
+  }
+}

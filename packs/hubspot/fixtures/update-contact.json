@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/update-contact).",
+  "params": {},
+  "input": {
+    "contactId": "151",
+    "jobtitle": "COO",
+    "phone": "+44 20 7946 0959"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/contacts/151",
+  "response": {
+    "id": "151",
+    "properties": {
+      "createdate": "2026-09-02T10:14:22.401Z",
+      "hs_object_id": "151",
+      "jobtitle": "COO",
+      "lastmodifieddate": "2026-10-15T09:02:11.500Z",
+      "phone": "+44 20 7946 0959"
+    },
+    "createdAt": "2026-09-02T10:14:22.401Z",
+    "updatedAt": "2026-10-15T09:02:11.500Z",
+    "archived": false
+  }
+}

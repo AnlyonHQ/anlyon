@@ -1,0 +1,73 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/searchcontacts).",
+  "params": {},
+  "input": {
+    "query": {
+      "field": "email",
+      "operator": "=",
+      "value": "sam@example.com"
+    }
+  },
+  "expectedUrl": "https://api.intercom.io/contacts/search",
+  "response": {
+    "type": "list",
+    "data": [
+      {
+        "type": "contact",
+        "id": "6762f0cd1bb69f9f2193bb7f",
+        "workspace_id": "ecahpwf5",
+        "external_id": null,
+        "role": "lead",
+        "email": "sam@example.com",
+        "phone": null,
+        "name": "Sam Rivera",
+        "avatar": null,
+        "owner_id": null,
+        "has_hard_bounced": false,
+        "marked_email_as_spam": false,
+        "unsubscribed_from_emails": false,
+        "created_at": 1734537421,
+        "updated_at": 1734537421,
+        "signed_up_at": null,
+        "last_seen_at": null,
+        "browser": null,
+        "os": null,
+        "custom_attributes": {},
+        "tags": {
+          "type": "list",
+          "data": [],
+          "url": "/contacts/6762f0cd1bb69f9f2193bb7f/tags",
+          "total_count": 0,
+          "has_more": false
+        },
+        "notes": {
+          "type": "list",
+          "data": [],
+          "url": "/contacts/6762f0cd1bb69f9f2193bb7f/notes",
+          "total_count": 0,
+          "has_more": false
+        },
+        "companies": {
+          "type": "list",
+          "data": [],
+          "url": "/contacts/6762f0cd1bb69f9f2193bb7f/companies",
+          "total_count": 0,
+          "has_more": false
+        },
+        "location": {
+          "type": "location",
+          "country": null,
+          "region": null,
+          "city": null
+        }
+      }
+    ],
+    "total_count": 1,
+    "pages": {
+      "type": "pages",
+      "page": 1,
+      "per_page": 15,
+      "total_pages": 1
+    }
+  }
+}

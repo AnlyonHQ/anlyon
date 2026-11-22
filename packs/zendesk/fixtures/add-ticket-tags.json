@@ -1,0 +1,42 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.zendesk.com/api-reference/ticketing/ticket-management/tags/, PUT /api/v2/tickets/{ticket_id}/tags).",
+  "params": {},
+  "accountHost": "acme.zendesk.com",
+  "input": {
+    "ticket_id": 35436,
+    "tag": "vip"
+  },
+  "expectedUrl": "https://acme.zendesk.com/api/v2/tickets/35436/tags.json",
+  "expectedBody": {
+    "tags": [
+      "vip"
+    ]
+  },
+  "response": {
+    "tags": [
+      "billing",
+      "invoice",
+      "vip"
+    ]
+  },
+  "expectedReadBackUrl": "https://acme.zendesk.com/api/v2/tickets/35436/tags.json",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "tags": [
+        "billing",
+        "invoice",
+        "vip"
+      ]
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "tags": [
+        "billing",
+        "invoice"
+      ]
+    }
+  }
+}

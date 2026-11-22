@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/deals/delete-deal).",
+  "params": {},
+  "input": {
+    "dealId": "7701"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/deals/7701",
+  "response": null,
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/deals/7701?archived=true&properties=hs_object_id",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "7701",
+      "properties": {
+        "hs_object_id": "7701"
+      },
+      "createdAt": "2026-10-01T12:00:00.000Z",
+      "updatedAt": "2026-10-15T09:40:00.000Z",
+      "archived": true,
+      "archivedAt": "2026-10-15T09:40:00.000Z"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "7701",
+      "properties": {
+        "hs_object_id": "7701"
+      },
+      "archived": false
+    }
+  }
+}

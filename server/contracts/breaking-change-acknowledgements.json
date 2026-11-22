@@ -1,0 +1,21 @@
+{
+  "$comment": [
+    "Breaking API changes the team decided to make, recorded before they landed.",
+    "",
+    "scripts/openapi-compatibility.ts reads this. An entry names ONE operation and",
+    "ONE path, so it cannot wave through a class of changes. Acknowledged changes",
+    "are printed on every run, and a STALE entry -- one that no longer matches a",
+    "change against the base -- fails the gate, because an acknowledgement that",
+    "outlives its change is a standing pre-approval for whatever lands there next.",
+    "",
+    "Adding an entry is not a way around the gate. It is a way to say, in the diff,",
+    "that this specific break is intended and where customers were told about it.",
+    "Remove the entry in the same change that merges to the base it was measured",
+    "against.",
+    "",
+    "A server extension keeps the entries about its own operations in",
+    "src/extensions/<name>/contracts/breaking-change-acknowledgements.json; the gate",
+    "reads them all as one list (scripts/contract.ts)."
+  ],
+  "acknowledged": []
+}

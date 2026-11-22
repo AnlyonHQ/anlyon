@@ -1,0 +1,41 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-put).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {
+    "issue_key": "OPS-142",
+    "summary": "Renew and deploy the TLS certificate for status.acme.example"
+  },
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142",
+  "expectedBody": {
+    "fields": {
+      "summary": "Renew and deploy the TLS certificate for status.acme.example"
+    }
+  },
+  "response": {},
+  "expectedReadBackUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142?fields=summary",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "id": "10142",
+      "self": "https://acme.atlassian.net/rest/api/3/issue/10142",
+      "key": "OPS-142",
+      "fields": {
+        "summary": "Renew and deploy the TLS certificate for status.acme.example"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "id": "10142",
+      "self": "https://acme.atlassian.net/rest/api/3/issue/10142",
+      "key": "OPS-142",
+      "fields": {
+        "summary": "Renew the TLS certificate for status.acme.example"
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "{\n  \"id\": \"apr_fixture\",\n  \"kind\": \"custom\",\n  \"status\": \"pending\",\n  \"title\": \"Run action \\\"update-ticket-priority\\\"\",\n  \"description\": \"Change a support ticket priority.\",\n  \"payload\": {},\n  \"decisionNote\": null,\n  \"decidedBy\": null,\n  \"votes\": [],\n  \"requiredApprovals\": 1,\n  \"approvedCount\": 0,\n  \"matchedPolicyId\": \"pol_fixture\",\n  \"matchedPolicyVersion\": 2,\n  \"policyExplanation\": \"Every call needs one approver.\",\n  \"decisionOrigin\": null,\n  \"expiresAt\": \"2026-10-01T00:00:00.000Z\",\n  \"decidedAt\": null,\n  \"createdAt\": \"2026-09-30T00:00:00.000Z\"\n}"
+    }
+  ]
+}

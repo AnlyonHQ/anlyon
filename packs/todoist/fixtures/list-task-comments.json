@@ -1,0 +1,23 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.todoist.com/api/v1/).",
+  "params": {},
+  "input": {
+    "task_id": "6XGgmFVcrG5RRjVr"
+  },
+  "expectedUrl": "https://api.todoist.com/api/v1/comments?task_id=6XGgmFVcrG5RRjVr&limit=20",
+  "response": {
+    "results": [
+      {
+        "id": "6XGgmFQrx44wfGHr",
+        "posted_uid": "1234567",
+        "content": "Quote sent; waiting on legal.",
+        "file_attachment": null,
+        "uids_to_notify": null,
+        "is_deleted": false,
+        "posted_at": "2026-10-20T11:00:00Z",
+        "reactions": null
+      }
+    ],
+    "next_cursor": null
+  }
+}

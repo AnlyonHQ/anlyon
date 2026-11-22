@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/deals/search/search-deals).",
+  "params": {},
+  "input": {
+    "query": "qualifiedtobuy"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/deals/search",
+  "response": {
+    "total": 1,
+    "results": [
+      {
+        "id": "7701",
+        "properties": {
+          "amount": "12000.00",
+          "closedate": "2026-12-31T00:00:00Z",
+          "createdate": "2026-10-01T12:00:00.000Z",
+          "dealname": "Acme renewal",
+          "dealstage": "qualifiedtobuy",
+          "dealtype": "existingbusiness",
+          "description": null,
+          "hs_lastmodifieddate": "2026-10-12T09:40:00.210Z",
+          "hs_object_id": "7701",
+          "hs_priority": "high",
+          "hubspot_owner_id": "84021733",
+          "pipeline": "default"
+        },
+        "createdAt": "2026-10-01T12:00:00.000Z",
+        "updatedAt": "2026-10-12T09:40:00.210Z",
+        "archived": false
+      }
+    ]
+  }
+}

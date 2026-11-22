@@ -1,0 +1,45 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "from": "oncall@example.com",
+    "incident_id": "Q1ABCDEF2GHIJK",
+    "source_incident_id": "Q2LMNOPQ3RSTUV"
+  },
+  "expectedUrl": "https://api.pagerduty.com/incidents/Q1ABCDEF2GHIJK/merge",
+  "response": {
+    "incident": {
+      "id": "Q1ABCDEF2GHIJK",
+      "type": "incident_reference",
+      "summary": "[#1234] Checkout error rate above 5%",
+      "self": "https://api.pagerduty.com/incidents/Q1ABCDEF2GHIJK"
+    }
+  },
+  "expectedReadBackUrl": "https://api.pagerduty.com/incidents/Q2LMNOPQ3RSTUV",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "incident": {
+        "id": "Q2LMNOPQ3RSTUV",
+        "status": "resolved",
+        "resolve_reason": {
+          "type": "merge_resolve_reason",
+          "incident": {
+            "id": "Q1ABCDEF2GHIJK",
+            "type": "incident_reference"
+          }
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "incident": {
+        "id": "Q2LMNOPQ3RSTUV",
+        "status": "resolved",
+        "resolve_reason": null
+      }
+    }
+  }
+}

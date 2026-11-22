@@ -1,0 +1,35 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_mc_contacts_v3.json, SearchContact).",
+  "params": {},
+  "input": {
+    "query": "email LIKE 'ada%' AND CONTAINS(list_ids, 'ca7a3796-e8a8-4029-9ccb-df8937940562')"
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/marketing/contacts/search",
+  "response": {
+    "result": [
+      {
+        "id": "4b4a6e5c-8b0f-4c1d-9a35-0f7e2b6c9d11",
+        "first_name": "Ada",
+        "last_name": "Lovelace",
+        "email": "ada@example.com",
+        "alternate_emails": [],
+        "city": "London",
+        "country": "United Kingdom",
+        "list_ids": [
+          "ca7a3796-e8a8-4029-9ccb-df8937940562"
+        ],
+        "segment_ids": [],
+        "custom_fields": {},
+        "created_at": "2026-10-01T09:12:44Z",
+        "updated_at": "2026-10-20T16:03:10Z",
+        "_metadata": {
+          "self": "https://api.sendgrid.com/v3/marketing/contacts/4b4a6e5c-8b0f-4c1d-9a35-0f7e2b6c9d11"
+        }
+      }
+    ],
+    "contact_count": 1,
+    "_metadata": {
+      "self": "https://api.sendgrid.com/v3/marketing/contacts/search"
+    }
+  }
+}

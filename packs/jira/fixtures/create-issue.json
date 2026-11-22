@@ -1,0 +1,96 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-post).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {
+    "project_key": "OPS",
+    "issue_type_id": "10001",
+    "summary": "Renew the TLS certificate for status.acme.example",
+    "description": "The certificate expires on 2026-11-02.\nRenew it and deploy it to both load balancers.",
+    "labels": [
+      "infra"
+    ]
+  },
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/issue",
+  "expectedBody": {
+    "fields": {
+      "project": {
+        "key": "OPS"
+      },
+      "issuetype": {
+        "id": "10001"
+      },
+      "summary": "Renew the TLS certificate for status.acme.example",
+      "description": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              {
+                "type": "text",
+                "text": "The certificate expires on 2026-11-02.\nRenew it and deploy it to both load balancers."
+              }
+            ]
+          }
+        ]
+      },
+      "labels": [
+        "infra"
+      ]
+    }
+  },
+  "response": {
+    "id": "10142",
+    "key": "OPS-142",
+    "self": "https://acme.atlassian.net/rest/api/3/issue/10142"
+  },
+  "expectedReadBackUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142?fields=summary,project",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "id": "10142",
+      "self": "https://acme.atlassian.net/rest/api/3/issue/10142",
+      "key": "OPS-142",
+      "fields": {
+        "summary": "Renew the TLS certificate for status.acme.example",
+        "project": {
+          "self": "https://acme.atlassian.net/rest/api/3/project/10000",
+          "id": "10000",
+          "key": "OPS",
+          "name": "Operations",
+          "projectTypeKey": "software",
+          "simplified": false,
+          "avatarUrls": {
+            "48x48": "https://acme.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/10400"
+          }
+        }
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "id": "10142",
+      "self": "https://acme.atlassian.net/rest/api/3/issue/10142",
+      "key": "OPS-142",
+      "fields": {
+        "summary": "Renew the TLS certificate",
+        "project": {
+          "self": "https://acme.atlassian.net/rest/api/3/project/10000",
+          "id": "10000",
+          "key": "OPS",
+          "name": "Operations",
+          "projectTypeKey": "software",
+          "simplified": false,
+          "avatarUrls": {
+            "48x48": "https://acme.atlassian.net/rest/api/3/universal_avatar/view/type/project/avatar/10400"
+          }
+        }
+      }
+    }
+  }
+}

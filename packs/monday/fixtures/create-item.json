@@ -1,0 +1,72 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/items).",
+  "params": {},
+  "input": {
+    "board_id": "5091234567",
+    "item_name": "Hooli onboarding",
+    "group_id": "topics",
+    "column_values": "{\"status\":{\"label\":\"Working on it\"},\"date4\":{\"date\":\"2026-11-09\"}}"
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "mutation ($board_id: ID!, $item_name: String!, $group_id: String, $column_values: JSON) { create_item(board_id: $board_id, item_name: $item_name, group_id: $group_id, column_values: $column_values) { id name group { id } } }",
+    "variables": {
+      "board_id": "5091234567",
+      "item_name": "Hooli onboarding",
+      "group_id": "topics",
+      "column_values": "{\"status\":{\"label\":\"Working on it\"},\"date4\":{\"date\":\"2026-11-09\"}}"
+    }
+  },
+  "response": {
+    "data": {
+      "create_item": {
+        "id": "9120000010",
+        "name": "Hooli onboarding",
+        "group": {
+          "id": "topics"
+        }
+      }
+    },
+    "extensions": {
+      "request_id": "req_create_item_1"
+    }
+  },
+  "expectedReadBackUrl": "https://api.monday.com/v2",
+  "expectedReadBackBody": {
+    "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id name state group { id } } }",
+    "variables": {
+      "item_id": "9120000010"
+    }
+  },
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": [
+          {
+            "id": "9120000010",
+            "name": "Hooli onboarding",
+            "state": "active",
+            "group": {
+              "id": "topics"
+            }
+          }
+        ]
+      },
+      "extensions": {
+        "request_id": "req_read_back"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "items": []
+      },
+      "extensions": {
+        "request_id": "req_read_back"
+      }
+    }
+  }
+}

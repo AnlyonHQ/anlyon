@@ -1,0 +1,42 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation getDeployments).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "project": "acme-web",
+    "target": "production",
+    "state": "READY",
+    "branch": "release/2026-10",
+    "until": 1761300000000
+  },
+  "expectedUrl": "https://api.vercel.com/v7/deployments?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F&limit=20&projectId=acme-web&target=production&state=READY&branch=release%2F2026-10&until=1761300000000",
+  "response": {
+    "deployments": [
+      {
+        "uid": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+        "name": "acme-web",
+        "url": "acme-web-git-main-acme.vercel.app",
+        "state": "READY",
+        "readyState": "READY",
+        "target": "production",
+        "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+        "created": 1761200000000,
+        "createdAt": 1761200000000,
+        "creator": {
+          "uid": "kr1PsOIzqEL5Xg6M4VZcZosf",
+          "username": "dana"
+        },
+        "meta": {
+          "githubCommitRef": "release/2026-10",
+          "githubCommitSha": "3f2a9c1"
+        },
+        "isRollbackCandidate": true
+      }
+    ],
+    "pagination": {
+      "count": 1,
+      "next": 1761100000000,
+      "prev": 1761200000000
+    }
+  }
+}

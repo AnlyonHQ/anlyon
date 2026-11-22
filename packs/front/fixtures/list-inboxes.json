@@ -1,0 +1,26 @@
+{
+  "_source": "Shaped after the provider's documented response (https://dev.frontapp.com/reference/list-inboxes).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api2.frontapp.com/inboxes",
+  "response": {
+    "_pagination": {
+      "next": null
+    },
+    "_links": {
+      "self": "https://api2.frontapp.com/x"
+    },
+    "_results": [
+      {
+        "_links": {
+          "self": "https://api2.frontapp.com/inboxes/inb_55c8c149"
+        },
+        "id": "inb_55c8c149",
+        "name": "Support",
+        "is_private": false,
+        "is_public": true,
+        "custom_fields": {}
+      }
+    ]
+  }
+}

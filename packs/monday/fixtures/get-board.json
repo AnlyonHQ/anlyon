@@ -1,0 +1,91 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/columns, https://developer.monday.com/api-reference/reference/groups).",
+  "params": {},
+  "input": {
+    "board_id": "5091234567"
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "query ($board_id: ID!) { boards(ids: [$board_id]) { id name description board_kind workspace_id columns { id title type settings } groups { id title color position } } }",
+    "variables": {
+      "board_id": "5091234567"
+    }
+  },
+  "response": {
+    "data": {
+      "boards": [
+        {
+          "id": "5091234567",
+          "name": "Customer onboarding",
+          "description": "One item per new customer.",
+          "board_kind": "public",
+          "workspace_id": "1288001",
+          "columns": [
+            {
+              "id": "name",
+              "title": "Name",
+              "type": "name",
+              "settings": {}
+            },
+            {
+              "id": "status",
+              "title": "Status",
+              "type": "status",
+              "settings": {
+                "labels": [
+                  {
+                    "id": 0,
+                    "label": "Working on it",
+                    "color": "#fdab3d",
+                    "index": 0
+                  },
+                  {
+                    "id": 1,
+                    "label": "Done",
+                    "color": "#00c875",
+                    "index": 1
+                  },
+                  {
+                    "id": 2,
+                    "label": "Stuck",
+                    "color": "#df2f4a",
+                    "index": 2
+                  }
+                ]
+              }
+            },
+            {
+              "id": "date4",
+              "title": "Kickoff",
+              "type": "date",
+              "settings": {}
+            },
+            {
+              "id": "text_mkx1abcd",
+              "title": "Account manager note",
+              "type": "text",
+              "settings": {}
+            }
+          ],
+          "groups": [
+            {
+              "id": "topics",
+              "title": "This week",
+              "color": "#579bfc",
+              "position": "65536"
+            },
+            {
+              "id": "group_mkx2b7q1",
+              "title": "Next week",
+              "color": "#a25ddc",
+              "position": "131072"
+            }
+          ]
+        }
+      ]
+    },
+    "extensions": {
+      "request_id": "req_get_board_1"
+    }
+  }
+}

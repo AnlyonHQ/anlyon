@@ -1,0 +1,34 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/contacts, GET /contact/{id}/).",
+  "params": {},
+  "input": {
+    "contact_id": "cont_JoAcme01"
+  },
+  "expectedUrl": "https://api.close.com/api/v1/contact/cont_JoAcme01/",
+  "response": {
+    "id": "cont_JoAcme01",
+    "organization_id": "orga_Example01",
+    "lead_id": "lead_Acme01",
+    "name": "Jo Rivera",
+    "display_name": "Jo Rivera",
+    "title": "Head of Operations",
+    "emails": [
+      {
+        "type": "office",
+        "email": "jo@acme.example"
+      }
+    ],
+    "phones": [
+      {
+        "type": "office",
+        "phone": "+14155550100",
+        "phone_formatted": "+1 415-555-0100"
+      }
+    ],
+    "urls": [],
+    "date_created": "2026-10-20T09:12:44.123000+00:00",
+    "date_updated": "2026-10-20T09:12:44.123000+00:00",
+    "created_by": "user_Alice01",
+    "updated_by": "user_Alice01"
+  }
+}

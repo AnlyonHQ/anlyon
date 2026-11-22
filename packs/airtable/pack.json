@@ -1,0 +1,761 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/airtable",
+  "version": "0.1.0",
+  "description": "Airtable for an agent: list bases and read their tables, search and read records and comments; create, update, upsert and delete records and add or edit comments, with every write governed.",
+  "secrets": [
+    {
+      "name": "AIRTABLE",
+      "kind": "connection",
+      "integrationId": "airtable",
+      "hosts": [
+        "api.airtable.com"
+      ],
+      "description": "The connected Airtable personal access token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "get-current-user",
+      "kind": "read",
+      "description": "Get the Airtable user the token acts as: the user id, and the email address when the token has the user.email:read scope. Use it to check whose account a call reaches.",
+      "method": "GET",
+      "urlTemplate": "https://api.airtable.com/v0/meta/whoami",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-bases",
+      "kind": "read",
+      "description": "List the bases the token can reach: id, name and your permission level on each. Airtable returns up to 1000 bases a page; when the response has an offset, pass it as offset for the next page. Limitation: a token that reaches many bases can get a response cut at the 64 KB limit, so give the token only the bases your agent needs.",
+      "method": "GET",
+      "urlTemplate": "https://api.airtable.com/v0/meta/bases?offset={{input.offset}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9/_-]{1,200}$",
+            "description": "The offset from the previous page's response, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-base-schema",
+      "kind": "read",
+      "description": "Get a base's tables: each table's id, name and primary field, its fields (id, name, type, options) and its views (id, name, type). Use it to learn the field names and ids before reading or writing records. Limitation: a base with very many tables or fields can be cut at the 64 KB limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.airtable.com/v0/meta/bases/{{input.base_id}}/tables",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-records",
+      "kind": "read",
+      "description": "List or search a table's records: id, createdTime and fields. 10 records a page; when the response has an offset, pass it as offset for the next page with the same filter, view and sort. Filter with an Airtable formula, for example {Status}='Open' or SEARCH('acme', LOWER({Name})). Empty cells are left out of fields. Limitation: a record with long text or many fields can make a page reach the 64 KB limit and be cut.",
+      "method": "GET",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}?pageSize=10&view={{input.view}}&filterByFormula={{input.filter_by_formula}}&sort%5B0%5D%5Bfield%5D={{input.sort_field}}&sort%5B0%5D%5Bdirection%5D={{input.sort_direction}}&offset={{input.offset}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "view": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "A view id (viw followed by 14 characters) or name. Only that view's records are returned, in its order unless sort_field is set."
+          },
+          "filter_by_formula": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,4000}$",
+            "description": "An Airtable formula. A record is returned when the formula is not 0, false, empty or an error, for example {Email}='ada@example.com'."
+          },
+          "sort_field": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "A field name or id to sort by."
+          },
+          "sort_direction": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "asc (the default) or desc. Used with sort_field."
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9/_-]{1,200}$",
+            "description": "The offset from the previous page's response, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-record",
+      "kind": "read",
+      "description": "Get one record by id: id, createdTime and every non-empty field, keyed by field name.",
+      "method": "GET",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "record_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^rec[A-Za-z0-9]{14}$",
+            "description": "The record id: rec followed by 14 letters and digits."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-comments",
+      "kind": "read",
+      "description": "List the comments on one record, newest first: id, author, text, createdTime and lastUpdatedTime. 20 a page; when the response has an offset, pass it as offset for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}/comments?pageSize=20&offset={{input.offset}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "record_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^rec[A-Za-z0-9]{14}$",
+            "description": "The record id: rec followed by 14 letters and digits."
+          },
+          "offset": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9/_-]{1,200}$",
+            "description": "The offset from the previous page's response, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-record",
+      "kind": "write",
+      "description": "Create one record with the fields you give. Returns the new record with its id. Read back by the returned id; the record must exist with the same createdTime. The read-back shows the record was created, not each field's value: field names differ per table. Limitation: no idempotency, so a retry after an unknown outcome can create a second record.",
+      "method": "POST",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "fields": "{{input.fields}}",
+        "typecast": "{{input.typecast}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "fields"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "fields": {
+            "type": "object",
+            "description": "Cell values keyed by field name or field id, as get-base-schema lists them: {\"Name\": \"Acme\", \"Status\": \"Open\"}. A field left out is not changed."
+          },
+          "typecast": {
+            "type": "boolean",
+            "description": "When true, Airtable converts text to the field's type where it can, and may add a new select option. Off by default."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "createdTime",
+            "equals": "{{response.createdTime}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-records",
+      "kind": "write",
+      "description": "Create up to 10 records in one call; Airtable refuses more. Counts one mutation per record. Read back the first new record by id; the others are not read back. Limitation: no idempotency, so a retry after an unknown outcome can create the records again.",
+      "method": "POST",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "records": "{{input.records}}",
+        "typecast": "{{input.typecast}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "records"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "records": {
+            "type": "array",
+            "description": "The records, up to 10 (Airtable refuses more). Each is {\"fields\": {...}} with cell values keyed by field name or field id.",
+            "items": {
+              "type": "object",
+              "required": [
+                "fields"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "fields": {
+                  "type": "object",
+                  "description": "Cell values keyed by field name or field id."
+                }
+              }
+            }
+          },
+          "typecast": {
+            "type": "boolean",
+            "description": "When true, Airtable converts text to the field's type where it can, and may add a new select option. Off by default."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "count(input.records)",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{response.records.0.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.records.0.id}}"
+          },
+          {
+            "path": "createdTime",
+            "equals": "{{response.records.0.createdTime}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-record",
+      "kind": "write",
+      "description": "Change the fields you give on one record; fields you leave out stay as they are. Returns the record. No read-back: the fields are chosen per call and named per table, so no fixed rule can show the change. Check with get-record. Limitation: a field you set to an empty value is left out of what Airtable returns.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "fields": "{{input.fields}}",
+        "typecast": "{{input.typecast}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "record_id",
+          "fields"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^rec[A-Za-z0-9]{14}$",
+            "description": "The record id: rec followed by 14 letters and digits."
+          },
+          "fields": {
+            "type": "object",
+            "description": "Cell values keyed by field name or field id, as get-base-schema lists them: {\"Name\": \"Acme\", \"Status\": \"Open\"}. A field left out is not changed."
+          },
+          "typecast": {
+            "type": "boolean",
+            "description": "When true, Airtable converts text to the field's type where it can, and may add a new select option. Off by default."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "upsert-records",
+      "kind": "write",
+      "description": "Update or create up to 10 records, matched on one to three fields that identify a record (for example Email). No match creates a record, one match updates it, and more than one match fails the call. Counts one mutation per record. Returns the records and the ids Airtable created and updated. No read-back: each record may be created or updated, and its fields are named per table. Check with get-record. Limitation: a merge field must be text, number, select or date, and not a formula, lookup or rollup.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "performUpsert": {
+          "fieldsToMergeOn": "{{input.merge_on}}"
+        },
+        "records": "{{input.records}}",
+        "typecast": "{{input.typecast}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "merge_on",
+          "records"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "merge_on": {
+            "type": "array",
+            "description": "One to three field names or ids whose values identify a record, for example [\"Email\"]. Every record must give a value for each.",
+            "items": {
+              "type": "string",
+              "pattern": "^[^\\r\\n]{1,255}$"
+            }
+          },
+          "records": {
+            "type": "array",
+            "description": "The records, up to 10 (Airtable refuses more). Each is {\"fields\": {...}} with cell values keyed by field name or field id.",
+            "items": {
+              "type": "object",
+              "required": [
+                "fields"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "fields": {
+                  "type": "object",
+                  "description": "Cell values keyed by field name or field id."
+                }
+              }
+            }
+          },
+          "typecast": {
+            "type": "boolean",
+            "description": "When true, Airtable converts text to the field's type where it can, and may add a new select option. Off by default."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "count(input.records)",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "delete-record",
+      "kind": "write",
+      "description": "Delete one record, with its comments. Read back: getting the record must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "record_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^rec[A-Za-z0-9]{14}$",
+            "description": "The record id: rec followed by 14 letters and digits."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "add-comment",
+      "kind": "write",
+      "description": "Add a comment to one record, as the token's user, or reply to a comment with parent_comment_id. Everyone with access to the base can see it. Read back from the record's newest 20 comments; the new comment's id and text must be among them. Limitation: no idempotency, so a retry after an unknown outcome can post the comment twice.",
+      "method": "POST",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}/comments",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "text": "{{input.text}}",
+        "parentCommentId": "{{input.parent_comment_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "record_id",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^rec[A-Za-z0-9]{14}$",
+            "description": "The record id: rec followed by 14 letters and digits."
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The comment text. Mention a collaborator with @[usrXXXXXXXXXXXXXX]."
+          },
+          "parent_comment_id": {
+            "type": "string",
+            "pattern": "^com[A-Za-z0-9]{14}$",
+            "description": "To reply in a thread: the id of the comment to reply to."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}/comments?pageSize=20",
+        "status": 200,
+        "match": [
+          {
+            "path": "comments.*.id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "comments.*.text",
+            "equals": "{{input.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-comment",
+      "kind": "write",
+      "description": "Replace the text of one comment. Airtable lets a token edit only comments its own user wrote. Read back from the record's newest 100 comments; the comment's id, the new text and the edit time Airtable returned must be among them. Limitation: a comment older than the newest 100 cannot be read back, so its receipt shows a mismatch.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}/comments/{{input.comment_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:airtable}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "text": "{{input.text}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "base_id",
+          "table",
+          "record_id",
+          "comment_id",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base_id": {
+            "type": "string",
+            "pattern": "^app[A-Za-z0-9]{14}$",
+            "description": "The base id: app followed by 14 letters and digits (list-bases shows it)."
+          },
+          "table": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The table id (tbl followed by 14 characters, from get-base-schema) or the table's name. Prefer the id: a name stops working when the table is renamed."
+          },
+          "record_id": {
+            "type": "string",
+            "pattern": "^rec[A-Za-z0-9]{14}$",
+            "description": "The record id: rec followed by 14 letters and digits."
+          },
+          "comment_id": {
+            "type": "string",
+            "pattern": "^com[A-Za-z0-9]{14}$",
+            "description": "The comment id: com followed by 14 letters and digits (list-comments shows it)."
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The comment text. Mention a collaborator with @[usrXXXXXXXXXXXXXX]."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.airtable.com/v0/{{input.base_id}}/{{input.table}}/{{input.record_id}}/comments?pageSize=100",
+        "status": 200,
+        "match": [
+          {
+            "path": "comments.*.id",
+            "equals": "{{input.comment_id}}"
+          },
+          {
+            "path": "comments.*.text",
+            "equals": "{{input.text}}"
+          },
+          {
+            "path": "comments.*.lastUpdatedTime",
+            "equals": "{{response.lastUpdatedTime}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "airtable: approve deleting a record",
+      "matchKind": "action",
+      "matchActionName": "delete-record",
+      "effect": "require_approval"
+    },
+    {
+      "name": "airtable: approve creating records in bulk",
+      "matchKind": "action",
+      "matchActionName": "create-records",
+      "effect": "require_approval"
+    },
+    {
+      "name": "airtable: approve upserting records",
+      "matchKind": "action",
+      "matchActionName": "upsert-records",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "airtable: records created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "create-record"
+    },
+    {
+      "name": "airtable: records created in bulk per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "create-records"
+    },
+    {
+      "name": "airtable: records updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 500,
+      "actionName": "update-record"
+    },
+    {
+      "name": "airtable: records upserted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "upsert-records"
+    },
+    {
+      "name": "airtable: records deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-record"
+    },
+    {
+      "name": "airtable: comments added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-comment"
+    },
+    {
+      "name": "airtable: comments edited per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-comment"
+    }
+  ]
+}

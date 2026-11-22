@@ -1,0 +1,75 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.zendesk.com/api-reference/ticketing/ticket-management/search/, GET /api/v2/search).",
+  "params": {},
+  "accountHost": "acme.zendesk.com",
+  "input": {
+    "query": "status<solved requester:dana.whitfield@example.com",
+    "sort_by": "updated_at"
+  },
+  "expectedUrl": "https://acme.zendesk.com/api/v2/search.json?query=type%3Aticket%20status%3Csolved%20requester%3Adana.whitfield%40example.com&sort_by=updated_at&per_page=10",
+  "response": {
+    "results": [
+      {
+        "id": 35436,
+        "url": "https://acme.zendesk.com/api/v2/tickets/35436.json",
+        "external_id": null,
+        "via": {
+          "channel": "email",
+          "source": {
+            "from": {
+              "address": "dana.whitfield@example.com",
+              "name": "Dana Whitfield"
+            },
+            "to": {
+              "address": "support@acme.zendesk.com",
+              "name": "Acme Support"
+            },
+            "rel": null
+          }
+        },
+        "created_at": "2026-10-23T14:02:11Z",
+        "updated_at": "2026-10-24T08:25:00Z",
+        "type": "question",
+        "subject": "Invoice shows the wrong billing address",
+        "raw_subject": "Invoice shows the wrong billing address",
+        "description": "Hello, the October invoice still shows our old address in Leeds. Can you correct it?",
+        "priority": "normal",
+        "status": "open",
+        "recipient": "support@acme.zendesk.com",
+        "requester_id": 20978392,
+        "submitter_id": 20978392,
+        "assignee_id": 235323,
+        "organization_id": 509974,
+        "group_id": 98738,
+        "collaborator_ids": [],
+        "follower_ids": [],
+        "email_cc_ids": [],
+        "problem_id": null,
+        "has_incidents": false,
+        "is_public": true,
+        "due_at": null,
+        "tags": [
+          "billing",
+          "invoice"
+        ],
+        "custom_fields": [
+          {
+            "id": 27642,
+            "value": "745"
+          }
+        ],
+        "satisfaction_rating": null,
+        "custom_status_id": 123,
+        "ticket_form_id": 9001,
+        "brand_id": 1234,
+        "allow_channelback": false,
+        "allow_attachments": true,
+        "result_type": "ticket"
+      }
+    ],
+    "facets": null,
+    "next_page": null,
+    "previous_page": null,
+    "count": 1
+  }
+}

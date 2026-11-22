@@ -1,0 +1,76 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.discord.com/developers/resources/message).",
+  "params": {},
+  "input": {
+    "thread_id": "1290000000000000099",
+    "content": "Rollback not needed."
+  },
+  "expectedUrl": "https://discord.com/api/v10/channels/1290000000000000099/messages",
+  "response": {
+    "id": "1290000000000000120",
+    "type": 0,
+    "channel_id": "1290000000000000099",
+    "author": {
+      "id": "1200000000000000007",
+      "username": "anlyon-bot",
+      "global_name": null,
+      "bot": true
+    },
+    "content": "Rollback not needed.",
+    "timestamp": "2026-10-15T09:12:00.000000+00:00",
+    "edited_timestamp": null,
+    "tts": false,
+    "mention_everyone": false,
+    "mentions": [],
+    "attachments": [],
+    "embeds": [],
+    "pinned": false
+  },
+  "expectedReadBackUrl": "https://discord.com/api/v10/channels/1290000000000000099/messages/1290000000000000120",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000120",
+      "type": 0,
+      "channel_id": "1290000000000000099",
+      "author": {
+        "id": "1200000000000000007",
+        "username": "anlyon-bot",
+        "global_name": null,
+        "bot": true
+      },
+      "content": "Rollback not needed.",
+      "timestamp": "2026-10-15T09:12:00.000000+00:00",
+      "edited_timestamp": null,
+      "tts": false,
+      "mention_everyone": false,
+      "mentions": [],
+      "attachments": [],
+      "embeds": [],
+      "pinned": false
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "1290000000000000120",
+      "type": 0,
+      "channel_id": "1290000000000000099",
+      "author": {
+        "id": "1200000000000000007",
+        "username": "anlyon-bot",
+        "global_name": null,
+        "bot": true
+      },
+      "content": "Something else.",
+      "timestamp": "2026-10-15T09:12:00.000000+00:00",
+      "edited_timestamp": null,
+      "tts": false,
+      "mention_everyone": false,
+      "mentions": [],
+      "attachments": [],
+      "embeds": [],
+      "pinned": false
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Invalid arguments for check_approval: \"approvalId\" is required"
+    }
+  ],
+  "isError": true
+}

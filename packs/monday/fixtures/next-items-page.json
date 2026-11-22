@@ -1,0 +1,56 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/next-items-page).",
+  "params": {},
+  "input": {
+    "cursor": "cursor_page_2",
+    "column_ids": [
+      "status",
+      "date4"
+    ]
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "query ($cursor: String!, $column_ids: [String!]) { next_items_page(limit: 20, cursor: $cursor) { cursor items { id name state updated_at group { id title } column_values(ids: $column_ids) { id type text } } } }",
+    "variables": {
+      "cursor": "cursor_page_2",
+      "column_ids": [
+        "status",
+        "date4"
+      ]
+    }
+  },
+  "response": {
+    "data": {
+      "next_items_page": {
+        "cursor": null,
+        "items": [
+          {
+            "id": "9120000003",
+            "name": "Umbrella onboarding",
+            "state": "active",
+            "updated_at": "2026-10-23T14:02:11Z",
+            "group": {
+              "id": "group_mkx2b7q1",
+              "title": "Next week"
+            },
+            "column_values": [
+              {
+                "id": "status",
+                "type": "status",
+                "text": "Done"
+              },
+              {
+                "id": "date4",
+                "type": "date",
+                "text": "2026-10-20"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "extensions": {
+      "request_id": "req_next_items_page_1"
+    }
+  }
+}

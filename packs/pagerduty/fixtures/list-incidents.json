@@ -1,0 +1,70 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "status": "triggered",
+    "second_status": "acknowledged",
+    "service_id": "PWIXJZS"
+  },
+  "expectedUrl": "https://api.pagerduty.com/incidents?limit=25&statuses[]=triggered&statuses[]=acknowledged&service_ids[]=PWIXJZS&sort_by=created_at:desc",
+  "response": {
+    "incidents": [
+      {
+        "id": "Q1ABCDEF2GHIJK",
+        "type": "incident",
+        "summary": "[#1234] Checkout error rate above 5%",
+        "self": "https://api.pagerduty.com/incidents/Q1ABCDEF2GHIJK",
+        "html_url": "https://acme.pagerduty.com/incidents/Q1ABCDEF2GHIJK",
+        "incident_number": 1234,
+        "title": "Checkout error rate above 5%",
+        "created_at": "2026-10-15T09:12:03Z",
+        "updated_at": "2026-10-15T09:20:41Z",
+        "status": "triggered",
+        "incident_key": "example-incident-key-0001",
+        "service": {
+          "id": "PWIXJZS",
+          "type": "service_reference",
+          "summary": "Checkout API",
+          "self": "https://api.pagerduty.com/services/PWIXJZS",
+          "html_url": "https://acme.pagerduty.com/services/PWIXJZS"
+        },
+        "assignments": [
+          {
+            "at": "2026-10-15T09:12:03Z",
+            "assignee": {
+              "id": "PXPGF42",
+              "type": "user_reference",
+              "summary": "Dana Lee",
+              "self": "https://api.pagerduty.com/users/PXPGF42",
+              "html_url": "https://acme.pagerduty.com/users/PXPGF42"
+            }
+          }
+        ],
+        "assigned_via": "escalation_policy",
+        "last_status_change_at": "2026-10-15T09:12:03Z",
+        "resolved_at": null,
+        "urgency": "high",
+        "escalation_policy": {
+          "id": "PT20YPA",
+          "type": "escalation_policy_reference",
+          "summary": "Checkout escalation",
+          "self": "https://api.pagerduty.com/escalation_policies/PT20YPA",
+          "html_url": "https://acme.pagerduty.com/escalation_policies/PT20YPA"
+        },
+        "teams": [],
+        "pending_actions": [],
+        "acknowledgements": [],
+        "priority": null,
+        "alert_counts": {
+          "all": 1,
+          "triggered": 1,
+          "resolved": 0
+        }
+      }
+    ],
+    "limit": 25,
+    "offset": 0,
+    "more": false,
+    "total": null
+  }
+}

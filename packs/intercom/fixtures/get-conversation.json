@@ -1,0 +1,82 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/retrieveconversation).",
+  "params": {},
+  "input": {
+    "conversation_id": "1295"
+  },
+  "expectedUrl": "https://api.intercom.io/conversations/1295?display_as=plaintext",
+  "response": {
+    "type": "conversation",
+    "id": "1295",
+    "title": null,
+    "created_at": 1734537500,
+    "updated_at": 1734537600,
+    "waiting_since": 1734537500,
+    "snoozed_until": null,
+    "open": true,
+    "state": "open",
+    "read": false,
+    "priority": "not_priority",
+    "admin_assignee_id": null,
+    "team_assignee_id": null,
+    "tags": {
+      "type": "tag.list",
+      "tags": []
+    },
+    "source": {
+      "type": "conversation",
+      "id": "403918330",
+      "delivered_as": "customer_initiated",
+      "subject": "",
+      "body": "My invoice is wrong",
+      "author": {
+        "type": "lead",
+        "id": "6762f0cd1bb69f9f2193bb7f",
+        "name": "Sam Rivera",
+        "email": "sam@example.com"
+      },
+      "attachments": [],
+      "url": null,
+      "redacted": false
+    },
+    "contacts": {
+      "type": "contact.list",
+      "contacts": [
+        {
+          "type": "contact",
+          "id": "6762f0cd1bb69f9f2193bb7f",
+          "external_id": null
+        }
+      ]
+    },
+    "teammates": {
+      "type": "admin.list",
+      "teammates": []
+    },
+    "conversation_parts": {
+      "type": "conversation_part.list",
+      "total_count": 1,
+      "conversation_parts": [
+        {
+          "type": "conversation_part",
+          "id": "18837",
+          "part_type": "comment",
+          "body": "Thanks Sam, looking into it now.",
+          "created_at": 1734537600,
+          "updated_at": 1734537600,
+          "notified_at": 1734537600,
+          "assigned_to": null,
+          "author": {
+            "type": "admin",
+            "id": "991267708",
+            "name": "Ava Chen",
+            "email": "ava@example.com"
+          },
+          "attachments": [],
+          "external_id": null,
+          "redacted": false
+        }
+      ]
+    }
+  }
+}

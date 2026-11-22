@@ -1,0 +1,228 @@
+{
+  "needs": {
+    "admin_id": "Your own teammate id in Intercom (list-admins shows it). Every conversation step is recorded as you, and you must belong to at least one team",
+    "tag_id": "The id of a tag that is safe to put on a test contact and conversation (list-tags shows it)",
+    "company_id": "The Intercom id (24 characters) of a company that has at least one contact (list-companies shows it)",
+    "article_phrase": "A word from the title of one published Help Center article"
+  },
+  "steps": [
+    {
+      "action": "list-admins",
+      "input": {}
+    },
+    {
+      "action": "get-admin",
+      "input": {
+        "admin_id": "{{needs.admin_id}}"
+      },
+      "save": {
+        "team_id": "team_ids.0"
+      }
+    },
+    {
+      "action": "list-teams",
+      "input": {},
+      "save": {
+        "team_admin_id": "teams.0.admin_ids.0"
+      }
+    },
+    {
+      "action": "list-tags",
+      "input": {}
+    },
+    {
+      "action": "list-companies",
+      "input": {
+        "page": 1
+      }
+    },
+    {
+      "action": "get-company",
+      "input": {
+        "company_id": "{{needs.company_id}}"
+      }
+    },
+    {
+      "action": "search-articles",
+      "input": {
+        "phrase": "{{needs.article_phrase}}",
+        "state": "published"
+      },
+      "save": {
+        "article_id": "data.articles.0.id"
+      }
+    },
+    {
+      "action": "get-article",
+      "input": {
+        "article_id": "{{saved.article_id}}"
+      }
+    },
+    {
+      "action": "create-contact",
+      "input": {
+        "role": "lead",
+        "email": "anlyon-exercise-{{run}}@example.com",
+        "name": "Anlyon exercise {{run}}"
+      },
+      "save": {
+        "contact_id": "id"
+      }
+    },
+    {
+      "action": "get-contact",
+      "input": {
+        "contact_id": "{{saved.contact_id}}"
+      }
+    },
+    {
+      "action": "update-contact",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "name": "Anlyon exercise {{run}} updated",
+        "phone": "+15555550100"
+      }
+    },
+    {
+      "action": "list-contacts",
+      "input": {}
+    },
+    {
+      "action": "search-contacts",
+      "input": {
+        "query": {
+          "field": "email",
+          "operator": "=",
+          "value": "anlyon-exercise-{{run}}@example.com"
+        }
+      }
+    },
+    {
+      "action": "tag-contact",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "tag_id": "{{needs.tag_id}}"
+      }
+    },
+    {
+      "action": "untag-contact",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "tag_id": "{{needs.tag_id}}"
+      }
+    },
+    {
+      "action": "attach-contact-to-company",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "company_id": "{{needs.company_id}}"
+      }
+    },
+    {
+      "action": "detach-contact-from-company",
+      "input": {
+        "contact_id": "{{saved.contact_id}}",
+        "company_id": "{{needs.company_id}}"
+      }
+    },
+    {
+      "action": "create-conversation",
+      "input": {
+        "from_type": "lead",
+        "contact_id": "{{saved.contact_id}}",
+        "body": "Anlyon exercise {{run}}: a test message, safe to ignore."
+      },
+      "save": {
+        "conversation_id": "conversation_id"
+      }
+    },
+    {
+      "action": "get-conversation",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}"
+      }
+    },
+    {
+      "action": "list-conversations",
+      "input": {}
+    },
+    {
+      "action": "search-conversations",
+      "input": {
+        "query": {
+          "field": "id",
+          "operator": "=",
+          "value": "{{saved.conversation_id}}"
+        }
+      }
+    },
+    {
+      "action": "add-conversation-note",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}",
+        "admin_id": "{{needs.admin_id}}",
+        "body": "Anlyon exercise {{run}}: internal note."
+      }
+    },
+    {
+      "action": "reply-to-conversation",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}",
+        "admin_id": "{{needs.admin_id}}",
+        "body": "Anlyon exercise {{run}}: test reply to a test contact."
+      }
+    },
+    {
+      "action": "tag-conversation",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}",
+        "tag_id": "{{needs.tag_id}}",
+        "admin_id": "{{needs.admin_id}}"
+      }
+    },
+    {
+      "action": "assign-conversation",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}",
+        "admin_id": "{{needs.admin_id}}",
+        "assignee_id": "{{saved.team_admin_id}}"
+      }
+    },
+    {
+      "action": "assign-conversation-to-team",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}",
+        "admin_id": "{{needs.admin_id}}",
+        "team_id": "{{saved.team_id}}"
+      }
+    },
+    {
+      "action": "snooze-conversation",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}",
+        "admin_id": "{{needs.admin_id}}",
+        "snoozed_until": 1924992000
+      }
+    },
+    {
+      "action": "reopen-conversation",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}",
+        "admin_id": "{{needs.admin_id}}"
+      }
+    },
+    {
+      "action": "close-conversation",
+      "input": {
+        "conversation_id": "{{saved.conversation_id}}",
+        "admin_id": "{{needs.admin_id}}"
+      }
+    },
+    {
+      "action": "delete-contact",
+      "input": {
+        "contact_id": "{{saved.contact_id}}"
+      }
+    }
+  ]
+}

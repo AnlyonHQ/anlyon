@@ -1,0 +1,31 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/trello/rest/api-group-boards/, GET /1/boards/{id}/lists).",
+  "params": {},
+  "input": {
+    "board_id": "6720a1b2c3d4e5f6a7b8c9d0"
+  },
+  "expectedUrl": "https://api.trello.com/1/boards/6720a1b2c3d4e5f6a7b8c9d0/lists?fields=name,closed,pos,idBoard",
+  "response": [
+    {
+      "id": "6720a1b2c3d4e5f6a7b8c9a1",
+      "name": "To do",
+      "closed": false,
+      "pos": 16384,
+      "idBoard": "6720a1b2c3d4e5f6a7b8c9d0"
+    },
+    {
+      "id": "6720a1b2c3d4e5f6a7b8c9a2",
+      "name": "Doing",
+      "closed": false,
+      "pos": 32768,
+      "idBoard": "6720a1b2c3d4e5f6a7b8c9d0"
+    },
+    {
+      "id": "6720a1b2c3d4e5f6a7b8c9a3",
+      "name": "Done",
+      "closed": false,
+      "pos": 49152,
+      "idBoard": "6720a1b2c3d4e5f6a7b8c9d0"
+    }
+  ]
+}

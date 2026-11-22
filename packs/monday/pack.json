@@ -1,0 +1,917 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/monday",
+  "version": "0.1.0",
+  "description": "monday.com for an agent: list boards and read their columns and groups, list, search and read items and their updates; create items, set column values, move items between groups, post updates, archive and delete items, with every write governed.",
+  "secrets": [
+    {
+      "name": "MONDAY",
+      "kind": "connection",
+      "integrationId": "monday",
+      "hosts": [
+        "api.monday.com"
+      ],
+      "description": "The connected monday.com personal API token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-boards",
+      "kind": "read",
+      "description": "List the boards the token's user can reach, 25 a page, in the order monday returns them. Returns each board's id, name, description, kind (public, private or share), workspace id, item count, last update and url. Archived and deleted boards are left out. Page with page (1 is the start); a page with fewer than 25 boards is the last. Changes nothing.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "query ($page: Int) { boards(limit: 25, page: $page, state: active) { id name description board_kind workspace_id items_count updated_at url } }",
+        "variables": {
+          "page": "{{input.page}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "The page to read, from 1. Leave out for the start."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-board",
+      "kind": "read",
+      "description": "Get one board with its columns and groups. Returns each column's id, title, type and settings (a status column's settings hold its labels), and each group's id, title, color and position. Use the column ids with get-item, set-column-value and change-column-values, and the group ids with create-item, move-item-to-group and list-group-items. Changes nothing.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "query ($board_id: ID!) { boards(ids: [$board_id]) { id name description board_kind workspace_id columns { id title type settings } groups { id title color position } } }",
+        "variables": {
+          "board_id": "{{input.board_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The board's id, from list-boards or the board's url."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-items",
+      "kind": "read",
+      "description": "List the items (rows) on a board, 20 a page, with each item's id, name, state, last update, group and the text of its column values. When items_page.cursor is not null, pass it to next-items-page for the next page; the cursor expires 60 minutes after this call. Name column_ids on a wide board to keep the response small. Changes nothing.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "query ($board_id: ID!, $column_ids: [String!]) { boards(ids: [$board_id]) { id items_page(limit: 20) { cursor items { id name state updated_at group { id title } column_values(ids: $column_ids) { id type text } } } } }",
+        "variables": {
+          "board_id": "{{input.board_id}}",
+          "column_ids": "{{input.column_ids}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The board's id, from list-boards."
+          },
+          "column_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,64}$"
+            },
+            "description": "These columns' values (column ids from get-board). Leave out for every column; on a wide board, name the columns you need so the response stays small."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-group-items",
+      "kind": "read",
+      "description": "List the items in one group of a board, 20 a page, with each item's id, name, state, last update, group and the text of its column values. When items_page.cursor is not null, pass it to next-items-page for the next page; the cursor expires 60 minutes after this call. Changes nothing.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "query ($board_id: ID!, $group_id: String!, $column_ids: [String!]) { boards(ids: [$board_id]) { id groups(ids: [$group_id]) { id title items_page(limit: 20) { cursor items { id name state updated_at group { id title } column_values(ids: $column_ids) { id type text } } } } } }",
+        "variables": {
+          "board_id": "{{input.board_id}}",
+          "group_id": "{{input.group_id}}",
+          "column_ids": "{{input.column_ids}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id",
+          "group_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The board's id, from list-boards."
+          },
+          "group_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]{1,64}$",
+            "description": "The group's id, from get-board (for example topics)."
+          },
+          "column_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,64}$"
+            },
+            "description": "These columns' values (column ids from get-board). Leave out for every column; on a wide board, name the columns you need so the response stays small."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-items",
+      "kind": "read",
+      "description": "Find the items on a board whose column holds a value, for example an email, a status label or a date (YYYY-MM-DD). The match is exact. monday supports this for some column types, listed in its docs; others are refused. Returns 20 a page; when cursor is not null, pass it to next-items-page. Changes nothing.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "query ($board_id: ID!, $column_id: String!, $value: String!, $column_ids: [String!]) { items_page_by_column_values(board_id: $board_id, limit: 20, columns: [{ column_id: $column_id, column_values: [$value] }]) { cursor items { id name state updated_at group { id title } column_values(ids: $column_ids) { id type text } } } }",
+        "variables": {
+          "board_id": "{{input.board_id}}",
+          "column_id": "{{input.column_id}}",
+          "value": "{{input.value}}",
+          "column_ids": "{{input.column_ids}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id",
+          "column_id",
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The board's id, from list-boards."
+          },
+          "column_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]{1,64}$",
+            "description": "The column to search, from get-board."
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The value to match: a status label's text, a date as YYYY-MM-DD, an email, or text."
+          },
+          "column_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,64}$"
+            },
+            "description": "These columns' values (column ids from get-board). Leave out for every column; on a wide board, name the columns you need so the response stays small."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "next-items-page",
+      "kind": "read",
+      "description": "Get the next 20 items after a cursor from list-items, list-group-items, search-items or an earlier next-items-page. Returns the same fields and a new cursor; a null cursor means there are no more. A cursor expires 60 minutes after the call that started the listing. Changes nothing.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "query ($cursor: String!, $column_ids: [String!]) { next_items_page(limit: 20, cursor: $cursor) { cursor items { id name state updated_at group { id title } column_values(ids: $column_ids) { id type text } } } }",
+        "variables": {
+          "cursor": "{{input.cursor}}",
+          "column_ids": "{{input.column_ids}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "cursor"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "cursor": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/:|.-]{1,1024}$",
+            "description": "The cursor the previous page returned."
+          },
+          "column_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,64}$"
+            },
+            "description": "These columns' values (column ids from get-board). Leave out for every column; on a wide board, name the columns you need so the response stays small."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-item",
+      "kind": "read",
+      "description": "Get one item with its board, group, state (active, archived or deleted), creation and last update, url, and every column value: its id, type, text and raw value (a JSON string). Name column_ids to read a few columns. Changes nothing.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "query ($item_id: ID!, $column_ids: [String!]) { items(ids: [$item_id]) { id name state created_at updated_at url board { id name } group { id title } column_values(ids: $column_ids) { id type text value } } }",
+        "variables": {
+          "item_id": "{{input.item_id}}",
+          "column_ids": "{{input.column_ids}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "item_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's id, from list-items or search-items."
+          },
+          "column_ids": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_]{1,64}$"
+            },
+            "description": "These columns' values (column ids from get-board). Leave out for every column; on a wide board, name the columns you need so the response stays small."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-updates",
+      "kind": "read",
+      "description": "List the updates (comments) on one item, 20 a page. Returns each update's id, plain text, creation time and creator (id and name). Page with page (1 is the start); a page with fewer than 20 updates is the last. Changes nothing.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "query ($item_id: ID!, $page: Int) { items(ids: [$item_id]) { id updates(limit: 20, page: $page) { id text_body created_at creator { id name } } } }",
+        "variables": {
+          "item_id": "{{input.item_id}}",
+          "page": "{{input.page}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "item_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's id, from list-items or search-items."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page to read, from 1. Leave out for the start."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-item",
+      "kind": "write",
+      "description": "Create one item on a board, in a group or in the board's top group. column_values optionally sets columns at creation, as a JSON object written as a string and keyed by column id, for example {\"status\":{\"label\":\"Done\"},\"date4\":{\"date\":\"2026-11-02\"},\"text_mkx1abcd\":\"Call before kickoff\"}. It travels as a GraphQL variable, so it never changes the query. Read back by the new item's id; the name must match. Limitation: the column values set at creation are not part of the read-back. No idempotency: a retry after an unknown outcome can create a second item.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "mutation ($board_id: ID!, $item_name: String!, $group_id: String, $column_values: JSON) { create_item(board_id: $board_id, item_name: $item_name, group_id: $group_id, column_values: $column_values) { id name group { id } } }",
+        "variables": {
+          "board_id": "{{input.board_id}}",
+          "item_name": "{{input.item_name}}",
+          "group_id": "{{input.group_id}}",
+          "column_values": "{{input.column_values}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id",
+          "item_name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The board's id, from list-boards."
+          },
+          "item_name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,255}$",
+            "description": "The item's name."
+          },
+          "group_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]{1,64}$",
+            "description": "The group to create it in, from get-board. Leave out for the board's top group."
+          },
+          "column_values": {
+            "type": "string",
+            "pattern": "^\\{[\\s\\S]{1,9998}\\}$",
+            "description": "Columns to set, as a JSON object written as a string, keyed by column id (from get-board). Status: {\"label\":\"Done\"}; date: {\"date\":\"YYYY-MM-DD\"}; text: a plain string."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.monday.com/v2",
+        "status": 200,
+        "graphql": {
+          "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id name state group { id } } }",
+          "variables": {
+            "item_id": "{{response.data.create_item.id}}"
+          }
+        },
+        "match": [
+          {
+            "path": "data.items.0.id",
+            "equals": "{{response.data.create_item.id}}"
+          },
+          {
+            "path": "data.items.0.name",
+            "equals": "{{input.item_name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-column-value",
+      "kind": "write",
+      "description": "Set one column of an item from a plain string: a status label's text (Done), a date as YYYY-MM-DD, a text, a number. monday refuses a status label the column does not have; get-board lists the labels. Read back by item and column; the column's text must equal what monday returned for this change.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "mutation ($board_id: ID!, $item_id: ID!, $column_id: String!, $value: String!) { change_simple_column_value(board_id: $board_id, item_id: $item_id, column_id: $column_id, value: $value) { id column_values(ids: [$column_id]) { id text value } } }",
+        "variables": {
+          "board_id": "{{input.board_id}}",
+          "item_id": "{{input.item_id}}",
+          "column_id": "{{input.column_id}}",
+          "value": "{{input.value}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id",
+          "item_id",
+          "column_id",
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's board id."
+          },
+          "item_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's id, from list-items or search-items."
+          },
+          "column_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]{1,64}$",
+            "description": "The column's id, from get-board (for example status or date4)."
+          },
+          "value": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,2000}$",
+            "description": "The new value as plain text: a status label, a date as YYYY-MM-DD, a text or a number."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.monday.com/v2",
+        "status": 200,
+        "graphql": {
+          "query": "query ($item_id: ID!, $column_id: String!) { items(ids: [$item_id]) { id column_values(ids: [$column_id]) { id text value } } }",
+          "variables": {
+            "item_id": "{{input.item_id}}",
+            "column_id": "{{input.column_id}}"
+          }
+        },
+        "match": [
+          {
+            "path": "data.items.0.column_values.0.id",
+            "equals": "{{input.column_id}}"
+          },
+          {
+            "path": "data.items.0.column_values.0.text",
+            "equals": "{{response.data.change_simple_column_value.column_values.0.text}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "change-column-values",
+      "kind": "write",
+      "description": "Set several columns of one item in one call. column_values is a JSON object written as a string, keyed by column id (from get-board), for example {\"status\":{\"label\":\"Stuck\"},\"date4\":{\"date\":\"2026-11-09\"},\"text_mkx1abcd\":\"Waiting on legal\"}. It travels as a GraphQL variable, so it never changes the query. monday refuses a status label the column does not have. Read back by item id; its last update time must equal the one monday returned for this change. Limitation: the read-back does not compare each column; use get-item to see them.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "mutation ($board_id: ID!, $item_id: ID!, $column_values: JSON!) { change_multiple_column_values(board_id: $board_id, item_id: $item_id, column_values: $column_values) { id updated_at } }",
+        "variables": {
+          "board_id": "{{input.board_id}}",
+          "item_id": "{{input.item_id}}",
+          "column_values": "{{input.column_values}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "board_id",
+          "item_id",
+          "column_values"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "board_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's board id."
+          },
+          "item_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's id, from list-items or search-items."
+          },
+          "column_values": {
+            "type": "string",
+            "pattern": "^\\{[\\s\\S]{1,9998}\\}$",
+            "description": "The columns to set, as a JSON object written as a string, keyed by column id. Status: {\"label\":\"Done\"}; date: {\"date\":\"YYYY-MM-DD\"}; text: a plain string."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.monday.com/v2",
+        "status": 200,
+        "graphql": {
+          "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id updated_at } }",
+          "variables": {
+            "item_id": "{{input.item_id}}"
+          }
+        },
+        "match": [
+          {
+            "path": "data.items.0.id",
+            "equals": "{{input.item_id}}"
+          },
+          {
+            "path": "data.items.0.updated_at",
+            "equals": "{{response.data.change_multiple_column_values.updated_at}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "move-item-to-group",
+      "kind": "write",
+      "description": "Move one item to another group on the same board. Read back by item id; its group must be the one asked for. Limitation: moving to another board is not offered.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "mutation ($item_id: ID!, $group_id: String!) { move_item_to_group(item_id: $item_id, group_id: $group_id) { id group { id } } }",
+        "variables": {
+          "item_id": "{{input.item_id}}",
+          "group_id": "{{input.group_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "item_id",
+          "group_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's id, from list-items or search-items."
+          },
+          "group_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_]{1,64}$",
+            "description": "The group to move it to, from get-board."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.monday.com/v2",
+        "status": 200,
+        "graphql": {
+          "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id group { id title } } }",
+          "variables": {
+            "item_id": "{{input.item_id}}"
+          }
+        },
+        "match": [
+          {
+            "path": "data.items.0.id",
+            "equals": "{{input.item_id}}"
+          },
+          {
+            "path": "data.items.0.group.id",
+            "equals": "{{input.group_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-update",
+      "kind": "write",
+      "description": "Add an update (a comment) to one item. The body is text or simple HTML. Everyone who can see the item sees it, and monday notifies the item's subscribers and anyone mentioned. Read back by the new update's id; it must be on this item with the body monday stored. No idempotency: a retry after an unknown outcome can post it twice.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "mutation ($item_id: ID!, $body: String!) { create_update(item_id: $item_id, body: $body) { id item_id body } }",
+        "variables": {
+          "item_id": "{{input.item_id}}",
+          "body": "{{input.body}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "item_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's id, from list-items or search-items."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The update, as text or simple HTML."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.monday.com/v2",
+        "status": 200,
+        "graphql": {
+          "query": "query ($update_id: ID!) { updates(ids: [$update_id]) { id item_id body } }",
+          "variables": {
+            "update_id": "{{response.data.create_update.id}}"
+          }
+        },
+        "match": [
+          {
+            "path": "data.updates.0.id",
+            "equals": "{{response.data.create_update.id}}"
+          },
+          {
+            "path": "data.updates.0.item_id",
+            "equals": "{{input.item_id}}"
+          },
+          {
+            "path": "data.updates.0.body",
+            "equals": "{{response.data.create_update.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-item",
+      "kind": "write",
+      "description": "Archive one item. It leaves the board and can be restored from the board's archive in monday. Read back by item id; its state must be archived.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "mutation ($item_id: ID!) { archive_item(item_id: $item_id) { id state } }",
+        "variables": {
+          "item_id": "{{input.item_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "item_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's id, from list-items or search-items."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.monday.com/v2",
+        "status": 200,
+        "graphql": {
+          "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id state } }",
+          "variables": {
+            "item_id": "{{input.item_id}}"
+          }
+        },
+        "match": [
+          {
+            "path": "data.items.0.id",
+            "equals": "{{input.item_id}}"
+          },
+          {
+            "path": "data.items.0.state",
+            "equals": "archived"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-item",
+      "kind": "write",
+      "description": "Delete one item. monday moves it to the account's trash, where it can be restored for a time. Read back by item id; its state must be deleted.",
+      "method": "POST",
+      "graphql": true,
+      "urlTemplate": "https://api.monday.com/v2",
+      "headers": {
+        "Authorization": "{{connection:monday}}",
+        "API-Version": "2026-07",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "mutation ($item_id: ID!) { delete_item(item_id: $item_id) { id state } }",
+        "variables": {
+          "item_id": "{{input.item_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "item_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "item_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The item's id, from list-items or search-items."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.monday.com/v2",
+        "status": 200,
+        "graphql": {
+          "query": "query ($item_id: ID!) { items(ids: [$item_id]) { id state } }",
+          "variables": {
+            "item_id": "{{input.item_id}}"
+          }
+        },
+        "match": [
+          {
+            "path": "data.items.0.id",
+            "equals": "{{input.item_id}}"
+          },
+          {
+            "path": "data.items.0.state",
+            "equals": "deleted"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "monday: approve deleting an item",
+      "matchKind": "action",
+      "matchActionName": "delete-item",
+      "effect": "require_approval"
+    },
+    {
+      "name": "monday: approve archiving an item",
+      "matchKind": "action",
+      "matchActionName": "archive-item",
+      "effect": "require_approval"
+    },
+    {
+      "name": "monday: approve posting an update",
+      "matchKind": "action",
+      "matchActionName": "add-update",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "monday: items created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-item"
+    },
+    {
+      "name": "monday: single column changes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "set-column-value"
+    },
+    {
+      "name": "monday: multiple column changes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "change-column-values"
+    },
+    {
+      "name": "monday: items moved between groups per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "move-item-to-group"
+    },
+    {
+      "name": "monday: updates posted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-update"
+    },
+    {
+      "name": "monday: items archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "archive-item"
+    },
+    {
+      "name": "monday: items deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-item"
+    }
+  ]
+}

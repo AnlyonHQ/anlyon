@@ -1,0 +1,11 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.asana.com/reference/deletesection).",
+  "params": {},
+  "input": {
+    "section_gid": "1208805555555555"
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/sections/1208805555555555",
+  "response": {
+    "data": {}
+  }
+}

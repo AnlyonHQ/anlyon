@@ -1,0 +1,31 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation requestPromote). Vercel answers 201 or 202 with no body; the read-back is getAlias.",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "project_id": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+    "deployment_id": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6",
+    "domain": "www.acme.com"
+  },
+  "expectedUrl": "https://api.vercel.com/v10/projects/prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3/promote/dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "response": {},
+  "expectedReadBackUrl": "https://api.vercel.com/v4/aliases/www.acme.com?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "uid": "2WjyKQmM8ZnGcJsPWMrHRHrE",
+      "alias": "www.acme.com",
+      "deploymentId": "dpl_9bH2kLmN4pQ6rS8tU0vW2xY4zA6",
+      "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "uid": "2WjyKQmM8ZnGcJsPWMrHRHrE",
+      "alias": "www.acme.com",
+      "deploymentId": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+      "projectId": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3"
+    }
+  }
+}

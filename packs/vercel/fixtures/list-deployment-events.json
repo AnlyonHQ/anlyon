@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation getDeploymentEvents).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "deployment_id": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+    "direction": "backward",
+    "until": 1761300050000
+  },
+  "expectedUrl": "https://api.vercel.com/v3/deployments/dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd/events?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F&limit=50&direction=backward&until=1761300050000",
+  "response": [
+    {
+      "type": "stdout",
+      "created": 1761300040000,
+      "payload": {
+        "deploymentId": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+        "id": "evt_1",
+        "date": 1761300040000,
+        "text": "Build Completed in /vercel/output [42s]"
+      }
+    },
+    {
+      "type": "stdout",
+      "created": 1761300020000,
+      "payload": {
+        "deploymentId": "dpl_5WJWYSyB7BpgTj3EuwF37WMRBXBtPQ2iTMJHJBJyRfd",
+        "id": "evt_0",
+        "date": 1761300020000,
+        "text": "Running \"npm run build\""
+      }
+    }
+  ]
+}

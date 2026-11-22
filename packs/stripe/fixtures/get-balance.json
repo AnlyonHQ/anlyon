@@ -1,0 +1,34 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/balance/balance_retrieve).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.stripe.com/v1/balance",
+  "response": {
+    "object": "balance",
+    "available": [
+      {
+        "amount": 666670,
+        "currency": "usd",
+        "source_types": {
+          "card": 666670
+        }
+      }
+    ],
+    "connect_reserved": [
+      {
+        "amount": 0,
+        "currency": "usd"
+      }
+    ],
+    "livemode": false,
+    "pending": [
+      {
+        "amount": 61414,
+        "currency": "usd",
+        "source_types": {
+          "card": 61414
+        }
+      }
+    ]
+  }
+}

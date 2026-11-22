@@ -1,0 +1,36 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/comments#delete-an-issue-comment).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "comment_id": "3051120077"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/issues/comments/3051120077",
+  "response": null,
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/issues/comments/3051120077",
+  "readBack": {
+    "status": 404,
+    "json": {
+      "message": "Not Found",
+      "documentation_url": "https://docs.github.com/en/rest/issues/comments#get-an-issue-comment",
+      "status": "404"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 3051120077,
+      "user": {
+        "login": "octo-dev",
+        "id": 583231,
+        "type": "User",
+        "html_url": "https://github.com/octo-dev"
+      },
+      "body": "A fix is in review.",
+      "created_at": "2026-10-15T08:01:12Z",
+      "updated_at": "2026-10-15T08:01:12Z",
+      "html_url": "https://github.com/acme/widgets/issues/412#issuecomment-3051120077"
+    }
+  }
+}

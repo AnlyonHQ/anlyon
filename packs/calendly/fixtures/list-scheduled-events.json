@@ -1,0 +1,53 @@
+{
+  "_source": "Shaped after the provider's documented response (Calendly API v2 OpenAPI document, list-scheduled-events).",
+  "params": {},
+  "input": {
+    "user": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+    "status": "active",
+    "invitee_email": "alex@example.com",
+    "min_start_time": "2026-11-01T00:00:00Z",
+    "sort": "start_time:asc"
+  },
+  "expectedUrl": "https://api.calendly.com/scheduled_events?user=https%3A%2F%2Fapi.calendly.com%2Fusers%2FBDHFGIJ2KLMNOPQR&status=active&invitee_email=alex%40example.com&min_start_time=2026-11-01T00%3A00%3A00Z&sort=start_time%3Aasc&count=20",
+  "response": {
+    "collection": [
+      {
+        "uri": "https://api.calendly.com/scheduled_events/FGHAB3CDEJKLMNOP",
+        "name": "30 Minute Meeting",
+        "meeting_notes_plain": null,
+        "meeting_notes_html": null,
+        "status": "active",
+        "start_time": "2026-11-03T15:00:00.000000Z",
+        "end_time": "2026-11-03T15:30:00.000000Z",
+        "event_type": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+        "location": {
+          "type": "google_conference",
+          "status": "pushed",
+          "join_url": "https://meet.google.com/abc-defg-hij"
+        },
+        "invitees_counter": {
+          "total": 1,
+          "active": 1,
+          "limit": 1
+        },
+        "created_at": "2026-10-24T10:00:00.000000Z",
+        "updated_at": "2026-10-24T10:00:00.000000Z",
+        "event_memberships": [
+          {
+            "user": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR",
+            "user_email": "sam@example.com",
+            "user_name": "Sam Rivera"
+          }
+        ],
+        "event_guests": []
+      }
+    ],
+    "pagination": {
+      "count": 1,
+      "next_page": null,
+      "previous_page": null,
+      "next_page_token": null,
+      "previous_page_token": null
+    }
+  }
+}

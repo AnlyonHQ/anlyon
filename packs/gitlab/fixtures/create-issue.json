@@ -1,0 +1,117 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.gitlab.com/api/issues/).",
+  "params": {},
+  "input": {
+    "project": "acme/web",
+    "title": "Checkout fails on Safari",
+    "description": "Steps to reproduce are in the thread.",
+    "labels": "bug"
+  },
+  "expectedUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/issues",
+  "response": {
+    "id": 151000042,
+    "iid": 42,
+    "project_id": 5000001,
+    "title": "Checkout fails on Safari",
+    "description": "Steps to reproduce are in the thread.",
+    "state": "opened",
+    "labels": [
+      "bug"
+    ],
+    "assignees": [
+      {
+        "id": 1001,
+        "username": "jdoe",
+        "name": "Jane Doe",
+        "state": "active",
+        "web_url": "https://gitlab.com/jdoe"
+      }
+    ],
+    "author": {
+      "id": 1001,
+      "username": "jdoe",
+      "name": "Jane Doe",
+      "state": "active",
+      "web_url": "https://gitlab.com/jdoe"
+    },
+    "milestone": null,
+    "due_date": null,
+    "created_at": "2026-10-20T09:00:00.000Z",
+    "updated_at": "2026-10-20T09:00:00.000Z",
+    "closed_at": null,
+    "web_url": "https://gitlab.com/acme/web/-/issues/42"
+  },
+  "expectedReadBackUrl": "https://gitlab.com/api/v4/projects/acme%2Fweb/issues/42",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 151000042,
+      "iid": 42,
+      "project_id": 5000001,
+      "title": "Checkout fails on Safari",
+      "description": "Steps to reproduce are in the thread.",
+      "state": "opened",
+      "labels": [
+        "bug"
+      ],
+      "assignees": [
+        {
+          "id": 1001,
+          "username": "jdoe",
+          "name": "Jane Doe",
+          "state": "active",
+          "web_url": "https://gitlab.com/jdoe"
+        }
+      ],
+      "author": {
+        "id": 1001,
+        "username": "jdoe",
+        "name": "Jane Doe",
+        "state": "active",
+        "web_url": "https://gitlab.com/jdoe"
+      },
+      "milestone": null,
+      "due_date": null,
+      "created_at": "2026-10-20T09:00:00.000Z",
+      "updated_at": "2026-10-20T09:00:00.000Z",
+      "closed_at": null,
+      "web_url": "https://gitlab.com/acme/web/-/issues/42"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 151000042,
+      "iid": 42,
+      "project_id": 5000001,
+      "title": "Another issue",
+      "description": "Steps to reproduce are in the thread.",
+      "state": "opened",
+      "labels": [
+        "bug"
+      ],
+      "assignees": [
+        {
+          "id": 1001,
+          "username": "jdoe",
+          "name": "Jane Doe",
+          "state": "active",
+          "web_url": "https://gitlab.com/jdoe"
+        }
+      ],
+      "author": {
+        "id": 1001,
+        "username": "jdoe",
+        "name": "Jane Doe",
+        "state": "active",
+        "web_url": "https://gitlab.com/jdoe"
+      },
+      "milestone": null,
+      "due_date": null,
+      "created_at": "2026-10-20T09:00:00.000Z",
+      "updated_at": "2026-10-20T09:00:00.000Z",
+      "closed_at": null,
+      "web_url": "https://gitlab.com/acme/web/-/issues/42"
+    }
+  }
+}

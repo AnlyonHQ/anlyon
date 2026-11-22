@@ -1,0 +1,30 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/comments#create-an-issue-comment).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "issue_number": "412",
+    "body": "A fix is in review."
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/issues/412/comments",
+  "response": {
+    "id": 3051120077,
+    "body": "A fix is in review."
+  },
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/issues/comments/3051120077",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": 3051120077,
+      "body": "A fix is in review."
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": 3051120077,
+      "body": "Something else."
+    }
+  }
+}

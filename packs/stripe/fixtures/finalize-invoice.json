@@ -1,0 +1,168 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/invoices/finalize).",
+  "params": {},
+  "input": {
+    "invoice_id": "in_1w7oQ1L81zBf53i9P6IbCFdB"
+  },
+  "expectedUrl": "https://api.stripe.com/v1/invoices/in_1w7oQ1L81zBf53i9P6IbCFdB/finalize",
+  "response": {
+    "id": "in_1w7oQ1L81zBf53i9P6IbCFdB",
+    "object": "invoice",
+    "account_country": "US",
+    "amount_due": 1500,
+    "amount_paid": 0,
+    "amount_remaining": 1500,
+    "attempt_count": 0,
+    "attempted": false,
+    "auto_advance": false,
+    "billing_reason": "manual",
+    "collection_method": "send_invoice",
+    "created": 1680644467,
+    "currency": "usd",
+    "customer": "cus_lEzmGSVXJKpHQR",
+    "customer_email": "jennyrosen@example.com",
+    "customer_name": "Jenny Rosen",
+    "description": null,
+    "due_date": 1683236467,
+    "hosted_invoice_url": "https://invoice.stripe.com/i/acct_15etRMenZkGE9FP3/test_prgqd27NXiGm70mglfO7jGaAKAJYJ7Y6",
+    "invoice_pdf": null,
+    "lines": {
+      "object": "list",
+      "data": [
+        {
+          "id": "il_1bH78K39Db2ILGFE7xeQvXwg",
+          "object": "line_item",
+          "amount": 1500,
+          "currency": "usd",
+          "description": "Consulting, 1 hour",
+          "quantity": 1
+        }
+      ],
+      "has_more": false,
+      "total_count": 1,
+      "url": "/v1/invoices/in_1w7oQ1L81zBf53i9P6IbCFdB/lines"
+    },
+    "livemode": false,
+    "metadata": {},
+    "number": "HCVXJZAF-0001",
+    "parent": null,
+    "status": "open",
+    "status_transitions": {
+      "finalized_at": 1792050500,
+      "marked_uncollectible_at": null,
+      "paid_at": null,
+      "voided_at": null
+    },
+    "subtotal": 1500,
+    "total": 1500
+  },
+  "expectedReadBackUrl": "https://api.stripe.com/v1/invoices/in_1w7oQ1L81zBf53i9P6IbCFdB",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "in_1w7oQ1L81zBf53i9P6IbCFdB",
+      "object": "invoice",
+      "account_country": "US",
+      "amount_due": 1500,
+      "amount_paid": 0,
+      "amount_remaining": 1500,
+      "attempt_count": 0,
+      "attempted": false,
+      "auto_advance": false,
+      "billing_reason": "manual",
+      "collection_method": "send_invoice",
+      "created": 1680644467,
+      "currency": "usd",
+      "customer": "cus_lEzmGSVXJKpHQR",
+      "customer_email": "jennyrosen@example.com",
+      "customer_name": "Jenny Rosen",
+      "description": null,
+      "due_date": 1683236467,
+      "hosted_invoice_url": "https://invoice.stripe.com/i/acct_15etRMenZkGE9FP3/test_prgqd27NXiGm70mglfO7jGaAKAJYJ7Y6",
+      "invoice_pdf": null,
+      "lines": {
+        "object": "list",
+        "data": [
+          {
+            "id": "il_1bH78K39Db2ILGFE7xeQvXwg",
+            "object": "line_item",
+            "amount": 1500,
+            "currency": "usd",
+            "description": "Consulting, 1 hour",
+            "quantity": 1
+          }
+        ],
+        "has_more": false,
+        "total_count": 1,
+        "url": "/v1/invoices/in_1w7oQ1L81zBf53i9P6IbCFdB/lines"
+      },
+      "livemode": false,
+      "metadata": {},
+      "number": "HCVXJZAF-0001",
+      "parent": null,
+      "status": "open",
+      "status_transitions": {
+        "finalized_at": 1792050500,
+        "marked_uncollectible_at": null,
+        "paid_at": null,
+        "voided_at": null
+      },
+      "subtotal": 1500,
+      "total": 1500
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "in_1w7oQ1L81zBf53i9P6IbCFdB",
+      "object": "invoice",
+      "account_country": "US",
+      "amount_due": 1500,
+      "amount_paid": 0,
+      "amount_remaining": 1500,
+      "attempt_count": 0,
+      "attempted": false,
+      "auto_advance": false,
+      "billing_reason": "manual",
+      "collection_method": "send_invoice",
+      "created": 1680644467,
+      "currency": "usd",
+      "customer": "cus_lEzmGSVXJKpHQR",
+      "customer_email": "jennyrosen@example.com",
+      "customer_name": "Jenny Rosen",
+      "description": null,
+      "due_date": 1683236467,
+      "hosted_invoice_url": null,
+      "invoice_pdf": null,
+      "lines": {
+        "object": "list",
+        "data": [
+          {
+            "id": "il_1bH78K39Db2ILGFE7xeQvXwg",
+            "object": "line_item",
+            "amount": 1500,
+            "currency": "usd",
+            "description": "Consulting, 1 hour",
+            "quantity": 1
+          }
+        ],
+        "has_more": false,
+        "total_count": 1,
+        "url": "/v1/invoices/in_1w7oQ1L81zBf53i9P6IbCFdB/lines"
+      },
+      "livemode": false,
+      "metadata": {},
+      "number": null,
+      "parent": null,
+      "status": "draft",
+      "status_transitions": {
+        "finalized_at": null,
+        "marked_uncollectible_at": null,
+        "paid_at": null,
+        "voided_at": null
+      },
+      "subtotal": 1500,
+      "total": 1500
+    }
+  }
+}

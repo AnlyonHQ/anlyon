@@ -1,0 +1,178 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/updatetask).",
+  "params": {},
+  "input": {
+    "task_id": "86a1b2c3d",
+    "status": "in progress"
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/task/86a1b2c3d",
+  "response": {
+    "id": "86a1b2c3d",
+    "custom_id": null,
+    "name": "Follow up with Acme",
+    "text_content": "They asked for the security review.",
+    "description": "They asked for the security review.",
+    "status": {
+      "id": "p9012345_iJkLmNoP",
+      "status": "in progress",
+      "color": "#4194f6",
+      "orderindex": 1,
+      "type": "custom"
+    },
+    "date_created": "1761300000000",
+    "date_updated": "1761300000000",
+    "date_closed": null,
+    "date_done": null,
+    "archived": false,
+    "creator": {
+      "id": 4501234,
+      "username": "Sam Rivera",
+      "color": "#827718"
+    },
+    "assignees": [],
+    "group_assignees": [],
+    "watchers": [],
+    "checklists": [],
+    "tags": [],
+    "parent": null,
+    "priority": {
+      "color": "#f8ae00",
+      "id": "3",
+      "orderindex": "3",
+      "priority": "normal"
+    },
+    "due_date": "1761868800000",
+    "start_date": null,
+    "team_id": "9012345",
+    "url": "https://app.clickup.com/t/86a1b2c3d",
+    "list": {
+      "id": "901201234567",
+      "name": "Customer follow-ups",
+      "access": true
+    },
+    "folder": {
+      "id": "90120123456",
+      "name": "Sales",
+      "hidden": false,
+      "access": true
+    },
+    "space": {
+      "id": "90120012345"
+    }
+  },
+  "expectedReadBackUrl": "https://api.clickup.com/api/v2/task/86a1b2c3d",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "86a1b2c3d",
+      "custom_id": null,
+      "name": "Follow up with Acme",
+      "text_content": "They asked for the security review.",
+      "description": "They asked for the security review.",
+      "status": {
+        "id": "p9012345_iJkLmNoP",
+        "status": "in progress",
+        "color": "#4194f6",
+        "orderindex": 1,
+        "type": "custom"
+      },
+      "date_created": "1761300000000",
+      "date_updated": "1761300000000",
+      "date_closed": null,
+      "date_done": null,
+      "archived": false,
+      "creator": {
+        "id": 4501234,
+        "username": "Sam Rivera",
+        "color": "#827718"
+      },
+      "assignees": [],
+      "group_assignees": [],
+      "watchers": [],
+      "checklists": [],
+      "tags": [],
+      "parent": null,
+      "priority": {
+        "color": "#f8ae00",
+        "id": "3",
+        "orderindex": "3",
+        "priority": "normal"
+      },
+      "due_date": "1761868800000",
+      "start_date": null,
+      "team_id": "9012345",
+      "url": "https://app.clickup.com/t/86a1b2c3d",
+      "list": {
+        "id": "901201234567",
+        "name": "Customer follow-ups",
+        "access": true
+      },
+      "folder": {
+        "id": "90120123456",
+        "name": "Sales",
+        "hidden": false,
+        "access": true
+      },
+      "space": {
+        "id": "90120012345"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "86a1b2c3d",
+      "custom_id": null,
+      "name": "Follow up with Acme",
+      "text_content": "They asked for the security review.",
+      "description": "They asked for the security review.",
+      "status": {
+        "id": "p9012345_aBcDeFgH",
+        "status": "to do",
+        "color": "#d3d3d3",
+        "orderindex": 0,
+        "type": "open"
+      },
+      "date_created": "1761300000000",
+      "date_updated": "1761300000000",
+      "date_closed": null,
+      "date_done": null,
+      "archived": false,
+      "creator": {
+        "id": 4501234,
+        "username": "Sam Rivera",
+        "color": "#827718"
+      },
+      "assignees": [],
+      "group_assignees": [],
+      "watchers": [],
+      "checklists": [],
+      "tags": [],
+      "parent": null,
+      "priority": {
+        "color": "#f8ae00",
+        "id": "3",
+        "orderindex": "3",
+        "priority": "normal"
+      },
+      "due_date": "1761868800000",
+      "start_date": null,
+      "team_id": "9012345",
+      "url": "https://app.clickup.com/t/86a1b2c3d",
+      "list": {
+        "id": "901201234567",
+        "name": "Customer follow-ups",
+        "access": true
+      },
+      "folder": {
+        "id": "90120123456",
+        "name": "Sales",
+        "hidden": false,
+        "access": true
+      },
+      "space": {
+        "id": "90120012345"
+      }
+    }
+  }
+}

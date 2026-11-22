@@ -1,0 +1,15 @@
+# action               operation                                                            kind
+# Twilio REST API 2010-04-01 (https://github.com/twilio/twilio-oai/blob/main/spec/json/twilio_api_v2010.json)
+list-messages          GET /2010-04-01/Accounts/{AccountSid}/Messages.json
+get-message            GET /2010-04-01/Accounts/{AccountSid}/Messages/{Sid}.json
+list-message-media     GET /2010-04-01/Accounts/{AccountSid}/Messages/{MessageSid}/Media.json
+list-phone-numbers     GET /2010-04-01/Accounts/{AccountSid}/IncomingPhoneNumbers.json
+get-phone-number       GET /2010-04-01/Accounts/{AccountSid}/IncomingPhoneNumbers/{Sid}.json
+list-calls             GET /2010-04-01/Accounts/{AccountSid}/Calls.json
+get-call               GET /2010-04-01/Accounts/{AccountSid}/Calls/{Sid}.json
+send-sms               POST /2010-04-01/Accounts/{AccountSid}/Messages.json
+# redact-message is UpdateMessage with Body set to an empty string
+redact-message         POST /2010-04-01/Accounts/{AccountSid}/Messages/{Sid}.json
+delete-message         DELETE /2010-04-01/Accounts/{AccountSid}/Messages/{Sid}.json
+# rename-phone-number is UpdateIncomingPhoneNumber with FriendlyName alone
+rename-phone-number    POST /2010-04-01/Accounts/{AccountSid}/IncomingPhoneNumbers/{Sid}.json

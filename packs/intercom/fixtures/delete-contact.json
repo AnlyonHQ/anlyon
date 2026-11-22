@@ -1,0 +1,14 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/contacts/deletecontact).",
+  "params": {},
+  "input": {
+    "contact_id": "6762f0cd1bb69f9f2193bb7f"
+  },
+  "expectedUrl": "https://api.intercom.io/contacts/6762f0cd1bb69f9f2193bb7f",
+  "response": {
+    "type": "contact",
+    "id": "6762f0cd1bb69f9f2193bb7f",
+    "external_id": null,
+    "deleted": true
+  }
+}

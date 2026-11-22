@@ -1,0 +1,36 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/deals/create-deal).",
+  "params": {},
+  "input": {
+    "dealname": "Acme renewal",
+    "amount": "12000.00",
+    "dealstage": "qualifiedtobuy"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/deals",
+  "response": {
+    "id": "7701",
+    "properties": {
+      "dealname": "Acme renewal",
+      "amount": "12000.00",
+      "dealstage": "qualifiedtobuy",
+      "pipeline": "default"
+    }
+  },
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/deals/7701?properties=dealname",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "7701",
+      "properties": {
+        "dealname": "Acme renewal"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 404,
+    "json": {
+      "status": "error",
+      "category": "OBJECT_NOT_FOUND"
+    }
+  }
+}

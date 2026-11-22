@@ -1,0 +1,81 @@
+{
+  "name": "@anlyonhq/mcp-server",
+  "version": "3.0.0",
+  "mcpName": "com.anlyon/anlyon",
+  "description": "MCP server for Anlyon. Lets an AI agent invoke named production actions and request human approval, without holding a credential.",
+  "author": "Anlyon <support@anlyon.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnlyonHQ/anlyon.git",
+    "directory": "sdks/typescript/mcp-server"
+  },
+  "homepage": "https://docs.anlyon.com/ai-tools/claude-code",
+  "bugs": {
+    "url": "https://docs.anlyon.com",
+    "email": "support@anlyon.com"
+  },
+  "keywords": [
+    "anlyon",
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "claude",
+    "claude-code",
+    "cursor",
+    "ai-agents",
+    "actions",
+    "approvals",
+    "human-in-the-loop",
+    "tools"
+  ],
+  "type": "module",
+  "bin": {
+    "anlyon-mcp": "./dist/index.js"
+  },
+  "main": "./dist/lib.js",
+  "module": "./dist/lib.js",
+  "types": "./dist/lib.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/lib.d.ts",
+      "default": "./dist/lib.js"
+    },
+    "./profiles/openai": {
+      "types": "./dist/profiles/openai.d.ts",
+      "default": "./dist/profiles/openai.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "server.json"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "clean": "rimraf dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node dist/index.js",
+    "prepublishOnly": "pnpm run build"
+  },
+  "dependencies": {
+    "@anlyonhq/sdk": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.32.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.10",
+    "rimraf": "^5.0.10",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.2",
+    "vitest": "^4.1.12"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

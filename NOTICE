@@ -1,0 +1,124 @@
+Anlyon
+Copyright (c) 2026 Anlyon
+
+This repository is licensed as stated in LICENSE (Elastic License 2.0), except the packages
+under sdks/, which are MIT-licensed as stated in each package's LICENSE file.
+
+It includes the following third-party material, which stays under its own licence.
+
+
+1. GitHub MCP Server tool definitions
+
+   What:      MCP tool names, descriptions, parameter descriptions and annotation titles,
+              used as test input. Two descriptions (get_me, create_issue) are shortened.
+   Where:     packages/mcp-risk/tests/fixtures/github-like.json
+   Origin:    https://github.com/github/github-mcp-server/tree/90a1255e1b0a3ec15da21786a67e9ce542621d6f/pkg/github
+   Licence:   MIT (text below)
+   Copyright: Copyright (c) 2025 GitHub
+
+
+2. Model Context Protocol reference servers: filesystem server tool definitions
+
+   What:      MCP tool names, descriptions and parameter descriptions, used as test input.
+              Some descriptions are shortened.
+   Where:     packages/mcp-risk/tests/fixtures/filesystem-like.json
+   Origin:    https://github.com/modelcontextprotocol/servers/blob/bad016799541c8f08a16ceac438cddbd6048d59f/src/filesystem/index.ts
+   Licence:   MIT (text below)
+   Copyright: Copyright (c) 2025 Anthropic, PBC
+
+
+3. Model Context Protocol reference servers: Slack server tool definitions
+
+   What:      MCP tool names, descriptions and parameter descriptions, used as test input.
+              The slack_archive_channel tool is Anlyon's own.
+   Where:     packages/mcp-risk/tests/fixtures/slack-like.json
+   Origin:    https://github.com/modelcontextprotocol/servers-archived/blob/9be4674d1ddf8c469e6461a27a337eeb65f76c2e/src/slack/index.ts
+   Licence:   MIT (text below)
+   Copyright: Copyright (c) 2024 Anthropic, PBC
+
+
+4. Stripe AI toolkit tool definitions
+
+   What:      Tool descriptions and parameter descriptions, used as test input. The
+              create_coupon description is shortened and edited.
+   Where:     packages/mcp-risk/tests/fixtures/stripe-like.json
+   Origin:    https://github.com/stripe/ai/tree/dd624f517802fd51e9ae9f7671b5148a5350dc71/tools/typescript/src/shared
+   Licence:   MIT (text below)
+   Copyright: Copyright (c) 2024-2025 Stripe
+
+
+5. shadcn/ui components
+
+   What:      React UI components, copied from the shadcn/ui registry and modified.
+   Where:     dashboard/src/components/ui/ (among them avatar, breadcrumb, card, chart,
+              drawer, dropdown-menu, empty, item, native-select, progress, sidebar and table),
+              and the data-table-column-header, data-table-pagination and
+              data-table-view-options components
+   Origin:    https://github.com/shadcn-ui/ui
+   Licence:   MIT (text below)
+   Copyright: Copyright (c) 2023 shadcn
+
+
+6. coss ui components
+
+   What:      React UI components built on Base UI, copied from the coss ui registry and
+              modified.
+   Where:     dashboard/src/components/ui/ (among them accordion, alert, alert-dialog,
+              autocomplete, badge, button, checkbox, checkbox-group, collapsible, combobox,
+              command, dialog, field, fieldset, group, input, input-group, kbd, label, menu,
+              meter, number-field, pagination, popover, preview-card, radio-group,
+              scroll-area, select, separator, sheet, skeleton, slider, spinner, switch, tabs,
+              textarea, toast, toggle, toggle-group, toolbar and tooltip)
+   Origin:    https://github.com/cosscom/ui
+   Licence:   MIT (text below)
+   Copyright: Copyright (c) 2025 coss.com and Origin UI
+
+
+7. Tool-poisoning examples
+
+   What:      Two short tool descriptions quoted as test input for the risk engine's
+              tool-poisoning checks.
+   Where:     packages/mcp-risk/tests/fixtures/invariant-labs.ts
+   Origin:    "MCP Security Notification: Tool Poisoning Attacks", Luca Beurer-Kellner and
+              Marc Fischer, Invariant Labs, 2025-04-01,
+              https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks
+   Copyright: Copyright (c) 2025 Invariant Labs AG
+
+
+8. Simple Icons
+
+   What:      SVG brand icons.
+   Where:     dashboard/public/integrations/ (airtable, asana, calcom, calendly, clickup,
+              discord, github, gitlab, hubspot, intercom, jira, mailchimp, pagerduty, resend,
+              sentry, stripe, todoist, trello and zendesk)
+   Origin:    https://github.com/simple-icons/simple-icons
+   Licence:   CC0 1.0 Universal
+
+
+Trademarks
+
+Product names, logos and brands shown in this repository, including the icons in
+dashboard/public/integrations/ and dashboard/public/google.svg, are the property of their
+owners. They are used only to identify the services Anlyon connects to, and imply no
+endorsement.
+
+
+MIT License (items 1 to 6, each under its copyright line above)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

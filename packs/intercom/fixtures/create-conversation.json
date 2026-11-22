@@ -1,0 +1,123 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.intercom.com/docs/references/2.11/rest-api/api.intercom.io/conversations/createconversation).",
+  "params": {},
+  "input": {
+    "from_type": "lead",
+    "contact_id": "6762f0cd1bb69f9f2193bb7f",
+    "body": "My invoice is wrong"
+  },
+  "expectedUrl": "https://api.intercom.io/conversations",
+  "response": {
+    "type": "user_message",
+    "id": "403918330",
+    "created_at": 1734537500,
+    "body": "My invoice is wrong",
+    "message_type": "inapp",
+    "conversation_id": "1295"
+  },
+  "expectedReadBackUrl": "https://api.intercom.io/conversations/1295",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "type": "conversation",
+      "id": "1295",
+      "title": null,
+      "created_at": 1734537500,
+      "updated_at": 1734537600,
+      "waiting_since": 1734537500,
+      "snoozed_until": null,
+      "open": true,
+      "state": "open",
+      "read": false,
+      "priority": "not_priority",
+      "admin_assignee_id": null,
+      "team_assignee_id": null,
+      "tags": {
+        "type": "tag.list",
+        "tags": []
+      },
+      "source": {
+        "type": "conversation",
+        "id": "403918330",
+        "delivered_as": "customer_initiated",
+        "subject": "",
+        "body": "<p>My invoice is wrong</p>",
+        "author": {
+          "type": "lead",
+          "id": "6762f0cd1bb69f9f2193bb7f",
+          "name": "Sam Rivera",
+          "email": "sam@example.com"
+        },
+        "attachments": [],
+        "url": null,
+        "redacted": false
+      },
+      "contacts": {
+        "type": "contact.list",
+        "contacts": [
+          {
+            "type": "contact",
+            "id": "6762f0cd1bb69f9f2193bb7f",
+            "external_id": null
+          }
+        ]
+      },
+      "teammates": {
+        "type": "admin.list",
+        "teammates": []
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "type": "conversation",
+      "id": "1295",
+      "title": null,
+      "created_at": 1734537500,
+      "updated_at": 1734537600,
+      "waiting_since": 1734537500,
+      "snoozed_until": null,
+      "open": true,
+      "state": "open",
+      "read": false,
+      "priority": "not_priority",
+      "admin_assignee_id": null,
+      "team_assignee_id": null,
+      "tags": {
+        "type": "tag.list",
+        "tags": []
+      },
+      "source": {
+        "type": "conversation",
+        "id": "403918330",
+        "delivered_as": "customer_initiated",
+        "subject": "",
+        "body": "<p>My invoice is wrong</p>",
+        "author": {
+          "type": "lead",
+          "id": "6762f0cd1bb69f9f2193bb7f",
+          "name": "Sam Rivera",
+          "email": "sam@example.com"
+        },
+        "attachments": [],
+        "url": null,
+        "redacted": false
+      },
+      "contacts": {
+        "type": "contact.list",
+        "contacts": [
+          {
+            "type": "contact",
+            "id": "6762f0aa1bb69f9f2193bb01",
+            "external_id": null
+          }
+        ]
+      },
+      "teammates": {
+        "type": "admin.list",
+        "teammates": []
+      }
+    }
+  }
+}

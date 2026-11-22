@@ -1,0 +1,18 @@
+# action               operation                                        kind
+# monday.com API, GraphQL at https://api.monday.com/v2 (https://developer.monday.com/api-reference/reference), API-Version 2026-07
+# monday publishes no OpenAPI spec; written by hand from the reference.
+list-boards            query boards                                     read
+get-board              query boards { columns groups }                  read
+list-items             query boards { items_page }                      read
+list-group-items       query boards { groups { items_page } }           read
+search-items           query items_page_by_column_values                read
+next-items-page        query next_items_page                            read
+get-item               query items                                      read
+list-updates           query items { updates }                          read
+create-item            mutation create_item
+set-column-value       mutation change_simple_column_value
+change-column-values   mutation change_multiple_column_values
+move-item-to-group     mutation move_item_to_group
+add-update             mutation create_update
+archive-item           mutation archive_item
+delete-item            mutation delete_item

@@ -1,0 +1,22 @@
+{
+  "needs": {
+    "agent_email": "The email of the agent the connection acts as (the email given at connect)"
+  },
+  "steps": [
+    { "action": "list-groups", "input": {} },
+    { "action": "create-ticket", "input": { "subject": "Anlyon exercise {{run}}", "body": "Anlyon exercise {{run}}: a test ticket with the connected agent as requester.", "public": false, "priority": "low", "type": "task", "tags": ["anlyon_exercise"] }, "save": { "ticket_id": "ticket.id", "agent_id": "ticket.requester_id" } },
+    { "action": "get-ticket", "input": { "ticket_id": "{{saved.ticket_id}}" } },
+    { "action": "list-tickets", "input": { "sort": "-updated_at" } },
+    { "action": "search-tickets", "input": { "query": "tags:anlyon_exercise", "sort_by": "created_at" } },
+    { "action": "add-internal-note", "input": { "ticket_id": "{{saved.ticket_id}}", "body": "Anlyon exercise {{run}} internal note" } },
+    { "action": "reply-to-ticket", "input": { "ticket_id": "{{saved.ticket_id}}", "body": "Anlyon exercise {{run}} public reply" } },
+    { "action": "list-ticket-comments", "input": { "ticket_id": "{{saved.ticket_id}}", "sort": "-created_at" } },
+    { "action": "set-ticket-priority", "input": { "ticket_id": "{{saved.ticket_id}}", "priority": "high" } },
+    { "action": "add-ticket-tags", "input": { "ticket_id": "{{saved.ticket_id}}", "tag": "anlyon_exercise_tagged" } },
+    { "action": "assign-ticket", "input": { "ticket_id": "{{saved.ticket_id}}", "assignee_id": "{{saved.agent_id}}" } },
+    { "action": "get-user", "input": { "user_id": "{{saved.agent_id}}" } },
+    { "action": "search-users", "input": { "query": "{{needs.agent_email}}" } },
+    { "action": "list-user-tickets", "input": { "user_id": "{{saved.agent_id}}" } },
+    { "action": "set-ticket-status", "input": { "ticket_id": "{{saved.ticket_id}}", "status": "solved" } }
+  ]
+}

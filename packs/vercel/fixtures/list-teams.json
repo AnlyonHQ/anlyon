@@ -1,0 +1,24 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation getTeams).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.vercel.com/v2/teams?limit=20",
+  "response": {
+    "teams": [
+      {
+        "id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+        "slug": "acme",
+        "name": "Acme",
+        "createdAt": 1700000000000,
+        "membership": {
+          "role": "OWNER"
+        }
+      }
+    ],
+    "pagination": {
+      "count": 1,
+      "next": null,
+      "prev": null
+    }
+  }
+}

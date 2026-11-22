@@ -1,0 +1,9 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "maintenance_window_id": "PW98YIO"
+  },
+  "expectedUrl": "https://api.pagerduty.com/maintenance_windows/PW98YIO",
+  "response": null
+}

@@ -1,0 +1,497 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/google-calendar",
+  "version": "0.1.0",
+  "description": "Google Calendar tools an agent can be given: list and read events in a time range; create, change and cancel events, each write governed and read back.",
+  "secrets": [
+    {
+      "name": "GOOGLE_CALENDAR",
+      "kind": "connection",
+      "integrationId": "google-calendar",
+      "hosts": [
+        "www.googleapis.com"
+      ],
+      "description": "The connected Google account whose calendars the agent works in"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-events",
+      "kind": "read",
+      "description": "List the events on one calendar that overlap a time range, earliest first, 50 per page: id, status, summary, location, start, end, organizer, attendees with their responses, the recurring series it belongs to and its link. Each occurrence of a recurring event is listed on its own. Cancelled events are left out. Filter with query, which Google matches against the summary, description, location and attendees. When nextPageToken is in the response, pass it as page_token for the next page. Use get-event for an event's description and everything else.",
+      "method": "GET",
+      "urlTemplate": "https://www.googleapis.com/calendar/v3/calendars/{{input.calendar_id}}/events?singleEvents=true&orderBy=startTime&maxResults=50&fields=nextPageToken,timeZone,items(id,status,summary,location,start,end,organizer(email),attendees(email,responseStatus),recurringEventId,htmlLink)&timeMin={{input.time_min}}&timeMax={{input.time_max}}&q={{input.query}}&pageToken={{input.page_token}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:google-calendar}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "calendar_id",
+          "time_min",
+          "time_max"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "calendar_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._@+#-]{1,255}$",
+            "description": "primary for the connected account's own calendar, or a calendar's id (Calendar settings, Integrate calendar), such as team@group.calendar.google.com."
+          },
+          "time_min": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "The start of the range, such as 2026-11-10T00:00:00Z. Events that end after it are listed."
+          },
+          "time_max": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+            "description": "The end of the range, such as 2026-11-17T00:00:00Z. Events that start before it are listed."
+          },
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Free text to match, such as a name or an email address."
+          },
+          "page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/.-]{1,2048}$",
+            "description": "nextPageToken from the previous page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-event",
+      "kind": "read",
+      "description": "Get one event by id: summary, description, location, start, end, status, organizer, attendees and their responses, recurrence, conference link and when it was created and last changed. A cancelled event is still returned, with status cancelled.",
+      "method": "GET",
+      "urlTemplate": "https://www.googleapis.com/calendar/v3/calendars/{{input.calendar_id}}/events/{{input.event_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:google-calendar}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "calendar_id",
+          "event_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "calendar_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._@+#-]{1,255}$",
+            "description": "primary for the connected account's own calendar, or a calendar's id (Calendar settings, Integrate calendar), such as team@group.calendar.google.com."
+          },
+          "event_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{5,1024}$",
+            "description": "The event's id, from list-events or create-event (id). One occurrence of a recurring event has its own id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-event",
+      "kind": "write",
+      "description": "Create one event on a calendar of the connected account, with a title, a start and an end, and optionally a description, a location and attendees. Google emails the attendees an invitation only when send_updates says so. Returns the event, with its id. Read back by that id; the summary must match and the event must be confirmed. Limitation: no idempotency, so a retry after an unknown outcome can create a second event; check with list-events first. Limitation: a recurring event, reminders and a video conference link cannot be set with this action.",
+      "method": "POST",
+      "urlTemplate": "https://www.googleapis.com/calendar/v3/calendars/{{input.calendar_id}}/events?sendUpdates={{input.send_updates}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:google-calendar}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "summary": "{{input.summary}}",
+        "description": "{{input.description}}",
+        "location": "{{input.location}}",
+        "start": "{{input.start}}",
+        "end": "{{input.end}}",
+        "attendees": "{{input.attendees}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "calendar_id",
+          "summary",
+          "start",
+          "end"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "calendar_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._@+#-]{1,255}$",
+            "description": "primary for the connected account's own calendar, or a calendar's id (Calendar settings, Integrate calendar), such as team@group.calendar.google.com."
+          },
+          "summary": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1024}$",
+            "description": "The event's title."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,4000}$",
+            "description": "The event's description. Plain text, or the limited HTML Google Calendar shows."
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1024}$",
+            "description": "Where it happens, as free text: an address, a room or a link."
+          },
+          "start": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dateTime": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+                "description": "When the event starts, with its offset, such as 2026-11-10T15:00:00Z or 2026-11-10T10:00:00-05:00."
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "description": "For an all-day event, the day it starts, such as 2026-11-10 (the end day is exclusive). Give date or dateTime, not both."
+              },
+              "timeZone": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_/+-]{1,64}$",
+                "description": "An IANA time zone such as Europe/London. Needed for a recurring event; otherwise the offset in dateTime is enough."
+              }
+            },
+            "description": "When the event starts: dateTime, or date for an all-day event."
+          },
+          "end": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dateTime": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+                "description": "When the event ends, with its offset, such as 2026-11-10T15:00:00Z or 2026-11-10T10:00:00-05:00."
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "description": "For an all-day event, the day it ends, such as 2026-11-10 (the end day is exclusive). Give date or dateTime, not both."
+              },
+              "timeZone": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_/+-]{1,64}$",
+                "description": "An IANA time zone such as Europe/London. Needed for a recurring event; otherwise the offset in dateTime is enough."
+              }
+            },
+            "description": "When the event ends: dateTime, or date for an all-day event."
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$"
+                },
+                "optional": {
+                  "type": "boolean",
+                  "description": "Mark this attendee as optional."
+                }
+              }
+            },
+            "description": "The people invited, by email. Google sends them an invitation only when send_updates says so."
+          },
+          "send_updates": {
+            "type": "string",
+            "enum": [
+              "all",
+              "externalOnly",
+              "none"
+            ],
+            "description": "Who Google emails about the change: all attendees, only those outside the calendar owner's Google Workspace domain, or none. Google emails nobody when left out."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://www.googleapis.com/calendar/v3/calendars/{{input.calendar_id}}/events/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "summary",
+            "equals": "{{input.summary}}"
+          },
+          {
+            "path": "status",
+            "equals": "confirmed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-event",
+      "kind": "write",
+      "description": "Change one event: its title, description, location, start, end or attendees. Only what you give is changed; attendees, when given, replaces the whole list. Google emails the attendees about the change only when send_updates says so. Read back by id; the event Google stores must be the version this change produced (its etag must match). Limitation: the read-back proves this change is the latest version, not which fields it touched; another change made in between makes it fail to match. Limitation: an event the connected account does not organise may refuse changes other than to its own copy.",
+      "method": "PATCH",
+      "urlTemplate": "https://www.googleapis.com/calendar/v3/calendars/{{input.calendar_id}}/events/{{input.event_id}}?sendUpdates={{input.send_updates}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:google-calendar}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "summary": "{{input.summary}}",
+        "description": "{{input.description}}",
+        "location": "{{input.location}}",
+        "start": "{{input.start}}",
+        "end": "{{input.end}}",
+        "attendees": "{{input.attendees}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "calendar_id",
+          "event_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "calendar_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._@+#-]{1,255}$",
+            "description": "primary for the connected account's own calendar, or a calendar's id (Calendar settings, Integrate calendar), such as team@group.calendar.google.com."
+          },
+          "event_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{5,1024}$",
+            "description": "The event's id, from list-events or create-event (id). One occurrence of a recurring event has its own id."
+          },
+          "summary": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1024}$",
+            "description": "The event's title."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,4000}$",
+            "description": "The event's description. Plain text, or the limited HTML Google Calendar shows."
+          },
+          "location": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,1024}$",
+            "description": "Where it happens, as free text: an address, a room or a link."
+          },
+          "start": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dateTime": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+                "description": "When the event starts, with its offset, such as 2026-11-10T15:00:00Z or 2026-11-10T10:00:00-05:00."
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "description": "For an all-day event, the day it starts, such as 2026-11-10 (the end day is exclusive). Give date or dateTime, not both."
+              },
+              "timeZone": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_/+-]{1,64}$",
+                "description": "An IANA time zone such as Europe/London. Needed for a recurring event; otherwise the offset in dateTime is enough."
+              }
+            },
+            "description": "When the event starts: dateTime, or date for an all-day event."
+          },
+          "end": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "dateTime": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,3})?(Z|[+-][0-9]{2}:[0-9]{2})$",
+                "description": "When the event ends, with its offset, such as 2026-11-10T15:00:00Z or 2026-11-10T10:00:00-05:00."
+              },
+              "date": {
+                "type": "string",
+                "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+                "description": "For an all-day event, the day it ends, such as 2026-11-10 (the end day is exclusive). Give date or dateTime, not both."
+              },
+              "timeZone": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_/+-]{1,64}$",
+                "description": "An IANA time zone such as Europe/London. Needed for a recurring event; otherwise the offset in dateTime is enough."
+              }
+            },
+            "description": "When the event ends: dateTime, or date for an all-day event."
+          },
+          "attendees": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "email"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "email": {
+                  "type": "string",
+                  "pattern": "^[^@\\s,;<>\"]{1,64}@[^@\\s,;<>\"]{1,190}$"
+                },
+                "optional": {
+                  "type": "boolean",
+                  "description": "Mark this attendee as optional."
+                }
+              }
+            },
+            "description": "The people invited, by email. Google sends them an invitation only when send_updates says so."
+          },
+          "send_updates": {
+            "type": "string",
+            "enum": [
+              "all",
+              "externalOnly",
+              "none"
+            ],
+            "description": "Who Google emails about the change: all attendees, only those outside the calendar owner's Google Workspace domain, or none. Google emails nobody when left out."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://www.googleapis.com/calendar/v3/calendars/{{input.calendar_id}}/events/{{input.event_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.event_id}}"
+          },
+          {
+            "path": "etag",
+            "equals": "{{response.etag}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "cancel-event",
+      "kind": "write",
+      "description": "Cancel one event, which removes it from every attendee's calendar. Google emails the attendees only when send_updates says so. The id of a recurring series cancels every occurrence; an occurrence's id from list-events cancels that one. Read back by id; Google keeps a cancelled event, and its status must be cancelled. Limitation: the read-back can match an event that was already cancelled. Cancelling cannot be undone with this pack; create the event again instead.",
+      "method": "DELETE",
+      "urlTemplate": "https://www.googleapis.com/calendar/v3/calendars/{{input.calendar_id}}/events/{{input.event_id}}?sendUpdates={{input.send_updates}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:google-calendar}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "calendar_id",
+          "event_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "calendar_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._@+#-]{1,255}$",
+            "description": "primary for the connected account's own calendar, or a calendar's id (Calendar settings, Integrate calendar), such as team@group.calendar.google.com."
+          },
+          "event_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{5,1024}$",
+            "description": "The event's id, from list-events or create-event (id). One occurrence of a recurring event has its own id."
+          },
+          "send_updates": {
+            "type": "string",
+            "enum": [
+              "all",
+              "externalOnly",
+              "none"
+            ],
+            "description": "Who Google emails about the change: all attendees, only those outside the calendar owner's Google Workspace domain, or none. Google emails nobody when left out."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://www.googleapis.com/calendar/v3/calendars/{{input.calendar_id}}/events/{{input.event_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.event_id}}"
+          },
+          {
+            "path": "status",
+            "equals": "cancelled"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "google-calendar: approve creating an event",
+      "matchKind": "action",
+      "matchActionName": "create-event",
+      "effect": "require_approval"
+    },
+    {
+      "name": "google-calendar: approve changing an event",
+      "matchKind": "action",
+      "matchActionName": "update-event",
+      "effect": "require_approval"
+    },
+    {
+      "name": "google-calendar: approve cancelling an event",
+      "matchKind": "action",
+      "matchActionName": "cancel-event",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "google-calendar: events created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-event"
+    },
+    {
+      "name": "google-calendar: events changed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-event"
+    },
+    {
+      "name": "google-calendar: events cancelled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "cancel-event"
+    }
+  ]
+}

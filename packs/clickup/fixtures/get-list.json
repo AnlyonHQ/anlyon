@@ -1,0 +1,50 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.clickup.com/reference/getlist).",
+  "params": {},
+  "input": {
+    "list_id": "901201234567"
+  },
+  "expectedUrl": "https://api.clickup.com/api/v2/list/901201234567",
+  "response": {
+    "id": "901201234567",
+    "name": "Customer follow-ups",
+    "orderindex": 0,
+    "content": "",
+    "task_count": 12,
+    "due_date": null,
+    "folder": {
+      "id": "90120123456",
+      "name": "Sales",
+      "hidden": false,
+      "access": true
+    },
+    "space": {
+      "id": "90120012345",
+      "name": "Customers",
+      "access": true
+    },
+    "archived": false,
+    "override_statuses": false,
+    "statuses": [
+      {
+        "status": "to do",
+        "orderindex": 0,
+        "color": "#d3d3d3",
+        "type": "open"
+      },
+      {
+        "status": "in progress",
+        "orderindex": 1,
+        "color": "#4194f6",
+        "type": "custom"
+      },
+      {
+        "status": "complete",
+        "orderindex": 2,
+        "color": "#6bc950",
+        "type": "closed"
+      }
+    ],
+    "permission_level": "create"
+  }
+}

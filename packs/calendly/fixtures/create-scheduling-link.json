@@ -1,0 +1,15 @@
+{
+  "_source": "Shaped after the provider's documented response (Calendly API v2 OpenAPI document, create-scheduling-link).",
+  "params": {},
+  "input": {
+    "event_type": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2"
+  },
+  "expectedUrl": "https://api.calendly.com/scheduling_links",
+  "response": {
+    "resource": {
+      "booking_url": "https://calendly.com/d/abcd-brv8/30-minute-meeting",
+      "owner": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+      "owner_type": "EventType"
+    }
+  }
+}

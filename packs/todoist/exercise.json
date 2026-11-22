@@ -1,0 +1,143 @@
+{
+  "needs": {
+    "project_id": "A test project the token's user can edit: its id from list-projects, or the last part of the project's URL in the Todoist app",
+    "since": "The start of a completion range that includes today, as an RFC 3339 date-time (for example, the first of this month at 00:00:00Z)",
+    "until": "The end of that range, at most 3 months after since and later than now (for example, tomorrow at 00:00:00Z)"
+  },
+  "steps": [
+    {
+      "action": "list-projects",
+      "input": {}
+    },
+    {
+      "action": "get-project",
+      "input": {
+        "project_id": "{{needs.project_id}}"
+      }
+    },
+    {
+      "action": "list-labels",
+      "input": {}
+    },
+    {
+      "action": "create-section",
+      "input": {
+        "project_id": "{{needs.project_id}}",
+        "name": "Anlyon exercise {{run}}"
+      },
+      "save": {
+        "section_id": "id"
+      }
+    },
+    {
+      "action": "list-sections",
+      "input": {
+        "project_id": "{{needs.project_id}}"
+      }
+    },
+    {
+      "action": "get-section",
+      "input": {
+        "section_id": "{{saved.section_id}}"
+      }
+    },
+    {
+      "action": "create-task",
+      "input": {
+        "content": "Anlyon exercise {{run}}",
+        "description": "Created by an Anlyon pack exercise run; it deletes this task at the end.",
+        "project_id": "{{needs.project_id}}",
+        "due_string": "tomorrow"
+      },
+      "save": {
+        "task_id": "id"
+      }
+    },
+    {
+      "action": "get-task",
+      "input": {
+        "task_id": "{{saved.task_id}}"
+      }
+    },
+    {
+      "action": "list-tasks",
+      "input": {
+        "project_id": "{{needs.project_id}}"
+      }
+    },
+    {
+      "action": "filter-tasks",
+      "input": {
+        "query": "tomorrow"
+      }
+    },
+    {
+      "action": "update-task",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "content": "Anlyon exercise {{run}} (updated)",
+        "description": "Updated by the exercise run.",
+        "priority": 2
+      }
+    },
+    {
+      "action": "add-comment",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "content": "Exercise comment {{run}}"
+      }
+    },
+    {
+      "action": "list-task-comments",
+      "input": {
+        "task_id": "{{saved.task_id}}"
+      }
+    },
+    {
+      "action": "move-task-to-section",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "section_id": "{{saved.section_id}}"
+      }
+    },
+    {
+      "action": "move-task-to-project",
+      "input": {
+        "task_id": "{{saved.task_id}}",
+        "project_id": "{{needs.project_id}}"
+      }
+    },
+    {
+      "action": "close-task",
+      "input": {
+        "task_id": "{{saved.task_id}}"
+      }
+    },
+    {
+      "action": "list-completed-tasks",
+      "input": {
+        "since": "{{needs.since}}",
+        "until": "{{needs.until}}",
+        "project_id": "{{needs.project_id}}"
+      }
+    },
+    {
+      "action": "reopen-task",
+      "input": {
+        "task_id": "{{saved.task_id}}"
+      }
+    },
+    {
+      "action": "delete-task",
+      "input": {
+        "task_id": "{{saved.task_id}}"
+      }
+    },
+    {
+      "action": "delete-section",
+      "input": {
+        "section_id": "{{saved.section_id}}"
+      }
+    }
+  ]
+}

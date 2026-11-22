@@ -1,0 +1,37 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "project_gid": "1208801234567890",
+    "name": "Follow up with Acme",
+    "notes": "They asked for the security review."
+  },
+  "expectedUrl": "https://app.asana.com/api/1.0/tasks",
+  "response": {
+    "data": {
+      "gid": "1208809876543210",
+      "resource_type": "task",
+      "name": "Follow up with Acme"
+    }
+  },
+  "expectedReadBackUrl": "https://app.asana.com/api/1.0/tasks/1208809876543210",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "name": "Follow up with Acme",
+        "completed": false
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "data": {
+        "gid": "1208809876543210",
+        "name": "Another task"
+      }
+    }
+  }
+}

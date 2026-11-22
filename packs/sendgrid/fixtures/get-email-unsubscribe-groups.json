@@ -1,0 +1,26 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_suppressions_v3.json, GetAsmSuppression).",
+  "params": {},
+  "input": {
+    "email": "ada@example.com"
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/asm/suppressions/ada%40example.com",
+  "response": {
+    "suppressions": [
+      {
+        "id": 10871,
+        "name": "Product updates",
+        "description": "News about new features",
+        "is_default": false,
+        "suppressed": true
+      },
+      {
+        "id": 10872,
+        "name": "Weekly digest",
+        "description": "A summary every Monday",
+        "is_default": true,
+        "suppressed": false
+      }
+    ]
+  }
+}

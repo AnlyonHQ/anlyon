@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_templates_v3.json, ListTemplate).",
+  "params": {},
+  "input": {},
+  "expectedUrl": "https://api.sendgrid.com/v3/templates?generations=dynamic&page_size=20",
+  "response": {
+    "result": [
+      {
+        "id": "d-8f2a1c3b4d5e6f708192a3b4c5d6e7f8",
+        "name": "Order shipped",
+        "generation": "dynamic",
+        "updated_at": "2026-10-02 14:20:11",
+        "versions": [
+          {
+            "id": "5997fcf6-2b9f-484d-acd5-7e9a99f0dc1f",
+            "template_id": "d-8f2a1c3b4d5e6f708192a3b4c5d6e7f8",
+            "active": 1,
+            "name": "Shipped v2",
+            "subject": "Your order {{order_id}} has shipped",
+            "updated_at": "2026-10-02 14:20:11",
+            "generate_plain_content": true,
+            "editor": "code",
+            "thumbnail_url": ""
+          }
+        ]
+      }
+    ],
+    "_metadata": {
+      "self": "https://api.sendgrid.com/v3/templates?generations=dynamic&page_size=20",
+      "count": 1
+    }
+  }
+}

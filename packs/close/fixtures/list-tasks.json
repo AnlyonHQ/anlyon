@@ -1,0 +1,24 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/tasks, GET /task/).",
+  "params": {},
+  "input": {
+    "lead_id": "lead_Acme01",
+    "is_complete": false
+  },
+  "expectedUrl": "https://api.close.com/api/v1/task/?lead_id=lead_Acme01&is_complete=false&_limit=20&_fields=id,_type,lead_id,text,date,is_complete,assigned_to,date_created",
+  "response": {
+    "has_more": false,
+    "data": [
+      {
+        "id": "task_CallAcme01",
+        "_type": "lead",
+        "lead_id": "lead_Acme01",
+        "text": "Call Jo about the renewal",
+        "date": "2026-10-28",
+        "is_complete": false,
+        "assigned_to": "user_Alice01",
+        "date_created": "2026-10-24T08:16:00.000000+00:00"
+      }
+    ]
+  }
+}

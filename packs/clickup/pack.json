@@ -1,0 +1,1285 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/clickup",
+  "version": "0.1.0",
+  "description": "ClickUp tools an agent can be given: find workspaces, spaces, folders, lists and tasks; read a task, its comments and replies, and a space's tags; create, update and delete tasks, change their status, assign and unassign people, comment, add and remove tags, and add and resolve checklist items, each write governed and read back where ClickUp allows.",
+  "secrets": [
+    {
+      "name": "CLICKUP",
+      "kind": "connection",
+      "integrationId": "clickup",
+      "hosts": [
+        "api.clickup.com"
+      ],
+      "description": "The connected ClickUp credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-workspaces",
+      "kind": "read",
+      "description": "List the workspaces the token can reach, with each one's id, name and members (user id and name). A workspace id is the team_id the other actions take. ClickUp returns them all at once, with no paging; a workspace with very many members can be cut at 64 KB.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/team",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-spaces",
+      "kind": "read",
+      "description": "List the spaces in one workspace, with each one's id, name, statuses and enabled features. ClickUp returns them all at once, with no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/team/{{input.team_id}}/space?archived={{input.archived}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The workspace id (ClickUp calls it team_id), from list-workspaces."
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "true for archived items instead of active ones. Leave out for active ones."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-folders",
+      "kind": "read",
+      "description": "List the folders in one space, with each one's id, name, task count and the lists inside it. ClickUp returns them all at once, with no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/space/{{input.space_id}}/folder?archived={{input.archived}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "space_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "space_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The space id, from list-spaces."
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "true for archived items instead of active ones. Leave out for active ones."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-lists",
+      "kind": "read",
+      "description": "List the lists in one folder, with each one's id, name, task count, status and due date. ClickUp returns them all at once, with no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/folder/{{input.folder_id}}/list?archived={{input.archived}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "folder_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "folder_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The folder id, from list-folders."
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "true for archived items instead of active ones. Leave out for active ones."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-folderless-lists",
+      "kind": "read",
+      "description": "List the lists that sit directly in a space, outside any folder, with the same fields as list-lists. ClickUp returns them all at once, with no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/space/{{input.space_id}}/list?archived={{input.archived}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "space_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "space_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The space id, from list-spaces."
+          },
+          "archived": {
+            "type": "boolean",
+            "description": "true for archived items instead of active ones. Leave out for active ones."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-list",
+      "kind": "read",
+      "description": "Get one list: name, description, task count, due date, folder, space, and the statuses its tasks can take (statuses[].status). Use those names with set-task-status and the status filters.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/list/{{input.list_id}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The list id, from list-lists, list-folderless-lists or the list's URL in ClickUp."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-tasks",
+      "kind": "read",
+      "description": "List the tasks whose home is one list, with name, status, assignees, tags, priority, due date and URL. Filter by status, assignee, tag and dates; closed tasks and subtasks are left out unless asked for. Pass page (from 0) for the next page until last_page is true. ClickUp fixes the page at 100 tasks and has no smaller page size, so a page of long tasks can be cut at 64 KB: narrow it with the filters.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/list/{{input.list_id}}/task?page={{input.page}}&order_by={{input.order_by}}&reverse={{input.reverse}}&subtasks={{input.subtasks}}&include_closed={{input.include_closed}}&statuses[]={{input.status}}&assignees[]={{input.assignee}}&tags[]={{input.tag}}&due_date_gt={{input.due_after}}&due_date_lt={{input.due_before}}&date_updated_gt={{input.updated_after}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The list id, from list-lists, list-folderless-lists or the list's URL in ClickUp."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page to fetch, starting at 0. ClickUp returns up to 100 tasks a page and last_page: true on the last one."
+          },
+          "order_by": {
+            "type": "string",
+            "enum": [
+              "id",
+              "created",
+              "updated",
+              "due_date"
+            ],
+            "description": "Sort by this field. ClickUp sorts by created when left out."
+          },
+          "reverse": {
+            "type": "boolean",
+            "description": "true to reverse the order."
+          },
+          "subtasks": {
+            "type": "boolean",
+            "description": "true to include subtasks. ClickUp leaves them out by default."
+          },
+          "include_closed": {
+            "type": "boolean",
+            "description": "true to include closed tasks. ClickUp leaves them out by default."
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Filter to tasks in this status. A status name exactly as get-list returns it in statuses[].status, for example \"in progress\". ClickUp returns status names in lower case."
+          },
+          "assignee": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "Filter to tasks assigned to this ClickUp user id, from the members in list-workspaces."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9 _.&'+-]{1,64}$",
+            "description": "Filter to tasks with this tag. A tag name exactly as list-space-tags returns it. ClickUp returns tag names in lower case."
+          },
+          "due_after": {
+            "type": "integer",
+            "description": "Filter to tasks due after this time, as Unix time in milliseconds."
+          },
+          "due_before": {
+            "type": "integer",
+            "description": "Filter to tasks due before this time, as Unix time in milliseconds."
+          },
+          "updated_after": {
+            "type": "integer",
+            "description": "Filter to tasks updated after this time, as Unix time in milliseconds."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-tasks",
+      "kind": "read",
+      "description": "Find tasks across a workspace, narrowed to a space, folder or list, and by status, assignee, tag and dates. Returns the same fields as list-tasks. Closed tasks and subtasks are left out unless asked for. Pass page (from 0) for the next page; an empty tasks list means there are no more. ClickUp fixes the page at 100 tasks and has no smaller page size, so a page of long tasks can be cut at 64 KB: narrow it with the filters.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/team/{{input.team_id}}/task?page={{input.page}}&space_ids[]={{input.space_id}}&project_ids[]={{input.folder_id}}&list_ids[]={{input.list_id}}&order_by={{input.order_by}}&reverse={{input.reverse}}&subtasks={{input.subtasks}}&include_closed={{input.include_closed}}&statuses[]={{input.status}}&assignees[]={{input.assignee}}&tags[]={{input.tag}}&due_date_gt={{input.due_after}}&due_date_lt={{input.due_before}}&date_updated_gt={{input.updated_after}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The workspace id (ClickUp calls it team_id), from list-workspaces."
+          },
+          "page": {
+            "type": "integer",
+            "description": "The page to fetch, starting at 0. ClickUp returns up to 100 tasks a page and last_page: true on the last one."
+          },
+          "space_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "Filter to tasks in this space. The space id, from list-spaces."
+          },
+          "folder_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "Filter to tasks in this folder. The folder id, from list-folders."
+          },
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "Filter to tasks in this list. The list id, from list-lists, list-folderless-lists or the list's URL in ClickUp."
+          },
+          "order_by": {
+            "type": "string",
+            "enum": [
+              "id",
+              "created",
+              "updated",
+              "due_date"
+            ],
+            "description": "Sort by this field. ClickUp sorts by created when left out."
+          },
+          "reverse": {
+            "type": "boolean",
+            "description": "true to reverse the order."
+          },
+          "subtasks": {
+            "type": "boolean",
+            "description": "true to include subtasks. ClickUp leaves them out by default."
+          },
+          "include_closed": {
+            "type": "boolean",
+            "description": "true to include closed tasks. ClickUp leaves them out by default."
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "Filter to tasks in this status. A status name exactly as get-list returns it in statuses[].status, for example \"in progress\". ClickUp returns status names in lower case."
+          },
+          "assignee": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "Filter to tasks assigned to this ClickUp user id, from the members in list-workspaces."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9 _.&'+-]{1,64}$",
+            "description": "Filter to tasks with this tag. A tag name exactly as list-space-tags returns it. ClickUp returns tag names in lower case."
+          },
+          "due_after": {
+            "type": "integer",
+            "description": "Filter to tasks due after this time, as Unix time in milliseconds."
+          },
+          "due_before": {
+            "type": "integer",
+            "description": "Filter to tasks due before this time, as Unix time in milliseconds."
+          },
+          "updated_after": {
+            "type": "integer",
+            "description": "Filter to tasks updated after this time, as Unix time in milliseconds."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-task",
+      "kind": "read",
+      "description": "Get one task: name, description, status, assignees, watchers, tags, priority, dates, checklists with their items, custom fields, parent, list, folder, space and URL. Pass include_subtasks for its subtasks, and include_markdown_description for the description in Markdown. A very long task can be cut at 64 KB.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}?include_subtasks={{input.include_subtasks}}&include_markdown_description={{input.include_markdown_description}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "include_subtasks": {
+            "type": "boolean",
+            "description": "true to include the task's subtasks."
+          },
+          "include_markdown_description": {
+            "type": "boolean",
+            "description": "true to return the description as Markdown in markdown_description."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-task-comments",
+      "kind": "read",
+      "description": "List a task's comments, 25 at a time, newest to oldest, with each one's id, text, author, date and reply count. For older comments, pass the date and id of the oldest comment on this page as start and start_id.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}/comment?start={{input.start}}&start_id={{input.start_id}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "start": {
+            "type": "integer",
+            "description": "The date of the oldest comment already read (its date field), for the next page, as Unix time in milliseconds."
+          },
+          "start_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$",
+            "description": "The id of the oldest comment already read, for the next page. Pass it with start."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-comment-replies",
+      "kind": "read",
+      "description": "List the replies in one comment's thread, with each reply's id, text, author and date. The comment id comes from list-task-comments. ClickUp returns the whole thread at once, with no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/comment/{{input.comment_id}}/reply",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "comment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "comment_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,24}$",
+            "description": "The comment id, from list-task-comments."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-space-tags",
+      "kind": "read",
+      "description": "List the tags of one space, with each tag's name and colours. Use these names with add-tag, remove-tag and the tag filters. ClickUp returns them all at once, with no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.clickup.com/api/v2/space/{{input.space_id}}/tag",
+      "headers": {
+        "Authorization": "{{connection:clickup}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "space_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "space_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The space id, from list-spaces."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-task",
+      "kind": "write",
+      "description": "Create one task in a list, with a name and optionally a description, status, priority, due date, assignees, tags or a parent task (which makes it a subtask). ClickUp notifies the assignees. Returns the task with its id. Read back by task id; the name and list must match. Limitation: no provider idempotency, so a retry after an unknown outcome can create a second task.",
+      "method": "POST",
+      "urlTemplate": "https://api.clickup.com/api/v2/list/{{input.list_id}}/task",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "description": "{{input.description}}",
+        "status": "{{input.status}}",
+        "priority": "{{input.priority}}",
+        "due_date": "{{input.due_date}}",
+        "assignees": "{{input.assignees}}",
+        "tags": "{{input.tags}}",
+        "parent": "{{input.parent_task_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The list id, from list-lists, list-folderless-lists or the list's URL in ClickUp."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "The task's name."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The task's description, as plain text."
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "The status to create it in. A status name exactly as get-list returns it in statuses[].status, for example \"in progress\". ClickUp returns status names in lower case. Leave out for the status new tasks start in."
+          },
+          "priority": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "1 urgent, 2 high, 3 normal, 4 low. Leave out for no priority."
+          },
+          "due_date": {
+            "type": "integer",
+            "description": "The due date, as Unix time in milliseconds."
+          },
+          "assignees": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "ClickUp user ids to assign, from the members in list-workspaces."
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9 _.&'+-]{1,64}$",
+              "description": "A tag name exactly as list-space-tags returns it. ClickUp returns tag names in lower case."
+            },
+            "description": "Tag names to put on the task, as list-space-tags returns them."
+          },
+          "parent_task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "A task in the same list to make this a subtask of. The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "name",
+            "equals": "{{input.name}}"
+          },
+          {
+            "path": "list.id",
+            "equals": "{{input.list_id}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "update-task",
+      "kind": "write",
+      "description": "Change a task's name, description, priority or due date. Fields left out stay as they are. Use set-task-status for the status and add-assignee or remove-assignee for people. Read back from the task; its name, description, due date and update time must equal ClickUp's response to this update. Limitation: it cannot clear a priority or a due date, and the read-back fails if someone else edits the task in between.",
+      "method": "PUT",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "description": "{{input.description}}",
+        "priority": "{{input.priority}}",
+        "due_date": "{{input.due_date}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "The new name."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The new description, as plain text. It replaces the old one."
+          },
+          "priority": {
+            "type": "integer",
+            "enum": [
+              1,
+              2,
+              3,
+              4
+            ],
+            "description": "1 urgent, 2 high, 3 normal, 4 low."
+          },
+          "due_date": {
+            "type": "integer",
+            "description": "The new due date, as Unix time in milliseconds."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{response.name}}"
+          },
+          {
+            "path": "description",
+            "equals": "{{response.description}}"
+          },
+          {
+            "path": "due_date",
+            "equals": "{{response.due_date}}"
+          },
+          {
+            "path": "date_updated",
+            "equals": "{{response.date_updated}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "set-task-status",
+      "kind": "write",
+      "description": "Move a task to another status of its list, for example to close it. Take the status names from get-list. ClickUp can run the list's automations on a status change. Read back from the task; its status must be the one given. Limitation: the read-back can match a task that was already in that status.",
+      "method": "PUT",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "{{input.status}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,100}$",
+            "description": "A status name exactly as get-list returns it in statuses[].status, for example \"in progress\". ClickUp returns status names in lower case."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "status.status",
+            "equals": "{{input.status}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "add-assignee",
+      "kind": "write",
+      "description": "Assign one person to a task, keeping its other assignees. ClickUp notifies them. Read back from the task; the user must be among its assignees.",
+      "method": "PUT",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "assignees": {
+          "add": [
+            "{{input.user_id}}"
+          ],
+          "rem": []
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "user_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "user_id": {
+            "type": "integer",
+            "description": "A ClickUp user id (a number), from the members in list-workspaces."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "assignees.*.id",
+            "equals": "{{input.user_id}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "remove-assignee",
+      "kind": "write",
+      "description": "Take one person off a task, keeping its other assignees. Read back from the task; the user must no longer be among its assignees.",
+      "method": "PUT",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "assignees": {
+          "add": [],
+          "rem": [
+            "{{input.user_id}}"
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "user_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "user_id": {
+            "type": "integer",
+            "description": "A ClickUp user id (a number), from the members in list-workspaces."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "assignees.*.id",
+            "equals": "{{input.user_id}}",
+            "absent": true
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "comment-on-task",
+      "kind": "write",
+      "description": "Add one comment to a task, as plain text. ClickUp notifies the task's assignees and watchers. Returns the comment's id. Read back from the task's 25 newest comments; the comment's id must be among them. Limitation: no provider idempotency, so a retry after an unknown outcome can post a second comment.",
+      "method": "POST",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}/comment",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "comment_text": "{{input.text}}",
+        "notify_all": false
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "text"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The comment, as plain text."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{input.task_id}}/comment",
+        "status": 200,
+        "match": [
+          {
+            "path": "comments.*.id",
+            "equals": "{{response.id}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "add-tag",
+      "kind": "write",
+      "description": "Put one existing tag of the task's space on a task. Take the name from list-space-tags. Read back from the task; the tag must be among its tags.",
+      "method": "POST",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}/tag/{{input.tag_name}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "tag_name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "tag_name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9 _.&'+-]{1,64}$",
+            "description": "A tag name exactly as list-space-tags returns it. ClickUp returns tag names in lower case."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "tags.*.name",
+            "equals": "{{input.tag_name}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "remove-tag",
+      "kind": "write",
+      "description": "Take one tag off a task. The tag stays in the space. Read back from the task; the tag must no longer be among its tags.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}/tag/{{input.tag_name}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "tag_name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "tag_name": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9 _.&'+-]{1,64}$",
+            "description": "A tag name exactly as list-space-tags returns it. ClickUp returns tag names in lower case."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.task_id}}"
+          },
+          {
+            "path": "tags.*.name",
+            "equals": "{{input.tag_name}}",
+            "absent": true
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-checklist",
+      "kind": "write",
+      "description": "Add an empty checklist to a task. Returns the checklist with its id; add items with add-checklist-item. Read back from the task; the new checklist's id must be among its checklists. Limitation: no provider idempotency, so a retry after an unknown outcome can add a second checklist.",
+      "method": "POST",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}/checklist",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "The checklist's name."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "checklists.*.id",
+            "equals": "{{response.checklist.id}}"
+          },
+          {
+            "path": "checklists.*.name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "add-checklist-item",
+      "kind": "write",
+      "description": "Add one item to a checklist, optionally assigned to a person. The checklist id comes from get-task (checklists[].id) or create-checklist. Returns the checklist with its items. Read back from the checklist's task; the checklist must be there and an item with this name must be in a checklist of the task. Limitation: no provider idempotency, so a retry after an unknown outcome can add a second item.",
+      "method": "POST",
+      "urlTemplate": "https://api.clickup.com/api/v2/checklist/{{input.checklist_id}}/checklist_item",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "assignee": "{{input.assignee}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "checklist_id",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "checklist_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "The checklist id, from get-task (checklists[].id) or create-checklist."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "The item's text."
+          },
+          "assignee": {
+            "type": "integer",
+            "description": "A ClickUp user id to assign the item to, from the members in list-workspaces."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.clickup.com/api/v2/task/{{response.checklist.task_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "checklists.*.id",
+            "equals": "{{input.checklist_id}}"
+          },
+          {
+            "path": "checklists.*.items.*.name",
+            "equals": "{{input.name}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "resolve-checklist-item",
+      "kind": "write",
+      "description": "Mark one checklist item done, or not done with resolved: false. The ids come from get-task (checklists[].id and checklists[].items[].id). No read-back: ClickUp has no read for one checklist item, and a read-back rule cannot tie an item's resolved state to its id in the task's checklists.",
+      "method": "PUT",
+      "urlTemplate": "https://api.clickup.com/api/v2/checklist/{{input.checklist_id}}/checklist_item/{{input.checklist_item_id}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "resolved": "{{input.resolved}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "checklist_id",
+          "checklist_item_id",
+          "resolved"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "checklist_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "The checklist id, from get-task (checklists[].id)."
+          },
+          "checklist_item_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+            "description": "The item id, from get-task (checklists[].items[].id)."
+          },
+          "resolved": {
+            "type": "boolean",
+            "description": "true to mark the item done, false to mark it not done."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "delete-task",
+      "kind": "write",
+      "description": "Delete one task. ClickUp moves it to the workspace's trash, where a person can restore it in the ClickUp app. No read-back: ClickUp does not document what reading a deleted task returns.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.clickup.com/api/v2/task/{{input.task_id}}",
+      "headers": {
+        "Authorization": "{{connection:clickup}}",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "task_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "task_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The task id (for example 86a1b2c3d), from list-tasks or search-tasks, or the end of the task's URL (app.clickup.com/t/<task_id>). Custom task ids are not accepted."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "requiresApproval": false
+    }
+  ],
+  "policies": [
+    {
+      "name": "clickup: approve deleting a task",
+      "matchKind": "action",
+      "matchActionName": "delete-task",
+      "effect": "require_approval"
+    },
+    {
+      "name": "clickup: approve commenting on a task",
+      "matchKind": "action",
+      "matchActionName": "comment-on-task",
+      "effect": "require_approval"
+    },
+    {
+      "name": "clickup: approve assigning a person",
+      "matchKind": "action",
+      "matchActionName": "add-assignee",
+      "effect": "require_approval"
+    },
+    {
+      "name": "clickup: approve unassigning a person",
+      "matchKind": "action",
+      "matchActionName": "remove-assignee",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "clickup: tasks created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-task"
+    },
+    {
+      "name": "clickup: task updates per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-task"
+    },
+    {
+      "name": "clickup: status changes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "set-task-status"
+    },
+    {
+      "name": "clickup: assignees added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "add-assignee"
+    },
+    {
+      "name": "clickup: assignees removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "remove-assignee"
+    },
+    {
+      "name": "clickup: comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "comment-on-task"
+    },
+    {
+      "name": "clickup: tags added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-tag"
+    },
+    {
+      "name": "clickup: tags removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "remove-tag"
+    },
+    {
+      "name": "clickup: checklists created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-checklist"
+    },
+    {
+      "name": "clickup: checklist items added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-checklist-item"
+    },
+    {
+      "name": "clickup: checklist items resolved per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "resolve-checklist-item"
+    },
+    {
+      "name": "clickup: tasks deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-task"
+    }
+  ]
+}

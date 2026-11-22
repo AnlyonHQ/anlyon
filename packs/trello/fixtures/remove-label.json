@@ -1,0 +1,30 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/trello/rest/api-group-cards/, DELETE /1/cards/{id}/idLabels/{idLabel}).",
+  "params": {},
+  "input": {
+    "card_id": "6720a1b2c3d4e5f6a7b8c9c1",
+    "label_id": "6720a1b2c3d4e5f6a7b8c9e2"
+  },
+  "expectedUrl": "https://api.trello.com/1/cards/6720a1b2c3d4e5f6a7b8c9c1/idLabels/6720a1b2c3d4e5f6a7b8c9e2",
+  "response": {},
+  "expectedReadBackUrl": "https://api.trello.com/1/cards/6720a1b2c3d4e5f6a7b8c9c1?fields=idLabels",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "6720a1b2c3d4e5f6a7b8c9c1",
+      "idLabels": [
+        "6720a1b2c3d4e5f6a7b8c9e1"
+      ]
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "6720a1b2c3d4e5f6a7b8c9c1",
+      "idLabels": [
+        "6720a1b2c3d4e5f6a7b8c9e1",
+        "6720a1b2c3d4e5f6a7b8c9e2"
+      ]
+    }
+  }
+}

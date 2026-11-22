@@ -1,0 +1,32 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issues/#api-rest-api-3-issue-issueidorkey-delete).",
+  "params": {},
+  "accountHost": "acme.atlassian.net",
+  "input": {
+    "issue_key": "OPS-142"
+  },
+  "expectedUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142",
+  "response": {},
+  "expectedReadBackUrl": "https://acme.atlassian.net/rest/api/3/issue/OPS-142?fields=summary",
+  "readBack": {
+    "status": 404,
+    "json": {
+      "errorMessages": [
+        "Issue does not exist or you do not have permission to see it."
+      ],
+      "errors": {}
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "expand": "renderedFields,names,schema,operations,editmeta,changelog,versionedRepresentations",
+      "id": "10142",
+      "self": "https://acme.atlassian.net/rest/api/3/issue/10142",
+      "key": "OPS-142",
+      "fields": {
+        "summary": "Renew the TLS certificate for status.acme.example"
+      }
+    }
+  }
+}

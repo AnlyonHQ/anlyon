@@ -1,0 +1,46 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.sentry.io/api/releases/list-an-organizations-releases/).",
+  "params": {},
+  "input": {
+    "organization": "acme",
+    "project": "4504127832"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/releases/?per_page=20&project=4504127832",
+  "response": [
+    {
+      "id": 81234,
+      "version": "web@2.14.0",
+      "shortVersion": "web@2.14.0",
+      "status": "open",
+      "dateCreated": "2026-10-14T16:20:00Z",
+      "dateReleased": "2026-10-14T16:31:00Z",
+      "newGroups": 3,
+      "commitCount": 12,
+      "deployCount": 1,
+      "lastDeploy": {
+        "id": "551",
+        "environment": "production",
+        "dateStarted": null,
+        "dateFinished": "2026-10-14T16:31:00Z",
+        "name": null,
+        "url": null
+      },
+      "authors": [],
+      "projects": [
+        {
+          "id": 4504127832,
+          "slug": "web",
+          "name": "Web",
+          "newGroups": 3,
+          "platform": "javascript-react",
+          "platforms": [
+            "javascript-react"
+          ],
+          "hasHealthData": false
+        }
+      ],
+      "firstEvent": "2026-10-14T16:35:00Z",
+      "lastEvent": "2026-10-15T09:02:11Z"
+    }
+  ]
+}

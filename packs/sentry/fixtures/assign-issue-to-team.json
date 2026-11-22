@@ -1,0 +1,138 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.sentry.io/api/events/update-an-issue/).",
+  "params": {},
+  "input": {
+    "organization": "acme",
+    "issue_id": "4509877862",
+    "team_id": "2"
+  },
+  "expectedUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/",
+  "response": {
+    "id": "4509877862",
+    "shortId": "WEB-4F",
+    "title": "TypeError: Cannot read properties of undefined (reading 'total')",
+    "culprit": "app/checkout/summary.tsx in CheckoutSummary",
+    "permalink": "https://acme.sentry.io/issues/4509877862/",
+    "level": "error",
+    "status": "unresolved",
+    "substatus": "ongoing",
+    "statusDetails": {},
+    "priority": "high",
+    "isPublic": false,
+    "platform": "javascript",
+    "project": {
+      "id": "4504127832",
+      "name": "Web",
+      "slug": "web",
+      "platform": "javascript-react"
+    },
+    "type": "error",
+    "issueCategory": "error",
+    "metadata": {
+      "type": "TypeError",
+      "value": "Cannot read properties of undefined (reading 'total')",
+      "filename": "app/checkout/summary.tsx"
+    },
+    "numComments": 0,
+    "assignedTo": {
+      "type": "team",
+      "id": "2",
+      "name": "frontend"
+    },
+    "isBookmarked": false,
+    "isSubscribed": false,
+    "hasSeen": false,
+    "count": "312",
+    "userCount": 87,
+    "firstSeen": "2026-10-12T08:14:00Z",
+    "lastSeen": "2026-10-15T09:02:11Z"
+  },
+  "expectedReadBackUrl": "https://sentry.io/api/0/organizations/acme/issues/4509877862/",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "4509877862",
+      "shortId": "WEB-4F",
+      "title": "TypeError: Cannot read properties of undefined (reading 'total')",
+      "culprit": "app/checkout/summary.tsx in CheckoutSummary",
+      "permalink": "https://acme.sentry.io/issues/4509877862/",
+      "level": "error",
+      "status": "unresolved",
+      "substatus": "ongoing",
+      "statusDetails": {},
+      "priority": "high",
+      "isPublic": false,
+      "platform": "javascript",
+      "project": {
+        "id": "4504127832",
+        "name": "Web",
+        "slug": "web",
+        "platform": "javascript-react"
+      },
+      "type": "error",
+      "issueCategory": "error",
+      "metadata": {
+        "type": "TypeError",
+        "value": "Cannot read properties of undefined (reading 'total')",
+        "filename": "app/checkout/summary.tsx"
+      },
+      "numComments": 0,
+      "assignedTo": {
+        "type": "team",
+        "id": "2",
+        "name": "frontend"
+      },
+      "isBookmarked": false,
+      "isSubscribed": false,
+      "hasSeen": false,
+      "count": "312",
+      "userCount": 87,
+      "firstSeen": "2026-10-12T08:14:00Z",
+      "lastSeen": "2026-10-15T09:02:11Z"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "4509877862",
+      "shortId": "WEB-4F",
+      "title": "TypeError: Cannot read properties of undefined (reading 'total')",
+      "culprit": "app/checkout/summary.tsx in CheckoutSummary",
+      "permalink": "https://acme.sentry.io/issues/4509877862/",
+      "level": "error",
+      "status": "unresolved",
+      "substatus": "ongoing",
+      "statusDetails": {},
+      "priority": "high",
+      "isPublic": false,
+      "platform": "javascript",
+      "project": {
+        "id": "4504127832",
+        "name": "Web",
+        "slug": "web",
+        "platform": "javascript-react"
+      },
+      "type": "error",
+      "issueCategory": "error",
+      "metadata": {
+        "type": "TypeError",
+        "value": "Cannot read properties of undefined (reading 'total')",
+        "filename": "app/checkout/summary.tsx"
+      },
+      "numComments": 0,
+      "assignedTo": {
+        "type": "user",
+        "id": "2",
+        "name": "Dana",
+        "email": "dana@example.com"
+      },
+      "isBookmarked": false,
+      "isSubscribed": false,
+      "hasSeen": false,
+      "count": "312",
+      "userCount": 87,
+      "firstSeen": "2026-10-12T08:14:00Z",
+      "lastSeen": "2026-10-15T09:02:11Z"
+    }
+  }
+}

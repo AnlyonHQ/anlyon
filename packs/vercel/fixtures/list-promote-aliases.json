@@ -1,0 +1,18 @@
+{
+  "_source": "Shaped after the provider's documented response (https://openapi.vercel.sh/, operation listPromoteAliases).",
+  "params": {},
+  "input": {
+    "team_id": "team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F",
+    "project_id": "prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3",
+    "failed_only": true
+  },
+  "expectedUrl": "https://api.vercel.com/v1/projects/prj_Qm4XGTs7mvAMMC7WW5ebrM33qKG3/promote/aliases?teamId=team_7Kp2mQx9Lr4Tz8Vb1Nc3Hd5F&limit=20&failedOnly=true",
+  "response": {
+    "aliases": [],
+    "pagination": {
+      "count": 0,
+      "next": null,
+      "prev": null
+    }
+  }
+}

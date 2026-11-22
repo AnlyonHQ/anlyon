@@ -1,0 +1,506 @@
+{
+  "tools": [
+    {
+      "name": "list_actions",
+      "description": "List the hosted tools this workspace has defined, with their input schemas and whether each one requires human approval. Call this to discover what you can do before invoking anything.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "invoke_action",
+      "description": "Invoke a hosted tool by name with a JSON input. Anlyon holds the credentials and makes the call. You never see them. If the action requires approval, this returns pendingApproval=true with an approvalId: call wait_for_approval, which returns the outcome once a human approves. Any limit on a governed action is shared by every agent, session and key in the environment, so a new session does not get a new allowance. An approval for a governed action is bound to the exact request, and a changed request is refused at dispatch. The result of a governed action carries a grade: confirmed means a read-back matched, acknowledged means the provider accepted it, unknown means do not retry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Action name (or act_xxx id)."
+          },
+          "input": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Input matching the action's inputSchema."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "request_approval",
+      "description": "Ask the human for a decision before doing something consequential. Returns an approval id (apr_xxx). Poll check_approval until it is approved or denied. Use this whenever you're about to take an irreversible or expensive action that isn't already gated. This approval does not release a gated action: that approval comes from invoking the action and is bound to the exact request.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "description": "What you want to do, in one line."
+          },
+          "description": {
+            "type": "string",
+            "description": "Context the human needs to decide. Be specific about consequences."
+          },
+          "payload": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "Structured detail of the proposed action."
+          },
+          "expiresInSeconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 2592000,
+            "description": "How long to wait for a decision (default 24h)."
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "check_approval",
+      "description": "Check whether an approval has been decided. Status is pending, approved, denied or expired. For a gated action, once it is approved the linked invocation has already run, and it is returned as invocation. An approval for a governed action is bound to the exact request, and a changed request is refused at dispatch. The invocation of a governed action carries a grade: confirmed means a read-back matched, acknowledged means the provider accepted it, unknown means do not retry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "approvalId": {
+            "type": "string",
+            "description": "Approval id (apr_xxx)."
+          }
+        },
+        "required": [
+          "approvalId"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "wait_for_approval",
+      "description": "Wait for a human to decide an approval, instead of polling check_approval. Blocks until the approval is approved, denied or expired, or until timeoutSeconds elapses. If it is still pending when this returns, tell the user it is waiting for them, and call it again. For a gated action, an approved result carries the outcome as invocation. Use this right after request_approval or after a gated invoke_action so the human's decision arrives in the same turn. An approval for a governed action is bound to the exact request, and a changed request is refused at dispatch. The invocation of a governed action carries a grade: confirmed means a read-back matched, acknowledged means the provider accepted it, unknown means do not retry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "approvalId": {
+            "type": "string",
+            "description": "Approval id (apr_xxx)."
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 120,
+            "description": "How long to wait before giving up and returning the pending approval (default 45, max 120)."
+          }
+        },
+        "required": [
+          "approvalId"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "get_invocation",
+      "description": "Read what one action call did: its status, the response, and for a governed action the receipt's grade. Use it when an earlier call's outcome was not returned. The result of a governed action carries a grade: confirmed means a read-back matched, acknowledged means the provider accepted it, unknown means do not retry.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "invocationId": {
+            "type": "string",
+            "description": "Invocation id (inv_xxx)."
+          }
+        },
+        "required": [
+          "invocationId"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "list_pending_approvals",
+      "description": "List the approvals in this environment still waiting for a decision: what is being asked, the request that would be sent, how many approvals it needs and when it expires. Use this before decide_approval.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50,
+            "description": "How many to return (default 20)."
+          }
+        },
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions",
+            "anlyon:approvals.decide"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "decide_approval",
+      "description": "Approve or deny a pending approval, with a reason recorded as the decision note. Approving a gated action makes Anlyon run the request exactly as it was shown for review. Denying means it is never sent. If the approval needs more than one approver, this decision counts once and it stays pending until enough distinct approvers agree. Only decide what the person you act for has asked you to decide.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "approvalId": {
+            "type": "string",
+            "description": "Approval id (apr_xxx), from list_pending_approvals."
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "deny"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000,
+            "description": "Why. Stored as the decision note and shown to everyone who reads the approval."
+          }
+        },
+        "required": [
+          "approvalId",
+          "decision",
+          "reason"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:approvals.decide"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "check_sign_off",
+      "description": "Check a change that waits for a human's sign-off: its status (pending, applied, rejected, expired, cancelled, failed), the diff, and the link a workspace admin approves it at. You cannot approve it yourself.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The sign-off request id (sor_xxx)."
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": []
+        }
+      ]
+    },
+    {
+      "name": "wait_for_sign_off",
+      "description": "Wait for a human to decide a change that needs their sign-off, instead of polling check_sign_off. Blocks until it is applied, rejected, expired, cancelled or failed, or until timeoutSeconds elapses. If it is still pending when this returns, call it again. You cannot approve it yourself.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The sign-off request id (sor_xxx)."
+          },
+          "timeoutSeconds": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 300,
+            "description": "How long to wait before returning the still-pending request (default 45, max 300)."
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": []
+        }
+      ]
+    },
+    {
+      "name": "list_workspaces",
+      "description": "List the Anlyon workspaces you can act in, with their environments, and show which one this connection is currently using. Use this before select_workspace, or when a call reports that no workspace is selected.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": []
+        }
+      ]
+    },
+    {
+      "name": "select_workspace",
+      "description": "Point this connection at a different Anlyon workspace. Applies immediately and persists, so it survives reconnecting and token renewal. No need to sign in again. Only affects this client, not your other connected apps.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "workspaceId": {
+            "type": "string",
+            "description": "Workspace to switch to. Get one from list_workspaces."
+          },
+          "environmentId": {
+            "type": "string",
+            "description": "Environment within that workspace. Defaults to the workspace's default environment."
+          }
+        },
+        "required": [
+          "workspaceId"
+        ],
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:workspace.switch"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "action_update-ticket-priority",
+      "description": "Change a support ticket priority. Gated. It requires human approval, and the call parks until a human decides.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticketId": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "high"
+            ]
+          }
+        },
+        "required": [
+          "ticketId",
+          "priority"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "action_get-ticket",
+      "description": "Read a ticket.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "ticketId": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "high"
+            ]
+          }
+        },
+        "required": [
+          "ticketId",
+          "priority"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "action_send-welcome-email",
+      "description": "Send the welcome email. Each call counts emails toward any shared limit set for this environment (amount: count(input.to), exact).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "to"
+        ]
+      },
+      "annotations": {
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true
+      },
+      "securitySchemes": [
+        {
+          "type": "oauth2",
+          "scopes": [
+            "anlyon:actions"
+          ]
+        }
+      ]
+    }
+  ]
+}

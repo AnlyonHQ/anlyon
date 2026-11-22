@@ -1,0 +1,34 @@
+{
+  "_source": "Shaped after the provider's documented response.",
+  "params": {},
+  "input": {
+    "from": "oncall@example.com",
+    "incident_id": "Q1ABCDEF2GHIJK"
+  },
+  "expectedUrl": "https://api.pagerduty.com/incidents/Q1ABCDEF2GHIJK",
+  "response": {
+    "incident": {
+      "id": "Q1ABCDEF2GHIJK",
+      "status": "resolved"
+    }
+  },
+  "expectedReadBackUrl": "https://api.pagerduty.com/incidents/Q1ABCDEF2GHIJK",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "incident": {
+        "id": "Q1ABCDEF2GHIJK",
+        "status": "resolved"
+      }
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "incident": {
+        "id": "Q1ABCDEF2GHIJK",
+        "status": "acknowledged"
+      }
+    }
+  }
+}

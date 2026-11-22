@@ -1,0 +1,36 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/list-records).",
+  "params": {},
+  "input": {
+    "base_id": "appLkNDICXNqxSDhG",
+    "table": "Accounts",
+    "view": "Grid view",
+    "filter_by_formula": "{Status}='Open'",
+    "sort_field": "Name",
+    "sort_direction": "desc",
+    "offset": "itrQ2YJqCgv7v2VcX/rec3lbPRG4aVqkeOQ"
+  },
+  "expectedUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/Accounts?pageSize=10&view=Grid%20view&filterByFormula=%7BStatus%7D%3D'Open'&sort%5B0%5D%5Bfield%5D=Name&sort%5B0%5D%5Bdirection%5D=desc&offset=itrQ2YJqCgv7v2VcX%2Frec3lbPRG4aVqkeOQ",
+  "response": {
+    "records": [
+      {
+        "id": "rec560UJdUtocSouk",
+        "createdTime": "2022-09-12T21:03:48.000Z",
+        "fields": {
+          "Name": "Union Square",
+          "Email": "ops@unionsquare.example",
+          "Status": "Open"
+        }
+      },
+      {
+        "id": "rec3lbPRG4aVqkeOQ",
+        "createdTime": "2022-09-12T21:03:48.000Z",
+        "fields": {
+          "Name": "Ferry Building",
+          "Status": "Open"
+        }
+      }
+    ],
+    "offset": "itrQ2YJqCgv7v2VcX/rec3lbPRG4aVqkeOQ"
+  }
+}

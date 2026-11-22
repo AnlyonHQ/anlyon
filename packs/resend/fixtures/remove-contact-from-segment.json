@@ -1,0 +1,49 @@
+{
+  "_source": "Shaped after the provider's documented response (https://resend.com/docs/api-reference/contacts/delete-contact-segment).",
+  "params": {},
+  "input": {
+    "contact_id": "e169aa45-1ecf-4183-9955-b1499d5701d3",
+    "segment_id": "78261eea-8f8b-4381-83c6-79fa7120f1cf"
+  },
+  "expectedUrl": "https://api.resend.com/contacts/e169aa45-1ecf-4183-9955-b1499d5701d3/segments/78261eea-8f8b-4381-83c6-79fa7120f1cf",
+  "response": {
+    "object": "contact_segment",
+    "id": "e169aa45-1ecf-4183-9955-b1499d5701d3",
+    "audienceId": "78261eea-8f8b-4381-83c6-79fa7120f1cf",
+    "deleted": true
+  },
+  "expectedReadBackUrl": "https://api.resend.com/contacts/e169aa45-1ecf-4183-9955-b1499d5701d3/segments",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "object": "list",
+      "has_more": false,
+      "data": [
+        {
+          "id": "b6d24b8e-af0b-4c3c-be0c-359bbd97381e",
+          "name": "Beta testers",
+          "created_at": "2026-09-14 10:02:11.204+00"
+        }
+      ]
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "object": "list",
+      "has_more": false,
+      "data": [
+        {
+          "id": "b6d24b8e-af0b-4c3c-be0c-359bbd97381e",
+          "name": "Beta testers",
+          "created_at": "2026-09-14 10:02:11.204+00"
+        },
+        {
+          "id": "78261eea-8f8b-4381-83c6-79fa7120f1cf",
+          "name": "Registered Users",
+          "created_at": "2026-10-06 22:59:55.977+00"
+        }
+      ]
+    }
+  }
+}

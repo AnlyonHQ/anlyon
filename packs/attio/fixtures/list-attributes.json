@@ -1,0 +1,73 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.attio.com/rest-api/endpoint-reference/attributes/list-attributes).",
+  "params": {},
+  "input": {
+    "target": "objects",
+    "identifier": "people"
+  },
+  "expectedUrl": "https://api.attio.com/v2/objects/people/attributes?limit=25",
+  "response": {
+    "data": [
+      {
+        "id": {
+          "workspace_id": "14beef7a-99f7-4534-a87e-70b564330a4c",
+          "object_id": "97052eb9-e65e-443f-a297-f2d9a4a7f795",
+          "attribute_id": "41252299-f8c7-4b5e-99c9-4ff8321d2f96"
+        },
+        "title": "Job title",
+        "description": null,
+        "api_slug": "job_title",
+        "type": "text",
+        "is_system_attribute": true,
+        "is_writable": true,
+        "is_required": false,
+        "is_unique": false,
+        "is_multiselect": false,
+        "is_default_value_enabled": false,
+        "is_archived": false,
+        "default_value": null,
+        "relationship": null,
+        "created_at": "2026-10-15T09:30:00.000000000Z",
+        "config": {
+          "currency": {
+            "default_currency_code": null,
+            "display_type": null
+          },
+          "record_reference": {
+            "allowed_object_ids": null
+          }
+        }
+      },
+      {
+        "id": {
+          "workspace_id": "14beef7a-99f7-4534-a87e-70b564330a4c",
+          "object_id": "97052eb9-e65e-443f-a297-f2d9a4a7f795",
+          "attribute_id": "6f3e5b0c-2a1d-4e8f-9b7a-1c2d3e4f5a6b"
+        },
+        "title": "Email addresses",
+        "description": null,
+        "api_slug": "email_addresses",
+        "type": "email-address",
+        "is_system_attribute": true,
+        "is_writable": true,
+        "is_required": false,
+        "is_unique": true,
+        "is_multiselect": true,
+        "is_default_value_enabled": false,
+        "is_archived": false,
+        "default_value": null,
+        "relationship": null,
+        "created_at": "2026-10-15T09:30:00.000000000Z",
+        "config": {
+          "currency": {
+            "default_currency_code": null,
+            "display_type": null
+          },
+          "record_reference": {
+            "allowed_object_ids": null
+          }
+        }
+      }
+    ]
+  }
+}

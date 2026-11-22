@@ -1,0 +1,42 @@
+{
+  "_source": "Shaped after the provider's documented response (Calendly API v2 OpenAPI document, get-event-type).",
+  "params": {},
+  "input": {
+    "event_type_uuid": "GHBEFDAADB5ECTY2"
+  },
+  "expectedUrl": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+  "response": {
+    "resource": {
+      "uri": "https://api.calendly.com/event_types/GHBEFDAADB5ECTY2",
+      "name": "30 Minute Meeting",
+      "active": true,
+      "duration": 30,
+      "duration_options": null,
+      "kind": "solo",
+      "pooling_type": null,
+      "scheduling_url": "https://calendly.com/sam-rivera/30min",
+      "description_plain": "A short call.",
+      "locations": [
+        {
+          "kind": "google_conference"
+        }
+      ],
+      "custom_questions": [
+        {
+          "name": "What would you like to discuss?",
+          "type": "text",
+          "position": 0,
+          "enabled": true,
+          "required": true,
+          "answer_choices": [],
+          "include_other": false
+        }
+      ],
+      "profile": {
+        "type": "User",
+        "name": "Sam Rivera",
+        "owner": "https://api.calendly.com/users/BDHFGIJ2KLMNOPQR"
+      }
+    }
+  }
+}

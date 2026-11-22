@@ -1,0 +1,38 @@
+{
+  "_source": "Shaped after the provider's documented response (https://postmarkapp.com/developer/api/suppressions-api).",
+  "params": {},
+  "input": {
+    "message_stream": "outbound",
+    "email": "ada@example.com"
+  },
+  "expectedUrl": "https://api.postmarkapp.com/message-streams/outbound/suppressions/delete",
+  "response": {
+    "Suppressions": [
+      {
+        "EmailAddress": "ada@example.com",
+        "Status": "Deleted",
+        "Message": null
+      }
+    ]
+  },
+  "expectedReadBackUrl": "https://api.postmarkapp.com/message-streams/outbound/suppressions/dump?EmailAddress=ada%40example.com",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "Suppressions": []
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "Suppressions": [
+        {
+          "EmailAddress": "ada@example.com",
+          "SuppressionReason": "SpamComplaint",
+          "Origin": "Recipient",
+          "CreatedAt": "2026-10-20T08:58:33-04:00"
+        }
+      ]
+    }
+  }
+}

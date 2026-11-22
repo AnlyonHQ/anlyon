@@ -1,0 +1,31 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/companies/get-company).",
+  "params": {},
+  "input": {
+    "companyId": "9001"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/companies/9001?properties=name,domain,website,phone,industry,city,state,country,numberofemployees,annualrevenue,lifecyclestage,hubspot_owner_id,createdate,hs_lastmodifieddate",
+  "response": {
+    "id": "9001",
+    "properties": {
+      "annualrevenue": "2500000",
+      "city": "London",
+      "country": "United Kingdom",
+      "createdate": "2026-08-20T08:00:11.052Z",
+      "domain": "acme.example",
+      "hs_lastmodifieddate": "2026-10-11T16:40:09.873Z",
+      "hs_object_id": "9001",
+      "hubspot_owner_id": "84021733",
+      "industry": "COMPUTER_SOFTWARE",
+      "lifecyclestage": "customer",
+      "name": "Acme Inc",
+      "numberofemployees": "120",
+      "phone": "+44 20 7946 0000",
+      "state": null,
+      "website": "https://acme.example"
+    },
+    "createdAt": "2026-08-20T08:00:11.052Z",
+    "updatedAt": "2026-10-11T16:40:09.873Z",
+    "archived": false
+  }
+}

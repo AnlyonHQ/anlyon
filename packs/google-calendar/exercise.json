@@ -1,0 +1,73 @@
+{
+  "needs": {
+    "start": "A free start time on the connected account's primary calendar, with its offset (2026-11-10T15:00:00Z)",
+    "end": "The end of that slot (2026-11-10T15:30:00Z)",
+    "new_start": "Another free start time, for the change (2026-11-10T16:00:00Z)",
+    "new_end": "The end of that slot (2026-11-10T16:30:00Z)",
+    "time_min": "A time before start, for list-events (2026-11-10T00:00:00Z)",
+    "time_max": "A time after new_end, for list-events (2026-11-11T00:00:00Z)",
+    "attendee_email": "An inbox you own, invited to the event; send_updates is none, so Google emails nobody"
+  },
+  "steps": [
+    {
+      "action": "create-event",
+      "input": {
+        "calendar_id": "primary",
+        "summary": "Anlyon exercise {{run}}",
+        "start": {
+          "dateTime": "{{needs.start}}"
+        },
+        "end": {
+          "dateTime": "{{needs.end}}"
+        },
+        "attendees": [
+          {
+            "email": "{{needs.attendee_email}}"
+          }
+        ],
+        "send_updates": "none"
+      },
+      "save": {
+        "event_id": "id"
+      }
+    },
+    {
+      "action": "get-event",
+      "input": {
+        "calendar_id": "primary",
+        "event_id": "{{saved.event_id}}"
+      }
+    },
+    {
+      "action": "list-events",
+      "input": {
+        "calendar_id": "primary",
+        "time_min": "{{needs.time_min}}",
+        "time_max": "{{needs.time_max}}",
+        "query": "Anlyon exercise {{run}}"
+      }
+    },
+    {
+      "action": "update-event",
+      "input": {
+        "calendar_id": "primary",
+        "event_id": "{{saved.event_id}}",
+        "start": {
+          "dateTime": "{{needs.new_start}}"
+        },
+        "end": {
+          "dateTime": "{{needs.new_end}}"
+        },
+        "send_updates": "none"
+      }
+    },
+    {
+      "action": "cancel-event",
+      "input": {
+        "calendar_id": "primary",
+        "event_id": "{{saved.event_id}}",
+        "send_updates": "none"
+      }
+    }
+  ]
+}

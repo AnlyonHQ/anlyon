@@ -1,0 +1,1233 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/mailchimp",
+  "version": "0.1.0",
+  "description": "Mailchimp for an agent: read audiences, members, tags, notes, activity, segments and campaigns; add or update a member, change their status on request, tag, note, archive, add to or remove from a static segment, send a campaign test, and schedule or unschedule a campaign, with every write governed.",
+  "secrets": [
+    {
+      "name": "MAILCHIMP",
+      "kind": "connection",
+      "integrationId": "mailchimp",
+      "hosts": [],
+      "description": "The connected Mailchimp account: its API key, bound to the account's data center host",
+      "accountHost": "{dc}.api.mailchimp.com"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-audiences",
+      "kind": "read",
+      "description": "List the account's audiences (Mailchimp's lists): id, name, created date, and member and unsubscribe counts. 20 a page; total_items gives the total, and offset pages on.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists?count=20&offset={{input.offset}}&fields=lists.id,lists.name,lists.date_created,lists.stats.member_count,lists.stats.unsubscribe_count,total_items",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "offset": {
+            "type": "integer",
+            "description": "How many records to skip, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-audience",
+      "kind": "read",
+      "description": "Get one audience by id: name, contact details, campaign defaults, permission reminder, subscribe URL and stats.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}?exclude_fields=_links",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-members",
+      "kind": "read",
+      "description": "Find members by email address or by first or last name, in one audience or all of them: id, email, name, status and audience. Mailchimp answers exact matches and a fuller search in one response, with no next page.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/search-members?query={{input.query}}&list_id={{input.list_id}}&fields=exact_matches.members.id,exact_matches.members.email_address,exact_matches.members.full_name,exact_matches.members.status,exact_matches.members.list_id,exact_matches.total_items,full_search.members.id,full_search.members.email_address,full_search.members.full_name,full_search.members.status,full_search.members.list_id,full_search.total_items",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "An email address, or a first or last name."
+          },
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "Search one audience (its id). Leave it out to search every audience."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-members",
+      "kind": "read",
+      "description": "List an audience's members, most recently changed first: id, email, name, status, tags and when they last changed. 20 a page; filter by status. total_items gives the total, and offset pages on.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members?count=20&offset={{input.offset}}&status={{input.status}}&sort_field=last_changed&sort_dir=DESC&fields=members.id,members.email_address,members.full_name,members.status,members.last_changed,members.tags,total_items",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "subscribed",
+              "unsubscribed",
+              "cleaned",
+              "pending",
+              "transactional",
+              "archived"
+            ],
+            "description": "Return members with this status."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many records to skip, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-member",
+      "kind": "read",
+      "description": "Get one member of an audience by email address or member id: status, name and merge fields, tags (up to 50), language, VIP, location, stats and when they opted in.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member}}?exclude_fields=_links",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{32}|[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190})$",
+            "description": "The member's email address, or their 32-character member id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-member-tags",
+      "kind": "read",
+      "description": "List the tags on one member, with each tag's id, name and when it was added. 50 a page; total_items gives the total, and offset pages on.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/tags?count=50&offset={{input.offset}}&fields=tags.id,tags.name,tags.date_added,total_items",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many records to skip, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-member-notes",
+      "kind": "read",
+      "description": "List the notes on one member, newest first: id, text, author and dates. 10 a page; total_items gives the total, and offset pages on.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/notes?count=10&offset={{input.offset}}&sort_field=created_at&sort_dir=DESC&exclude_fields=_links,notes._links",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many records to skip, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-member-activity",
+      "kind": "read",
+      "description": "Get one member's recent activity, newest first: opens, clicks, bounces, sign-ups, notes and other events, each with its type and date. 20 a page; filter by activity type; offset pages on.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/activity-feed?count=20&offset={{input.offset}}&activity_filters={{input.activity_filters}}&exclude_fields=_links",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          },
+          "activity_filters": {
+            "type": "string",
+            "pattern": "^[a-z_]{1,40}(,[a-z_]{1,40}){0,19}$",
+            "description": "Activity types, comma separated, for example open,click,bounce."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many records to skip, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-segments",
+      "kind": "read",
+      "description": "List an audience's segments and tags (a tag is a static segment): id, name, type and member count. 20 a page; filter by type; total_items gives the total, and offset pages on.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/segments?count=20&offset={{input.offset}}&type={{input.type}}&fields=segments.id,segments.name,segments.type,segments.member_count,segments.updated_at,total_items",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "saved",
+              "static",
+              "fuzzy"
+            ],
+            "description": "Return segments of this type. Tags are static."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many records to skip, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-segment-members",
+      "kind": "read",
+      "description": "List the members of one segment or tag: id, email, name and status. 20 a page; total_items gives the total, and offset pages on.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/segments/{{input.segment_id}}/members?count=20&offset={{input.offset}}&fields=members.id,members.email_address,members.full_name,members.status,total_items",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "segment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "segment_id": {
+            "type": "integer",
+            "description": "The segment's or tag's numeric id (list-segments shows it)."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many records to skip, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-campaigns",
+      "kind": "read",
+      "description": "List campaigns, newest first: id, type, status, title, subject line, audience, recipient count, emails sent and send time. 10 a page; filter by status or audience; total_items gives the total, and offset pages on.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/campaigns?count=10&offset={{input.offset}}&status={{input.status}}&list_id={{input.list_id}}&sort_field=create_time&sort_dir=DESC&fields=campaigns.id,campaigns.type,campaigns.status,campaigns.create_time,campaigns.send_time,campaigns.emails_sent,campaigns.settings.title,campaigns.settings.subject_line,campaigns.recipients.list_id,campaigns.recipients.list_name,campaigns.recipients.recipient_count,total_items",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "save",
+              "paused",
+              "schedule",
+              "sending",
+              "sent"
+            ],
+            "description": "Return campaigns with this status. save is a draft."
+          },
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "Return campaigns sent to this audience."
+          },
+          "offset": {
+            "type": "integer",
+            "description": "How many records to skip, for the next page. Leave it out for the first page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-campaign",
+      "kind": "read",
+      "description": "Get one campaign by id: status, settings (title, subject, from name, reply-to), recipients (audience, segment and recipient count), tracking, send time and a report summary once sent.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/3.0/campaigns/{{input.campaign_id}}?exclude_fields=_links",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "campaign_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The campaign's id (list-campaigns shows it)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "upsert-member",
+      "kind": "write",
+      "description": "Add one person to an audience, or update their name if they are already in it. A new member gets status_if_new; an existing member keeps their status, so this never changes someone's consent (use set-member-status for that). subscribed adds them without a confirmation email; pending sends Mailchimp's opt-in email; transactional receives no campaigns. Read back by member id; the member must be in this audience. Limitation: the name is sent as the FNAME and LNAME merge fields, which an audience may have renamed or removed.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.email}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "email_address": "{{input.email}}",
+        "status_if_new": "{{input.status_if_new}}",
+        "merge_fields": {
+          "FNAME": "{{input.first_name}}",
+          "LNAME": "{{input.last_name}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "email",
+          "status_if_new"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+            "description": "The person's email address."
+          },
+          "status_if_new": {
+            "type": "string",
+            "enum": [
+              "subscribed",
+              "pending",
+              "transactional"
+            ],
+            "description": "The status if they are new to this audience. pending sends Mailchimp's opt-in email."
+          },
+          "first_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "First name (the FNAME merge field)."
+          },
+          "last_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "Last name (the LNAME merge field)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{response.id}}?fields=id,email_address,status,list_id",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "list_id",
+            "equals": "{{input.list_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-member-name",
+      "kind": "write",
+      "description": "Replace one member's first and last name. Read back by member id; FNAME and LNAME must match. Limitation: an audience that renamed or removed the FNAME or LNAME merge field refuses it.",
+      "method": "PATCH",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "merge_fields": {
+          "FNAME": "{{input.first_name}}",
+          "LNAME": "{{input.last_name}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id",
+          "first_name",
+          "last_name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          },
+          "first_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "First name (FNAME)."
+          },
+          "last_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "Last name (LNAME)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}?fields=id,merge_fields",
+        "status": 200,
+        "match": [
+          {
+            "path": "merge_fields.FNAME",
+            "equals": "{{input.first_name}}"
+          },
+          {
+            "path": "merge_fields.LNAME",
+            "equals": "{{input.last_name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-member-status",
+      "kind": "write",
+      "description": "Change one member's subscription status: unsubscribed stops campaigns to them; pending sends Mailchimp's opt-in email; subscribed adds them back without one. This is the person's consent, so do it on their request. Read back by member id; the status must match. Limitation: Mailchimp refuses subscribed for someone who unsubscribed themselves; use pending so they confirm.",
+      "method": "PATCH",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "status": "{{input.status}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id",
+          "status"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "unsubscribed",
+              "pending",
+              "subscribed"
+            ],
+            "description": "The new status."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}?fields=id,status",
+        "status": 200,
+        "match": [
+          {
+            "path": "status",
+            "equals": "{{input.status}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-member-tag",
+      "kind": "write",
+      "description": "Add one tag to a member. A tag that does not exist yet is created. Read back from the member's tags; the tag must be among them. Adding a tag the member already has changes nothing. Limitation: the read-back sees the member's first 100 tags.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/tags",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "tags": [
+          {
+            "name": "{{input.tag}}",
+            "status": "active"
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id",
+          "tag"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "The tag's name, as it shows in Mailchimp. Matching is exact."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/tags?count=100&fields=tags.id,tags.name,total_items",
+        "status": 200,
+        "match": [
+          {
+            "path": "tags.*.name",
+            "equals": "{{input.tag}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "remove-member-tag",
+      "kind": "write",
+      "description": "Remove one tag from a member. The tag stays in the audience. Read back from the member's tags; the tag must no longer be among them. Limitation: the read-back sees the member's first 100 tags.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/tags",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "tags": [
+          {
+            "name": "{{input.tag}}",
+            "status": "inactive"
+          }
+        ]
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id",
+          "tag"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          },
+          "tag": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$",
+            "description": "The tag's name, as it shows in Mailchimp. Matching is exact."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/tags?count=100&fields=tags.id,tags.name,total_items",
+        "status": 200,
+        "match": [
+          {
+            "path": "tags.*.name",
+            "equals": "{{input.tag}}",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-member-note",
+      "kind": "write",
+      "description": "Add one note to a member, up to 1,000 characters. Notes are internal; the member never sees them. Read back by note id; the text must match. Limitation: no idempotency, so a retry after an unknown outcome can add the note twice.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "note": "{{input.note}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id",
+          "note"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          },
+          "note": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,1000}$",
+            "description": "The note's text, up to 1,000 characters."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/notes/{{response.id}}?fields=id,note",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "note",
+            "equals": "{{input.note}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "archive-member",
+      "kind": "write",
+      "description": "Archive one member: they leave the audience and receive nothing more, and their history is kept. Adding them again with upsert-member brings them back. Read back by member id; the status must be archived. Permanent deletion is not offered.",
+      "method": "DELETE",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "member_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}?fields=id,status",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.member_id}}"
+          },
+          {
+            "path": "status",
+            "equals": "archived"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-to-segment",
+      "kind": "write",
+      "description": "Add one member, by email address, to a static segment or tag. Read back from that member's tags (Mailchimp keeps a static segment as a tag); the segment's id must be among them. Limitation: saved (rule-based) segments cannot be added to, and the read-back sees the member's first 100 tags.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/segments/{{input.segment_id}}/members",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "email_address": "{{input.email}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "segment_id",
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "segment_id": {
+            "type": "integer",
+            "description": "The segment's or tag's numeric id (list-segments shows it)."
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+            "description": "The member's email address. They must already be in the audience."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{response.id}}/tags?count=100&fields=tags.id,tags.name,total_items",
+        "status": 200,
+        "match": [
+          {
+            "path": "tags.*.id",
+            "equals": "{{input.segment_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "remove-from-segment",
+      "kind": "write",
+      "description": "Remove one member from a static segment or tag. The member stays in the audience. Read back from the member's tags; the segment's id must no longer be among them. Limitation: the read-back sees the member's first 100 tags.",
+      "method": "DELETE",
+      "urlTemplate": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/segments/{{input.segment_id}}/members/{{input.member_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "list_id",
+          "segment_id",
+          "member_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "list_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The audience's id (list-audiences shows it), for example 4ca5becb8d."
+          },
+          "segment_id": {
+            "type": "integer",
+            "description": "The segment's or tag's numeric id (list-segments shows it)."
+          },
+          "member_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{32}$",
+            "description": "The member's id: 32 hex characters, the `id` field of get-member, search-members or list-members."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/lists/{{input.list_id}}/members/{{input.member_id}}/tags?count=100&fields=tags.id,tags.name,total_items",
+        "status": 200,
+        "match": [
+          {
+            "path": "tags.*.id",
+            "equals": "{{input.segment_id}}",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "send-test-email",
+      "kind": "write",
+      "description": "Send a test of one campaign to the addresses given, as HTML or plain text. The campaign itself is not sent. Counted in emails, one per address. No read-back: Mailchimp answers 204 and keeps no record of a test send to read. Limitation: Mailchimp limits how many tests an account can send a day and refuses more.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/3.0/campaigns/{{input.campaign_id}}/actions/test",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "test_emails": "{{input.test_emails}}",
+        "send_type": "{{input.send_type}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "campaign_id",
+          "test_emails",
+          "send_type"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The campaign's id (list-campaigns shows it)."
+          },
+          "test_emails": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[^@\\s/?#]{1,64}@[^@\\s/?#]{1,190}$",
+              "description": "One address to send the test to."
+            },
+            "description": "The addresses to send the test to."
+          },
+          "send_type": {
+            "type": "string",
+            "enum": [
+              "html",
+              "plaintext"
+            ],
+            "description": "Which version to send."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "emails",
+        "amount": "count(input.test_emails)",
+        "bound": "upper_bound"
+      }
+    },
+    {
+      "name": "schedule-campaign",
+      "kind": "write",
+      "description": "Schedule one draft campaign to go to its whole audience at a UTC time on the quarter hour. This is a send to many people; check recipients.recipient_count with get-campaign first. Read back by campaign id; the status must be schedule. Limitations: the recipient count is not counted against a limit, because it is not in the request; Mailchimp refuses a campaign that fails its send checklist.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/3.0/campaigns/{{input.campaign_id}}/actions/schedule",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "schedule_time": "{{input.schedule_time}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "campaign_id",
+          "schedule_time"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The campaign's id (list-campaigns shows it)."
+          },
+          "schedule_time": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:(00|15|30|45):00(Z|\\+00:00)$",
+            "description": "When to send, in UTC on the quarter hour: 2026-11-03T15:30:00Z."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/campaigns/{{input.campaign_id}}?fields=id,status,send_time",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.campaign_id}}"
+          },
+          {
+            "path": "status",
+            "equals": "schedule"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unschedule-campaign",
+      "kind": "write",
+      "description": "Unschedule one scheduled campaign, so it goes back to a draft and is not sent. Read back by campaign id; the status must no longer be schedule.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/3.0/campaigns/{{input.campaign_id}}/actions/unschedule",
+      "headers": {
+        "Authorization": "Bearer {{connection:mailchimp}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "campaign_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "campaign_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9]{1,32}$",
+            "description": "The campaign's id (list-campaigns shows it)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/3.0/campaigns/{{input.campaign_id}}?fields=id,status",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.campaign_id}}"
+          },
+          {
+            "path": "status",
+            "equals": "schedule",
+            "absent": true
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "mailchimp: approve adding a new member as subscribed",
+      "matchKind": "action",
+      "matchActionName": "upsert-member",
+      "condition": "input.status_if_new == 'subscribed'",
+      "effect": "require_approval"
+    },
+    {
+      "name": "mailchimp: approve changing a member's status",
+      "matchKind": "action",
+      "matchActionName": "set-member-status",
+      "effect": "require_approval"
+    },
+    {
+      "name": "mailchimp: approve archiving a member",
+      "matchKind": "action",
+      "matchActionName": "archive-member",
+      "effect": "require_approval"
+    },
+    {
+      "name": "mailchimp: approve sending a campaign test",
+      "matchKind": "action",
+      "matchActionName": "send-test-email",
+      "effect": "require_approval"
+    },
+    {
+      "name": "mailchimp: approve scheduling a campaign",
+      "matchKind": "action",
+      "matchActionName": "schedule-campaign",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "mailchimp: members added or updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "upsert-member"
+    },
+    {
+      "name": "mailchimp: member names updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-member-name"
+    },
+    {
+      "name": "mailchimp: member statuses changed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "set-member-status"
+    },
+    {
+      "name": "mailchimp: member tags added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-member-tag"
+    },
+    {
+      "name": "mailchimp: member tags removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "remove-member-tag"
+    },
+    {
+      "name": "mailchimp: member notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-member-note"
+    },
+    {
+      "name": "mailchimp: members archived per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "archive-member"
+    },
+    {
+      "name": "mailchimp: segment members added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-to-segment"
+    },
+    {
+      "name": "mailchimp: segment members removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "remove-from-segment"
+    },
+    {
+      "name": "mailchimp: test emails per day",
+      "dimension": "emails",
+      "period": "day",
+      "amount": 20,
+      "actionName": "send-test-email"
+    },
+    {
+      "name": "mailchimp: campaigns scheduled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 3,
+      "actionName": "schedule-campaign"
+    },
+    {
+      "name": "mailchimp: campaigns unscheduled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "unschedule-campaign"
+    }
+  ]
+}

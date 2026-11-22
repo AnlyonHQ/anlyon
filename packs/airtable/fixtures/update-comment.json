@@ -1,0 +1,62 @@
+{
+  "_source": "Shaped after the provider's documented response (https://airtable.com/developers/web/api/update-comment).",
+  "params": {},
+  "input": {
+    "base_id": "appLkNDICXNqxSDhG",
+    "table": "tblIhd7aUd4H6h2rS",
+    "record_id": "rec560UJdUtocSouk",
+    "comment_id": "comB5z37Mg9zaEPw6",
+    "text": "Demo booked for Tuesday."
+  },
+  "expectedUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS/rec560UJdUtocSouk/comments/comB5z37Mg9zaEPw6",
+  "response": {
+    "id": "comB5z37Mg9zaEPw6",
+    "author": {
+      "id": "usrL2PNC5o3H4lBEi",
+      "email": "ada@example.com",
+      "name": "Ada Lovelace"
+    },
+    "text": "Demo booked for Tuesday.",
+    "createdTime": "2026-10-20T09:00:00.000Z",
+    "lastUpdatedTime": "2026-10-24T11:30:00.000Z"
+  },
+  "expectedReadBackUrl": "https://api.airtable.com/v0/appLkNDICXNqxSDhG/tblIhd7aUd4H6h2rS/rec560UJdUtocSouk/comments?pageSize=100",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "comments": [
+        {
+          "id": "comB5z37Mg9zaEPw6",
+          "author": {
+            "id": "usrL2PNC5o3H4lBEi",
+            "email": "ada@example.com",
+            "name": "Ada Lovelace"
+          },
+          "text": "Demo booked for Tuesday.",
+          "createdTime": "2026-10-20T09:00:00.000Z",
+          "lastUpdatedTime": "2026-10-24T11:30:00.000Z"
+        }
+      ],
+      "offset": null
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "comments": [
+        {
+          "id": "comB5z37Mg9zaEPw6",
+          "author": {
+            "id": "usrL2PNC5o3H4lBEi",
+            "email": "ada@example.com",
+            "name": "Ada Lovelace"
+          },
+          "text": "Called them, they want a demo next week.",
+          "createdTime": "2026-10-20T09:00:00.000Z",
+          "lastUpdatedTime": null
+        }
+      ],
+      "offset": null
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "needs": {
+    "event_type_id": "A test event type of the key's user that books without confirmation: not recurring, not seated, and with no required custom booking fields. The number in its URL in Event Types, or from list-event-types",
+    "confirmation_event_type_id": "A second test event type of the same user with Requires confirmation turned on, and the same restrictions",
+    "slots_from": "A date for find-available-slots, such as 2026-11-02",
+    "slots_to": "The day after slots_from",
+    "start": "A free start time for event_type_id, in UTC (2026-11-02T14:00:00Z), from find-available-slots",
+    "new_start": "Another free start time for event_type_id, in UTC, for the reschedule",
+    "pending_start": "A free start time for confirmation_event_type_id, in UTC",
+    "second_pending_start": "Another free start time for confirmation_event_type_id, in UTC",
+    "attendee_email": "A lowercase inbox you own. Cal.com emails it about each booking",
+    "guest_email": "A second lowercase inbox you own, added as a guest",
+    "past_booking_uid": "The uid of a past test booking of the key's user, to mark its attendee and its host absent",
+    "past_attendee_email": "The lowercase email of that past booking's attendee"
+  },
+  "steps": [
+    { "action": "get-me", "input": {}, "save": { "schedule_id": "data.defaultScheduleId" } },
+    { "action": "list-schedules", "input": {} },
+    { "action": "get-schedule", "input": { "schedule_id": "{{saved.schedule_id}}" } },
+    { "action": "list-event-types", "input": {} },
+    { "action": "get-event-type", "input": { "event_type_id": "{{needs.event_type_id}}" } },
+    { "action": "find-available-slots", "input": { "event_type_id": "{{needs.event_type_id}}", "start": "{{needs.slots_from}}", "end": "{{needs.slots_to}}" } },
+    { "action": "create-booking", "input": { "event_type_id": "{{needs.event_type_id}}", "start": "{{needs.start}}", "attendee_name": "Anlyon exercise {{run}}", "attendee_email": "{{needs.attendee_email}}", "attendee_time_zone": "UTC" }, "save": { "booking_uid": "data.uid" } },
+    { "action": "get-booking", "input": { "booking_uid": "{{saved.booking_uid}}" } },
+    { "action": "list-booking-attendees", "input": { "booking_uid": "{{saved.booking_uid}}" } },
+    { "action": "add-guest", "input": { "booking_uid": "{{saved.booking_uid}}", "guest_email": "{{needs.guest_email}}", "guest_name": "Anlyon exercise guest" } },
+    { "action": "list-bookings", "input": { "status": "upcoming", "attendee_email": "{{needs.attendee_email}}", "sort_start": "asc" } },
+    { "action": "reschedule-booking", "input": { "booking_uid": "{{saved.booking_uid}}", "start": "{{needs.new_start}}", "reason": "Anlyon exercise {{run}}" }, "save": { "rescheduled_uid": "data.uid" } },
+    { "action": "cancel-booking", "input": { "booking_uid": "{{saved.rescheduled_uid}}", "reason": "Anlyon exercise {{run}}: cleaning up" } },
+    { "action": "create-booking", "input": { "event_type_id": "{{needs.confirmation_event_type_id}}", "start": "{{needs.pending_start}}", "attendee_name": "Anlyon exercise {{run}}", "attendee_email": "{{needs.attendee_email}}", "attendee_time_zone": "UTC" }, "save": { "pending_uid": "data.uid" } },
+    { "action": "confirm-booking", "input": { "booking_uid": "{{saved.pending_uid}}" } },
+    { "action": "cancel-booking", "input": { "booking_uid": "{{saved.pending_uid}}", "reason": "Anlyon exercise {{run}}: cleaning up" } },
+    { "action": "create-booking", "input": { "event_type_id": "{{needs.confirmation_event_type_id}}", "start": "{{needs.second_pending_start}}", "attendee_name": "Anlyon exercise {{run}}", "attendee_email": "{{needs.attendee_email}}", "attendee_time_zone": "UTC" }, "save": { "declined_uid": "data.uid" } },
+    { "action": "decline-booking", "input": { "booking_uid": "{{saved.declined_uid}}", "reason": "Anlyon exercise {{run}}" } },
+    { "action": "mark-attendee-absent", "input": { "booking_uid": "{{needs.past_booking_uid}}", "attendee_email": "{{needs.past_attendee_email}}" } },
+    { "action": "mark-host-absent", "input": { "booking_uid": "{{needs.past_booking_uid}}" } }
+  ]
+}

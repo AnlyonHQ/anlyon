@@ -1,0 +1,881 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/jira",
+  "version": "0.1.0",
+  "description": "Jira for an agent: search issues with JQL and read issues, comments, transitions, projects, issue types and priorities; create, rename, label, prioritise, assign and transition issues, comment, and delete comments and issues, with every write governed.",
+  "secrets": [
+    {
+      "name": "JIRA",
+      "kind": "connection",
+      "integrationId": "jira",
+      "hosts": [],
+      "accountHost": "{site}.atlassian.net",
+      "description": "The connected Jira site, with the account's email and an API token"
+    }
+  ],
+  "actions": [
+    {
+      "name": "get-myself",
+      "kind": "read",
+      "description": "Get the Jira user the connection acts as: account id, display name, email (when the user's privacy settings show it), time zone and whether the account is active. Use its accountId to assign an issue to that user.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/myself",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-projects",
+      "kind": "read",
+      "description": "List the projects the user can see, 50 a page, optionally filtered by text in the key or name. Each project has its id, key, name and type. The response has startAt, maxResults, total and isLast; when isLast is false, pass startAt plus 50 as start_at for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/project/search?query={{input.query}}&startAt={{input.start_at}}&maxResults=50",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Text to match in the project key or name, case insensitive."
+          },
+          "start_at": {
+            "type": "integer",
+            "description": "The index of the item to start at, for the next page: startAt plus maxResults of the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-issue-types",
+      "kind": "read",
+      "description": "List the issue types a project can create, 50 a page: id, name, description and whether it is a subtask type. Use an id with create-issue; a subtask type needs a parent, which create-issue does not set. The response has startAt, maxResults and total.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/createmeta/{{input.project_key}}/issuetypes?startAt={{input.start_at}}&maxResults=50",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_key"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_key": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,254}$",
+            "description": "The project's key (PROJ), from list-projects."
+          },
+          "start_at": {
+            "type": "integer",
+            "description": "The index of the item to start at, for the next page: startAt plus maxResults of the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-priorities",
+      "kind": "read",
+      "description": "List the issue priorities, 50 a page: id, name, description and whether it is the default. Use an id with set-issue-priority. The response has startAt, maxResults, total and isLast.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/priority/search?startAt={{input.start_at}}&maxResults=50",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "start_at": {
+            "type": "integer",
+            "description": "The index of the item to start at, for the next page: startAt plus maxResults of the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-issues",
+      "kind": "read",
+      "description": "Search issues with JQL, 25 a page. Each issue has its id and key, and the summary, status, assignee, priority, issue type, project, labels and dates. Jira refuses an unbounded query: include a restriction, for example project = OPS AND statusCategory != Done ORDER BY updated DESC. Recent changes can take a moment to show in search; read one issue with get-issue for its current state. When nextPageToken is in the response, pass it as next_page_token for the next page; the last page has none. No total count is returned.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/search/jql?jql={{input.jql}}&fields=summary,status,assignee,priority,issuetype,project,labels,created,updated&maxResults=25&nextPageToken={{input.next_page_token}}",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "jql"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "jql": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,4000}$",
+            "description": "A bounded JQL query, e.g. assignee = currentUser() AND statusCategory != Done ORDER BY updated DESC."
+          },
+          "next_page_token": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_=+/.-]{1,2048}$",
+            "description": "nextPageToken from the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-issue",
+      "kind": "read",
+      "description": "Get one issue: summary, status, assignee, reporter, priority, issue type, project, labels, description, parent, due date, resolution and dates. The description is Atlassian Document Format (a JSON document), not plain text. Comments are read with list-comments and the moves an issue can make with list-transitions.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}?fields=summary,status,assignee,reporter,priority,issuetype,project,labels,description,parent,duedate,resolution,created,updated",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-transitions",
+      "kind": "read",
+      "description": "List the transitions the user can make on an issue from its current status. Each has an id, a name and to, the status it moves the issue to (to.id, to.name). Pass the id and to.id to transition-issue. An empty list means the user may not transition the issue.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/transitions",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-comments",
+      "kind": "read",
+      "description": "List an issue's comments, 20 a page, from the oldest unless order is -created. Each comment has its id, author, body (Atlassian Document Format), and created and updated times. The response has startAt, maxResults and total; pass startAt plus 20 as start_at for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/comment?orderBy={{input.order}}&startAt={{input.start_at}}&maxResults=20",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "order": {
+            "type": "string",
+            "enum": [
+              "created",
+              "-created"
+            ],
+            "description": "created to start from the oldest, -created to start from the newest."
+          },
+          "start_at": {
+            "type": "integer",
+            "description": "The index of the item to start at, for the next page: startAt plus maxResults of the previous page. Leave out to start at the beginning."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-comment",
+      "kind": "read",
+      "description": "Get one comment on an issue: author, body (Atlassian Document Format), and created and updated times.",
+      "method": "GET",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/comment/{{input.comment_id}}",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key",
+          "comment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "comment_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,18}$",
+            "description": "The comment's id, from list-comments or add-comment."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-issue",
+      "kind": "write",
+      "description": "Create one issue in a project with a summary, a plain-text description and optional labels. Take the issue type id from list-issue-types; a subtask type is refused, because this action sets no parent. The description becomes one Atlassian Document Format paragraph; headings, lists and formatting are not offered. Set the priority and assignee afterwards with set-issue-priority and assign-issue. Returns the new issue's id and key. Read back by key; the key, summary and project must match. Limitation: no idempotency, so a retry after an unknown outcome can create a second issue. Search before you create.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "fields": {
+          "project": {
+            "key": "{{input.project_key}}"
+          },
+          "issuetype": {
+            "id": "{{input.issue_type_id}}"
+          },
+          "summary": "{{input.summary}}",
+          "description": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+              {
+                "type": "paragraph",
+                "content": [
+                  {
+                    "type": "text",
+                    "text": "{{input.description}}"
+                  }
+                ]
+              }
+            ]
+          },
+          "labels": "{{input.labels}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project_key",
+          "issue_type_id",
+          "summary",
+          "description"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project_key": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,254}$",
+            "description": "The project's key (PROJ), from list-projects."
+          },
+          "issue_type_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,18}$",
+            "description": "The issue type's id, from list-issue-types."
+          },
+          "summary": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The summary: one line, up to 255 characters."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,30000}$",
+            "description": "Plain text for the description, sent as one Atlassian Document Format paragraph. Line breaks are sent inside that paragraph as they are."
+          },
+          "labels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[^\\s]{1,255}$"
+            },
+            "description": "Labels to set. A label has no spaces."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{response.key}}?fields=summary,project",
+        "status": 200,
+        "match": [
+          {
+            "path": "key",
+            "equals": "{{response.key}}"
+          },
+          {
+            "path": "fields.summary",
+            "equals": "{{input.summary}}"
+          },
+          {
+            "path": "fields.project.key",
+            "equals": "{{input.project_key}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "rename-issue",
+      "kind": "write",
+      "description": "Change one issue's summary. Read back by issue key; the summary must match.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "fields": {
+          "summary": "{{input.summary}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key",
+          "summary"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "summary": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The summary: one line, up to 255 characters."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}?fields=summary",
+        "status": 200,
+        "match": [
+          {
+            "path": "fields.summary",
+            "equals": "{{input.summary}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-issue-label",
+      "kind": "write",
+      "description": "Add one label to an issue, keeping its other labels. A label has no spaces; Jira creates a label that does not exist yet. Read back by issue key; the label must be among the issue's labels.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "update": {
+          "labels": [
+            {
+              "add": "{{input.label}}"
+            }
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key",
+          "label"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "label": {
+            "type": "string",
+            "pattern": "^[^\\s]{1,255}$",
+            "description": "The label to add, without spaces, e.g. needs-review."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}?fields=labels",
+        "status": 200,
+        "match": [
+          {
+            "path": "fields.labels.*",
+            "equals": "{{input.label}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-issue-priority",
+      "kind": "write",
+      "description": "Set one issue's priority. Take the priority id from list-priorities; a priority outside the project's priority scheme is refused. Read back by issue key; the priority id must match.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "fields": {
+          "priority": {
+            "id": "{{input.priority_id}}"
+          }
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key",
+          "priority_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "priority_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,18}$",
+            "description": "The priority's id, from list-priorities."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}?fields=priority",
+        "status": 200,
+        "match": [
+          {
+            "path": "fields.priority.id",
+            "equals": "{{input.priority_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "assign-issue",
+      "kind": "write",
+      "description": "Assign one issue to a user by Atlassian account id. Use get-myself for the connected user's own id, or an assignee or reporter accountId from get-issue. The user must be assignable in the project. Unassigning and the project's default assignee are not offered. Jira can email the new assignee, as its notification scheme says. Read back by issue key; the assignee's accountId must match.",
+      "method": "PUT",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/assignee",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "accountId": "{{input.account_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key",
+          "account_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "account_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9:-]{9,127}$",
+            "description": "The user's Atlassian account id, e.g. 5b10ac8d82e05b22cc7d4ef5."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}?fields=assignee",
+        "status": 200,
+        "match": [
+          {
+            "path": "fields.assignee.accountId",
+            "equals": "{{input.account_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "transition-issue",
+      "kind": "write",
+      "description": "Move one issue through its workflow, for example to In Progress or Done. Take transition_id and to_status_id from the same entry of list-transitions (its id and to.id). A transition whose screen asks for fields (hasScreen) can be refused, because this action sets none. Read back by issue key; the status id must equal to_status_id.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/transitions",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "transition": {
+          "id": "{{input.transition_id}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key",
+          "transition_id",
+          "to_status_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "transition_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,18}$",
+            "description": "The transition's id, from list-transitions."
+          },
+          "to_status_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,18}$",
+            "description": "The status the transition leads to: to.id of the same transition in list-transitions. Used for the read-back."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}?fields=status",
+        "status": 200,
+        "match": [
+          {
+            "path": "fields.status.id",
+            "equals": "{{input.to_status_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "add-comment",
+      "kind": "write",
+      "description": "Add one comment to an issue, visible to everyone who can see the issue. The text is sent as one Atlassian Document Format paragraph; formatting, mentions and restricted visibility are not offered. Jira can email the issue's watchers, as its notification scheme says. Returns the comment with its id. Read back by comment id; the comment's text must equal the input. Limitation: no idempotency, so a retry after an unknown outcome can add a second comment.",
+      "method": "POST",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/comment",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "body": {
+          "type": "doc",
+          "version": 1,
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [
+                {
+                  "type": "text",
+                  "text": "{{input.body}}"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,30000}$",
+            "description": "The comment, as plain text. Line breaks are sent inside the paragraph as they are."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/comment/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "body.content.0.content.0.text",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-comment",
+      "kind": "write",
+      "description": "Delete one comment from an issue. Treat it as final. Read back: getting the comment must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/comment/{{input.comment_id}}",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key",
+          "comment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          },
+          "comment_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,18}$",
+            "description": "The comment's id, from list-comments or add-comment."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}/comment/{{input.comment_id}}",
+        "status": 404,
+        "match": []
+      }
+    },
+    {
+      "name": "delete-issue",
+      "kind": "write",
+      "description": "Delete one issue with its comments and history. Treat it as final. An issue with subtasks is refused; delete its subtasks before, or keep the issue. Read back: getting the issue must answer 404.",
+      "method": "DELETE",
+      "urlTemplate": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}",
+      "headers": {
+        "Authorization": "Basic {{connection:jira}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "issue_key"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "issue_key": {
+            "type": "string",
+            "pattern": "^([A-Z][A-Z0-9_]{0,254}-[0-9]{1,12}|[0-9]{1,18})$",
+            "description": "The issue's key (PROJ-123) or numeric id, from search-issues."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://{{connection.host}}/rest/api/3/issue/{{input.issue_key}}?fields=summary",
+        "status": 404,
+        "match": []
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "jira: approve deleting an issue",
+      "matchKind": "action",
+      "matchActionName": "delete-issue",
+      "effect": "require_approval"
+    },
+    {
+      "name": "jira: approve deleting a comment",
+      "matchKind": "action",
+      "matchActionName": "delete-comment",
+      "effect": "require_approval"
+    },
+    {
+      "name": "jira: approve adding a comment",
+      "matchKind": "action",
+      "matchActionName": "add-comment",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "jira: issues created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-issue"
+    },
+    {
+      "name": "jira: issues renamed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "rename-issue"
+    },
+    {
+      "name": "jira: labels added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-issue-label"
+    },
+    {
+      "name": "jira: priorities set per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "set-issue-priority"
+    },
+    {
+      "name": "jira: issues assigned per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "assign-issue"
+    },
+    {
+      "name": "jira: issues transitioned per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "transition-issue"
+    },
+    {
+      "name": "jira: comments added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-comment"
+    },
+    {
+      "name": "jira: comments deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-comment"
+    },
+    {
+      "name": "jira: issues deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "delete-issue"
+    }
+  ]
+}

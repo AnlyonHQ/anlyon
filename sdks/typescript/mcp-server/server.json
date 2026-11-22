@@ -1,0 +1,52 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.anlyon/anlyon",
+  "title": "Anlyon",
+  "description": "Governed production actions and human approvals for AI agents.",
+  "websiteUrl": "https://docs.anlyon.com/ai-tools/claude-code",
+  "repository": {
+    "url": "https://github.com/AnlyonHQ/anlyon",
+    "source": "github",
+    "subfolder": "sdks/typescript/mcp-server"
+  },
+  "version": "3.0.0",
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://api.anlyon.com/mcp"
+    }
+  ],
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "@anlyonhq/mcp-server",
+      "version": "3.0.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "ANLYON_API_KEY",
+          "description": "Anlyon API key (Workspace Settings, API Keys). Its scopes decide what the tools can do.",
+          "isRequired": true,
+          "isSecret": true,
+          "format": "string"
+        },
+        {
+          "name": "ANLYON_BASE_URL",
+          "description": "API origin, for a non-production Anlyon API. Defaults to https://api.anlyon.com.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        },
+        {
+          "name": "ANLYON_END_USER",
+          "description": "Act for one of your users: every call carries Anlyon-End-User with this id, so actions use that user's own connected accounts. Set by your server, never by the model.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
+        }
+      ]
+    }
+  ]
+}

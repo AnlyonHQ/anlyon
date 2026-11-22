@@ -1,0 +1,33 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developers.hubspot.com/docs/api-reference/legacy/crm/objects/contacts/delete-contact).",
+  "params": {},
+  "input": {
+    "contactId": "151"
+  },
+  "expectedUrl": "https://api.hubapi.com/crm/v3/objects/contacts/151",
+  "response": null,
+  "expectedReadBackUrl": "https://api.hubapi.com/crm/v3/objects/contacts/151?archived=true&properties=hs_object_id",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "151",
+      "properties": {
+        "hs_object_id": "151"
+      },
+      "createdAt": "2026-10-01T12:00:00.000Z",
+      "updatedAt": "2026-10-15T09:40:00.000Z",
+      "archived": true,
+      "archivedAt": "2026-10-15T09:40:00.000Z"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "151",
+      "properties": {
+        "hs_object_id": "151"
+      },
+      "archived": false
+    }
+  }
+}

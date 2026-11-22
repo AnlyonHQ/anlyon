@@ -1,0 +1,30 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.github.com/en/rest/issues/issues#update-an-issue).",
+  "params": {},
+  "input": {
+    "owner": "acme",
+    "repo": "widgets",
+    "issue_number": "412"
+  },
+  "expectedUrl": "https://api.github.com/repos/acme/widgets/issues/412",
+  "response": {
+    "number": 412,
+    "state": "closed"
+  },
+  "expectedReadBackUrl": "https://api.github.com/repos/acme/widgets/issues/412",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "number": 412,
+      "state": "closed",
+      "state_reason": "completed"
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "number": 412,
+      "state": "open"
+    }
+  }
+}

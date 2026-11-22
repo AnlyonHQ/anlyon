@@ -1,0 +1,23 @@
+{
+  "needs": { "board_id": "A Trello board the account can edit, with at least two open lists and one label" },
+  "steps": [
+    { "action": "list-boards", "input": { "filter": "open" } },
+    { "action": "get-board", "input": { "board_id": "{{needs.board_id}}" } },
+    { "action": "list-lists", "input": { "board_id": "{{needs.board_id}}" }, "save": { "list_a": "0.id", "list_b": "1.id" } },
+    { "action": "list-labels", "input": { "board_id": "{{needs.board_id}}" }, "save": { "label_id": "0.id" } },
+    { "action": "create-card", "input": { "list_id": "{{saved.list_a}}", "name": "Anlyon exercise {{run}}", "desc": "Created by the Anlyon exercise {{run}}.", "pos": "bottom" }, "save": { "card_id": "id" } },
+    { "action": "get-card", "input": { "card_id": "{{saved.card_id}}" } },
+    { "action": "update-card", "input": { "card_id": "{{saved.card_id}}", "name": "Anlyon exercise {{run}} (updated)", "due": "2030-01-15T17:00:00Z" } },
+    { "action": "add-comment", "input": { "card_id": "{{saved.card_id}}", "text": "Anlyon exercise {{run}} comment" } },
+    { "action": "list-card-comments", "input": { "card_id": "{{saved.card_id}}" } },
+    { "action": "add-label", "input": { "card_id": "{{saved.card_id}}", "label_id": "{{saved.label_id}}" } },
+    { "action": "remove-label", "input": { "card_id": "{{saved.card_id}}", "label_id": "{{saved.label_id}}" } },
+    { "action": "move-card", "input": { "card_id": "{{saved.card_id}}", "list_id": "{{saved.list_b}}", "pos": "top" } },
+    { "action": "list-list-cards", "input": { "list_id": "{{saved.list_b}}" } },
+    { "action": "list-board-cards", "input": { "board_id": "{{needs.board_id}}" } },
+    { "action": "search-cards", "input": { "query": "Anlyon exercise", "board_id": "{{needs.board_id}}", "partial": true } },
+    { "action": "archive-card", "input": { "card_id": "{{saved.card_id}}" } },
+    { "action": "restore-card", "input": { "card_id": "{{saved.card_id}}" } },
+    { "action": "delete-card", "input": { "card_id": "{{saved.card_id}}" } }
+  ]
+}

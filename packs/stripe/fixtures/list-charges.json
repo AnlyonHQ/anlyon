@@ -1,0 +1,62 @@
+{
+  "_source": "Shaped after the provider's documented response (https://docs.stripe.com/api/charges/list).",
+  "params": {},
+  "input": {
+    "payment_intent": "pi_3YnXmHyKQWWoIcdMaYjSuQoG"
+  },
+  "expectedUrl": "https://api.stripe.com/v1/charges?limit=10&payment_intent=pi_3YnXmHyKQWWoIcdMaYjSuQoG",
+  "response": {
+    "object": "list",
+    "url": "/v1/charges",
+    "has_more": false,
+    "data": [
+      {
+        "id": "ch_3PLMntMEfrhTi2gaJDvtoyWn",
+        "object": "charge",
+        "amount": 2000,
+        "amount_captured": 2000,
+        "amount_refunded": 0,
+        "balance_transaction": "txn_38AsrWq8XpyCDlBAifakAZAe",
+        "billing_details": {
+          "email": null,
+          "name": null,
+          "phone": null
+        },
+        "captured": true,
+        "created": 1680800505,
+        "currency": "usd",
+        "customer": "cus_lEzmGSVXJKpHQR",
+        "description": null,
+        "disputed": false,
+        "failure_code": null,
+        "failure_message": null,
+        "livemode": false,
+        "metadata": {},
+        "outcome": {
+          "network_status": "approved_by_network",
+          "reason": null,
+          "risk_level": "normal",
+          "seller_message": "Payment complete.",
+          "type": "authorized"
+        },
+        "paid": true,
+        "payment_intent": "pi_3YnXmHyKQWWoIcdMaYjSuQoG",
+        "payment_method": "pm_1UcV8bBzikVgetYm7BUGc30P",
+        "payment_method_details": {
+          "card": {
+            "brand": "visa",
+            "country": "US",
+            "exp_month": 3,
+            "exp_year": 2030,
+            "funding": "credit",
+            "last4": "4242"
+          },
+          "type": "card"
+        },
+        "receipt_url": "https://pay.stripe.com/receipts/payment/zJ8ctrb5MBh1Q5P373FrYUivFv1NAf3UNkNrvKLrFMHFNW3D58iFdFcHpBU6DA4dGtLJ9UOIEDGIfpAN",
+        "refunded": false,
+        "status": "succeeded"
+      }
+    ]
+  }
+}

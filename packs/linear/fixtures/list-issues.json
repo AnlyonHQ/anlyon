@@ -1,0 +1,93 @@
+{
+  "_source": "Shaped after the provider's documented response (https://github.com/linear/linear/blob/master/packages/sdk/src/schema.graphql, Query.issues, IssueFilter, IssueConnection; https://linear.app/developers/graphql).",
+  "params": {},
+  "input": {
+    "filter": {
+      "team": {
+        "id": {
+          "eq": "5f1c2a8e-3b7d-4e9a-8c21-6d0f4b2e9a17"
+        }
+      },
+      "state": {
+        "type": {
+          "in": [
+            "unstarted",
+            "started"
+          ]
+        }
+      },
+      "assignee": {
+        "isMe": {
+          "eq": true
+        }
+      }
+    },
+    "order_by": "updatedAt"
+  },
+  "expectedUrl": "https://api.linear.app/graphql",
+  "expectedBody": {
+    "query": "query ListIssues($filter: IssueFilter, $orderBy: PaginationOrderBy, $after: String) { issues(first: 25, after: $after, filter: $filter, orderBy: $orderBy) { nodes { id identifier title priority priorityLabel url dueDate createdAt updatedAt state { id name type } team { id key } assignee { id name } labels(first: 10) { nodes { id name } } } pageInfo { hasNextPage endCursor } } }",
+    "variables": {
+      "filter": {
+        "team": {
+          "id": {
+            "eq": "5f1c2a8e-3b7d-4e9a-8c21-6d0f4b2e9a17"
+          }
+        },
+        "state": {
+          "type": {
+            "in": [
+              "unstarted",
+              "started"
+            ]
+          }
+        },
+        "assignee": {
+          "isMe": {
+            "eq": true
+          }
+        }
+      },
+      "orderBy": "updatedAt"
+    }
+  },
+  "response": {
+    "data": {
+      "issues": {
+        "nodes": [
+          {
+            "id": "a3c9e2f1-7b4d-4c8e-9f12-3e5d6a7b8c90",
+            "identifier": "ENG-412",
+            "title": "Checkout page times out for large carts",
+            "priority": 2,
+            "priorityLabel": "High",
+            "url": "https://linear.app/acme/issue/ENG-412/checkout-page-times-out-for-large-carts",
+            "dueDate": null,
+            "createdAt": "2026-10-24T08:10:00.000Z",
+            "updatedAt": "2026-10-24T08:10:00.000Z",
+            "state": {
+              "id": "8d2f4a6c-9e1b-4c3d-a5f7-2b4d6e8f0a13",
+              "name": "In Progress",
+              "type": "started"
+            },
+            "team": {
+              "id": "5f1c2a8e-3b7d-4e9a-8c21-6d0f4b2e9a17",
+              "key": "ENG"
+            },
+            "assignee": {
+              "id": "e7f9b1d3-5a2c-4b4e-8d6f-1a3c5e7b9d24",
+              "name": "Priya Nair"
+            },
+            "labels": {
+              "nodes": []
+            }
+          }
+        ],
+        "pageInfo": {
+          "hasNextPage": true,
+          "endCursor": "cursor_page_2"
+        }
+      }
+    }
+  }
+}

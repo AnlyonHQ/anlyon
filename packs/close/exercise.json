@@ -1,0 +1,25 @@
+{
+  "needs": {},
+  "steps": [
+    { "action": "list-lead-statuses", "input": {}, "save": { "lead_status": "data.0.id" } },
+    { "action": "list-opportunity-statuses", "input": {}, "save": { "opp_status_a": "data.0.id", "opp_status_b": "data.1.id" } },
+    { "action": "create-lead", "input": { "name": "Anlyon exercise {{run}}", "status_id": "{{saved.lead_status}}", "contacts": [{ "name": "Anlyon Exercise {{run}}", "emails": [{ "email": "anlyon-exercise-{{run}}@example.com", "type": "office" }] }] }, "save": { "lead_id": "id", "contact_id": "contacts.0.id" } },
+    { "action": "get-lead", "input": { "lead_id": "{{saved.lead_id}}" } },
+    { "action": "search-leads", "input": { "query": "name:\"Anlyon exercise {{run}}\"" } },
+    { "action": "update-lead", "input": { "lead_id": "{{saved.lead_id}}", "description": "Anlyon exercise {{run}} (updated)" } },
+    { "action": "create-contact", "input": { "lead_id": "{{saved.lead_id}}", "name": "Anlyon Exercise {{run}} second", "title": "Buyer" }, "save": { "contact_b": "id" } },
+    { "action": "get-contact", "input": { "contact_id": "{{saved.contact_b}}" } },
+    { "action": "create-opportunity", "input": { "lead_id": "{{saved.lead_id}}", "contact_id": "{{saved.contact_id}}", "status_id": "{{saved.opp_status_a}}", "value": 10000, "value_period": "one_time", "confidence": 20, "note": "Anlyon exercise {{run}}" }, "save": { "opportunity_id": "id" } },
+    { "action": "update-opportunity", "input": { "opportunity_id": "{{saved.opportunity_id}}", "status_id": "{{saved.opp_status_b}}", "confidence": 50 } },
+    { "action": "get-opportunity", "input": { "opportunity_id": "{{saved.opportunity_id}}" } },
+    { "action": "list-opportunities", "input": { "lead_id": "{{saved.lead_id}}" } },
+    { "action": "add-note", "input": { "lead_id": "{{saved.lead_id}}", "note": "Anlyon exercise {{run}} note" }, "save": { "note_id": "id" } },
+    { "action": "get-note", "input": { "note_id": "{{saved.note_id}}" } },
+    { "action": "list-activities", "input": { "lead_id": "{{saved.lead_id}}", "type": "Note" } },
+    { "action": "create-task", "input": { "lead_id": "{{saved.lead_id}}", "text": "Anlyon exercise {{run}} task" }, "save": { "task_id": "id" } },
+    { "action": "complete-task", "input": { "task_id": "{{saved.task_id}}" } },
+    { "action": "get-task", "input": { "task_id": "{{saved.task_id}}" } },
+    { "action": "list-tasks", "input": { "lead_id": "{{saved.lead_id}}" } },
+    { "action": "delete-lead", "input": { "lead_id": "{{saved.lead_id}}" } }
+  ]
+}

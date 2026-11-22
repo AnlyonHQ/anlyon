@@ -1,0 +1,1755 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/gitlab",
+  "version": "0.1.0",
+  "description": "GitLab tools for the projects a gitlab.com access token reaches: list and read projects, issues and their comments, labels, merge requests with their diffs and comments, pipelines, files, branches and commits; open, edit, close, reopen and comment on issues; open, edit, comment on, approve and merge merge requests; retry and cancel pipelines. Every write is limited and read back where GitLab can show it.",
+  "secrets": [
+    {
+      "name": "GITLAB",
+      "kind": "connection",
+      "integrationId": "gitlab",
+      "hosts": [
+        "gitlab.com"
+      ],
+      "description": "The connected GitLab credential (a personal, group or project access token on gitlab.com)"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-projects",
+      "kind": "read",
+      "description": "List the projects the token's user is a member of, 20 per page, most recently active first, in GitLab's short form: id, name, full path, default branch, web URL and last activity. Archived projects are left out. Pass `search` to match names, and `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects?membership=true&simple=true&archived=false&order_by=last_activity_at&search={{input.search}}&per_page=20&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "search": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Text to look for in project names and paths."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-project",
+      "kind": "read",
+      "description": "Get one project: id, name, full path, description, default branch, visibility, open issue count, web URL and the token user's access level in it.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-issues",
+      "kind": "read",
+      "description": "Search issues across every project the token's user can see, 10 per page, newest first, with descriptions. `scope` is created_by_me when left out; `assigned_to_me` and `all` widen it. GitLab.com may refuse `all` with 400. Filter by state, labels (all must match) and text. Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/issues?scope={{input.scope}}&state={{input.state}}&labels={{input.labels}}&search={{input.search}}&per_page=10&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "created_by_me",
+              "assigned_to_me",
+              "all"
+            ],
+            "description": "Whose issues: created_by_me when left out."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "opened",
+              "closed",
+              "all"
+            ],
+            "description": "Every state when left out."
+          },
+          "labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names; an issue must have all of them."
+          },
+          "search": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Text to look for in titles and descriptions."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-issues",
+      "kind": "read",
+      "description": "List the issues of one project, 10 per page, newest first by default, with descriptions, labels, assignees and milestone. Filters: state, labels (all must match), text, assignee and author usernames, milestone title, and updated_after. Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/issues?state={{input.state}}&labels={{input.labels}}&search={{input.search}}&assignee_username={{input.assignee_username}}&author_username={{input.author_username}}&milestone={{input.milestone}}&updated_after={{input.updated_after}}&order_by={{input.order_by}}&sort={{input.sort}}&per_page=10&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "opened",
+              "closed",
+              "all"
+            ],
+            "description": "Every state when left out."
+          },
+          "labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names; an issue must have all of them. `None` for no label, `Any` for at least one."
+          },
+          "search": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Text to look for in titles and descriptions."
+          },
+          "assignee_username": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}$",
+            "description": "Issues assigned to this username."
+          },
+          "author_username": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}$",
+            "description": "Issues opened by this username."
+          },
+          "milestone": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "A milestone title, `None` or `Any`."
+          },
+          "updated_after": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "Issues updated at or after this time: ISO 8601 UTC, YYYY-MM-DDTHH:MM:SSZ."
+          },
+          "order_by": {
+            "type": "string",
+            "enum": [
+              "created_at",
+              "updated_at",
+              "due_date",
+              "priority"
+            ],
+            "description": "created_at when left out."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "desc",
+              "asc"
+            ],
+            "description": "desc when left out."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-issue",
+      "kind": "read",
+      "description": "Get one issue by its number in the project: title, description, state, labels, assignees, author, milestone, due date, timestamps and web URL.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "issue_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "issue_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The issue's number inside its project (`iid`, shown after # in GitLab), not its global id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-issue-notes",
+      "kind": "read",
+      "description": "List the comments and system notes on one issue, 20 per page, oldest first by default. Pass activity_filter=only_comments to leave out system notes (label and state changes). Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}/notes?activity_filter={{input.activity_filter}}&sort={{input.sort}}&order_by=created_at&per_page=20&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "issue_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "issue_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The issue's number inside its project (`iid`, shown after # in GitLab), not its global id."
+          },
+          "activity_filter": {
+            "type": "string",
+            "enum": [
+              "all_notes",
+              "only_comments",
+              "only_activity"
+            ],
+            "description": "all_notes when left out."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Order by creation time; desc (newest first) when left out."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-labels",
+      "kind": "read",
+      "description": "List the labels of one project, 50 per page, with each one's name, color, description and open issue count. Use the names in labels, add_labels and remove_labels. Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/labels?with_counts=true&search={{input.search}}&per_page=50&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "search": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Text to look for in label names."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-merge-requests",
+      "kind": "read",
+      "description": "List the merge requests of one project, 5 per page, newest first by default, with descriptions, branches, state, draft flag, merge status and web URL. Filters: state, labels, text, author and reviewer usernames, target branch. Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests?state={{input.state}}&labels={{input.labels}}&search={{input.search}}&author_username={{input.author_username}}&reviewer_username={{input.reviewer_username}}&target_branch={{input.target_branch}}&order_by={{input.order_by}}&sort={{input.sort}}&per_page=5&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "opened",
+              "closed",
+              "locked",
+              "merged",
+              "all"
+            ],
+            "description": "Every state when left out."
+          },
+          "labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names; a merge request must have all of them."
+          },
+          "search": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Text to look for in titles and descriptions."
+          },
+          "author_username": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}$",
+            "description": "Merge requests opened by this username."
+          },
+          "reviewer_username": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}$",
+            "description": "Merge requests this username is asked to review."
+          },
+          "target_branch": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*\\.\\.)[A-Za-z0-9_][A-Za-z0-9._/-]{0,254}$",
+            "description": "Merge requests into this branch."
+          },
+          "order_by": {
+            "type": "string",
+            "enum": [
+              "created_at",
+              "updated_at",
+              "merged_at",
+              "title"
+            ],
+            "description": "created_at when left out."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "desc",
+              "asc"
+            ],
+            "description": "desc when left out."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-merge-request",
+      "kind": "read",
+      "description": "Get one merge request by its number in the project: title, description, source and target branches, state, draft flag, detailed_merge_status, head commit `sha` (pass it to approve-merge-request and merge-merge-request), labels, assignees, reviewers, latest pipeline and web URL.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "merge_request_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "merge_request_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The merge request's number inside its project (`iid`, shown after ! in GitLab), not its global id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-merge-request-diffs",
+      "kind": "read",
+      "description": "List the changed files of one merge request, 5 per page, each with old and new path, whether it was added, renamed or deleted, and its unified diff. GitLab collapses very large diffs (too_large, collapsed) and a page with big diffs can be cut at 64 KB. Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}/diffs?per_page=5&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "merge_request_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "merge_request_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The merge request's number inside its project (`iid`, shown after ! in GitLab), not its global id."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-merge-request-notes",
+      "kind": "read",
+      "description": "List the comments and system notes on one merge request, 20 per page, newest first by default. Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}/notes?sort={{input.sort}}&order_by=created_at&per_page=20&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "merge_request_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "merge_request_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The merge request's number inside its project (`iid`, shown after ! in GitLab), not its global id."
+          },
+          "sort": {
+            "type": "string",
+            "enum": [
+              "asc",
+              "desc"
+            ],
+            "description": "Order by creation time; desc when left out."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-pipelines",
+      "kind": "read",
+      "description": "List the CI/CD pipelines of one project, 20 per page, newest first, with id, status, ref, sha, source and web URL. Filters: status, ref (branch or tag) and sha. Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/pipelines?status={{input.status}}&ref={{input.ref}}&sha={{input.sha}}&per_page=20&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "created",
+              "waiting_for_resource",
+              "preparing",
+              "waiting_for_callback",
+              "pending",
+              "running",
+              "success",
+              "failed",
+              "canceling",
+              "canceled",
+              "skipped",
+              "manual",
+              "scheduled"
+            ],
+            "description": "Pipelines in this status."
+          },
+          "ref": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*\\.\\.)[A-Za-z0-9_][A-Za-z0-9._/-]{0,254}$",
+            "description": "Pipelines for this branch or tag."
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$",
+            "description": "Pipelines for this commit SHA."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-pipeline",
+      "kind": "read",
+      "description": "Get one pipeline: status, ref, sha, source, who started it, timestamps, duration and web URL.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/pipelines/{{input.pipeline_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "pipeline_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "pipeline_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,11}$",
+            "description": "The pipeline's id, from list-pipelines."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-file",
+      "kind": "read",
+      "description": "Get one file from a repository at a branch, tag or commit (`ref`). The file comes back with its `content` in base64, its size, blob id and last commit id. A file over about 45 KB is cut by the 64 KB response limit once encoded.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/repository/files/{{input.file_path}}?ref={{input.ref}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "file_path",
+          "ref"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "file_path": {
+            "type": "string",
+            "pattern": "^(?!/)(?![\\s\\S]*(?:^|/)\\.\\.(?:/|$))[^\\r\\n]{1,1024}$",
+            "description": "The file's path from the repository root, such as `src/app.ts` (Anlyon encodes the slashes)."
+          },
+          "ref": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*\\.\\.)[A-Za-z0-9_][A-Za-z0-9._/-]{0,254}$",
+            "description": "A branch, tag or commit SHA. Use the project's default_branch from get-project for the current version."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-branches",
+      "kind": "read",
+      "description": "List the branches of one repository, 30 per page, with each one's name, protected and merged flags, default flag and latest commit. Pass `search` to match names, and `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/repository/branches?search={{input.search}}&per_page=30&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "search": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,200}$",
+            "description": "Text to look for in branch names."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-commits",
+      "kind": "read",
+      "description": "List commits on a branch or tag, 20 per page, newest first, with sha, title, message, author, dates and web URL. Filter by ref_name (the default branch when left out), a file path, and since and until times. Pass `page` for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/repository/commits?ref_name={{input.ref_name}}&path={{input.path}}&since={{input.since}}&until={{input.until}}&per_page=20&page={{input.page}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "ref_name": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*\\.\\.)[A-Za-z0-9_][A-Za-z0-9._/-]{0,254}$",
+            "description": "A branch or tag name. The default branch when left out."
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^(?!/)[^\\r\\n]{1,1024}$",
+            "description": "Only commits that touch this file path."
+          },
+          "since": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "Commits after this time: ISO 8601 UTC, YYYY-MM-DDTHH:MM:SSZ."
+          },
+          "until": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+            "description": "Commits before this time: ISO 8601 UTC, YYYY-MM-DDTHH:MM:SSZ."
+          },
+          "page": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,3}$",
+            "description": "Page number, from 1. Leave out for the first page. GitLab returns the next page number in the x-next-page header; an empty page means there are no more."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-issue",
+      "kind": "write",
+      "description": "Open one issue in a project, with a title and optional description, labels, one assignee, milestone and due date. Returns the issue with its number (`iid`). Read back by that number; the title must match. Limitation: no provider idempotency, so a retry after an unknown outcome can open a second issue. The description may not start a line with a slash, so it cannot run GitLab quick actions.",
+      "method": "POST",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/issues",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "title": "{{input.title}}",
+        "description": "{{input.description}}",
+        "labels": "{{input.labels}}",
+        "assignee_id": "{{input.assignee_id}}",
+        "milestone_id": "{{input.milestone_id}}",
+        "due_date": "{{input.due_date}}",
+        "confidential": "{{input.confidential}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "title"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The title, one line."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*(?:^|\\n)[ \\t]*/)[^\\r]{0,19999}[^\\s]$",
+            "description": "The issue's description in Markdown, up to 20,000 characters. No line may start with a slash (GitLab quick actions). No carriage returns, and it must end in a visible character."
+          },
+          "labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names to put on the issue. A name the project does not have yet is created."
+          },
+          "assignee_id": {
+            "type": "integer",
+            "description": "The GitLab user id to assign."
+          },
+          "milestone_id": {
+            "type": "integer",
+            "description": "The milestone's global id."
+          },
+          "due_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Due date, YYYY-MM-DD."
+          },
+          "confidential": {
+            "type": "boolean",
+            "description": "True makes the issue confidential: people outside the project cannot see it. False when left out."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{response.iid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "iid",
+            "equals": "{{response.iid}}"
+          },
+          {
+            "path": "title",
+            "equals": "{{input.title}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-issue",
+      "kind": "write",
+      "description": "Change one issue: any of title, description, the full label list, labels to add or remove, assignees, milestone and due date. Fields left out are not changed. It does not open or close the issue: use close-issue and reopen-issue. Read back from the issue; its title, labels and update time must equal what GitLab returned for this update. Limitations: the read-back fails if someone else edits the issue in between. An empty `labels` clears every label; `assignee_ids` [0] unassigns everyone; `milestone_id` 0 removes the milestone. The description may not start a line with a slash.",
+      "method": "PUT",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "title": "{{input.title}}",
+        "description": "{{input.description}}",
+        "labels": "{{input.labels}}",
+        "add_labels": "{{input.add_labels}}",
+        "remove_labels": "{{input.remove_labels}}",
+        "assignee_ids": "{{input.assignee_ids}}",
+        "milestone_id": "{{input.milestone_id}}",
+        "due_date": "{{input.due_date}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "issue_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "issue_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The issue's number inside its project (`iid`, shown after # in GitLab), not its global id."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The title, one line."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*(?:^|\\n)[ \\t]*/)[^\\r]{0,19999}[^\\s]$",
+            "description": "The new description in Markdown. No line may start with a slash (GitLab quick actions). No carriage returns, and it must end in a visible character."
+          },
+          "labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{0,500}$",
+            "description": "Comma-separated names of every label the issue should have; replaces the current labels. An empty string clears them."
+          },
+          "add_labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names to add, keeping the others."
+          },
+          "remove_labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names to remove, keeping the others."
+          },
+          "assignee_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Every GitLab user id the issue should be assigned to; replaces the current assignees. [0] unassigns everyone. GitLab Free accepts one."
+          },
+          "milestone_id": {
+            "type": "integer",
+            "description": "The milestone's global id; 0 removes the milestone."
+          },
+          "due_date": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+            "description": "Due date, YYYY-MM-DD."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "iid",
+            "equals": "{{response.iid}}"
+          },
+          {
+            "path": "title",
+            "equals": "{{response.title}}"
+          },
+          {
+            "path": "updated_at",
+            "equals": "{{response.updated_at}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "close-issue",
+      "kind": "write",
+      "description": "Close one issue. Read back from the issue; its state must be closed. Limitation: the read-back can match an issue that was already closed.",
+      "method": "PUT",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "state_event": "close"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "issue_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "issue_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The issue's number inside its project (`iid`, shown after # in GitLab), not its global id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "state",
+            "equals": "closed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reopen-issue",
+      "kind": "write",
+      "description": "Reopen one closed issue. Read back from the issue; its state must be opened. Limitation: the read-back can match an issue that was already open.",
+      "method": "PUT",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "state_event": "reopen"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "issue_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "issue_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The issue's number inside its project (`iid`, shown after # in GitLab), not its global id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "state",
+            "equals": "opened"
+          }
+        ]
+      }
+    },
+    {
+      "name": "comment-on-issue",
+      "kind": "write",
+      "description": "Add one comment to an issue. Read back by comment id; the text must match. Limitations: no provider idempotency, so a retry after an unknown outcome can post the comment twice. No line may start with a slash, so the comment cannot run GitLab quick actions.",
+      "method": "POST",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "body": "{{input.body}}",
+        "internal": "{{input.internal}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "issue_iid",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "issue_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The issue's number inside its project (`iid`, shown after # in GitLab), not its global id."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*(?:^|\\n)[ \\t]*/)[^\\r]{0,19999}[^\\s]$",
+            "description": "The comment in Markdown, up to 20,000 characters. No line may start with a slash (GitLab quick actions). No carriage returns, and it must end in a visible character."
+          },
+          "internal": {
+            "type": "boolean",
+            "description": "True posts an internal note, which people outside the project cannot see. False when left out."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/issues/{{input.issue_iid}}/notes/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-merge-request",
+      "kind": "write",
+      "description": "Open one merge request from a source branch into a target branch in the same project, with a title and optional description, labels, assignees, reviewers, and whether to squash and delete the source branch on merge. Start the title with `Draft:` to open it as a draft. Returns the merge request with its number (`iid`). Read back by that number; title and source branch must match. Limitations: GitLab refuses a second open merge request for the same branches (409). The description may not start a line with a slash.",
+      "method": "POST",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "source_branch": "{{input.source_branch}}",
+        "target_branch": "{{input.target_branch}}",
+        "title": "{{input.title}}",
+        "description": "{{input.description}}",
+        "labels": "{{input.labels}}",
+        "assignee_ids": "{{input.assignee_ids}}",
+        "reviewer_ids": "{{input.reviewer_ids}}",
+        "remove_source_branch": "{{input.remove_source_branch}}",
+        "squash": "{{input.squash}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "source_branch",
+          "target_branch",
+          "title"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "source_branch": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*\\.\\.)[A-Za-z0-9_][A-Za-z0-9._/-]{0,254}$",
+            "description": "The branch with the changes."
+          },
+          "target_branch": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*\\.\\.)[A-Za-z0-9_][A-Za-z0-9._/-]{0,254}$",
+            "description": "The branch to merge into, often the default branch."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The title, one line. Start it with `Draft:` to open a draft."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*(?:^|\\n)[ \\t]*/)[^\\r]{0,19999}[^\\s]$",
+            "description": "The description in Markdown. No line may start with a slash (GitLab quick actions). No carriage returns, and it must end in a visible character."
+          },
+          "labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names."
+          },
+          "assignee_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "GitLab user ids to assign. GitLab Free accepts one."
+          },
+          "reviewer_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "GitLab user ids to ask for a review. GitLab Free accepts one."
+          },
+          "remove_source_branch": {
+            "type": "boolean",
+            "description": "Delete the source branch when it is merged."
+          },
+          "squash": {
+            "type": "boolean",
+            "description": "Squash the commits into one when it is merged."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{response.iid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "iid",
+            "equals": "{{response.iid}}"
+          },
+          {
+            "path": "title",
+            "equals": "{{input.title}}"
+          },
+          {
+            "path": "source_branch",
+            "equals": "{{input.source_branch}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-merge-request",
+      "kind": "write",
+      "description": "Change one merge request: any of title, description, the full label list, labels to add or remove, assignees, reviewers and target branch, or close or reopen it (`state_event`). Fields left out are not changed. Read back from the merge request; its title, state and update time must equal what GitLab returned for this update. Limitations: the read-back fails if someone else edits it in between. GitLab ignores a new target branch once it is merged. The description may not start a line with a slash.",
+      "method": "PUT",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "title": "{{input.title}}",
+        "description": "{{input.description}}",
+        "labels": "{{input.labels}}",
+        "add_labels": "{{input.add_labels}}",
+        "remove_labels": "{{input.remove_labels}}",
+        "assignee_ids": "{{input.assignee_ids}}",
+        "reviewer_ids": "{{input.reviewer_ids}}",
+        "target_branch": "{{input.target_branch}}",
+        "state_event": "{{input.state_event}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "merge_request_iid"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "merge_request_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The merge request's number inside its project (`iid`, shown after ! in GitLab), not its global id."
+          },
+          "title": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,255}$",
+            "description": "The new title, one line. Add or remove `Draft:` at the start to mark or unmark a draft."
+          },
+          "description": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*(?:^|\\n)[ \\t]*/)[^\\r]{0,19999}[^\\s]$",
+            "description": "The new description in Markdown. No line may start with a slash (GitLab quick actions). No carriage returns, and it must end in a visible character."
+          },
+          "labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{0,500}$",
+            "description": "Comma-separated names of every label it should have; replaces the current labels. An empty string clears them."
+          },
+          "add_labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names to add, keeping the others."
+          },
+          "remove_labels": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,500}$",
+            "description": "Comma-separated label names to remove, keeping the others."
+          },
+          "assignee_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Every GitLab user id it should be assigned to; replaces the current assignees. [0] unassigns everyone."
+          },
+          "reviewer_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "Every GitLab user id asked to review; replaces the current reviewers. [0] removes them all."
+          },
+          "target_branch": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*\\.\\.)[A-Za-z0-9_][A-Za-z0-9._/-]{0,254}$",
+            "description": "The new target branch."
+          },
+          "state_event": {
+            "type": "string",
+            "enum": [
+              "close",
+              "reopen"
+            ],
+            "description": "close closes it without merging; reopen reopens a closed one."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "iid",
+            "equals": "{{response.iid}}"
+          },
+          {
+            "path": "title",
+            "equals": "{{response.title}}"
+          },
+          {
+            "path": "state",
+            "equals": "{{response.state}}"
+          },
+          {
+            "path": "updated_at",
+            "equals": "{{response.updated_at}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "comment-on-merge-request",
+      "kind": "write",
+      "description": "Add one comment to a merge request's overview. Read back by comment id; the text must match. Limitations: no provider idempotency, so a retry after an unknown outcome can post the comment twice. No line may start with a slash, so the comment cannot run GitLab quick actions such as /merge or /approve.",
+      "method": "POST",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}/notes",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "body": "{{input.body}}",
+        "internal": "{{input.internal}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "merge_request_iid",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "merge_request_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The merge request's number inside its project (`iid`, shown after ! in GitLab), not its global id."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^(?![\\s\\S]*(?:^|\\n)[ \\t]*/)[^\\r]{0,19999}[^\\s]$",
+            "description": "The comment in Markdown, up to 20,000 characters. No line may start with a slash (GitLab quick actions). No carriage returns, and it must end in a visible character."
+          },
+          "internal": {
+            "type": "boolean",
+            "description": "True posts an internal note, which people outside the project cannot see. False when left out."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}/notes/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "body",
+            "equals": "{{input.body}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "approve-merge-request",
+      "kind": "write",
+      "description": "Approve one merge request as the token's user. Pass the head `sha` you reviewed (from get-merge-request); GitLab refuses the approval (409) if the branch has moved since. Read back from the merge request's approval state; user_has_approved must be true. Limitations: GitLab refuses an approval the project's rules do not allow, such as the author approving their own merge request (401). A project that requires a password to approve cannot be approved here.",
+      "method": "POST",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}/approve",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "sha": "{{input.sha}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "merge_request_iid",
+          "sha"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "merge_request_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The merge request's number inside its project (`iid`, shown after ! in GitLab), not its global id."
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$",
+            "description": "The merge request's head commit SHA that was reviewed (`sha` from get-merge-request)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}/approvals",
+        "status": 200,
+        "match": [
+          {
+            "path": "user_has_approved",
+            "equals": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "merge-merge-request",
+      "kind": "write",
+      "description": "Merge one merge request now. `sha` must be the head commit you reviewed (from get-merge-request); GitLab refuses the merge (409) if the branch has moved since. Optionally squash, delete the source branch, and set the merge or squash commit message. Read back from the merge request; its state must be merged. Limitations: it does not wait for a pipeline (auto-merge is left out); GitLab answers 405 when the merge request cannot be merged yet (draft, failing or required pipeline, missing approvals, conflicts) and 422 when the merge fails. Branch protection still applies.",
+      "method": "PUT",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}/merge",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "sha": "{{input.sha}}",
+        "squash": "{{input.squash}}",
+        "should_remove_source_branch": "{{input.should_remove_source_branch}}",
+        "merge_commit_message": "{{input.merge_commit_message}}",
+        "squash_commit_message": "{{input.squash_commit_message}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "merge_request_iid",
+          "sha"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "merge_request_iid": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,9}$",
+            "description": "The merge request's number inside its project (`iid`, shown after ! in GitLab), not its global id."
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{40}(?:[0-9a-f]{24})?$",
+            "description": "The merge request's head commit SHA that was reviewed (`sha` from get-merge-request)."
+          },
+          "squash": {
+            "type": "boolean",
+            "description": "Squash the commits into one. The merge request's own setting when left out."
+          },
+          "should_remove_source_branch": {
+            "type": "boolean",
+            "description": "Delete the source branch after the merge."
+          },
+          "merge_commit_message": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The merge commit's message."
+          },
+          "squash_commit_message": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The squash commit's message, when squashing."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://gitlab.com/api/v4/projects/{{input.project}}/merge_requests/{{input.merge_request_iid}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "state",
+            "equals": "merged"
+          }
+        ]
+      }
+    },
+    {
+      "name": "retry-pipeline",
+      "kind": "write",
+      "description": "Retry the failed and canceled jobs of one pipeline. A pipeline with none is left as it was. Returns the pipeline. No read-back: the retried jobs start on GitLab's runners afterwards, so the pipeline's status right after the call is not settled. Limitations: retried jobs run with the project's CI/CD settings and can deploy if the pipeline does. GitLab answers 409 while a retry of the same pipeline is already running.",
+      "method": "POST",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/pipelines/{{input.pipeline_id}}/retry",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "pipeline_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "pipeline_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,11}$",
+            "description": "The pipeline's id, from list-pipelines."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "cancel-pipeline",
+      "kind": "write",
+      "description": "Cancel the running and pending jobs of one pipeline. Returns the pipeline. No read-back: a pipeline passes through canceling while its jobs stop, so its status right after the call is not settled, and GitLab answers 200 whatever the pipeline's state. Check it later with get-pipeline.",
+      "method": "POST",
+      "urlTemplate": "https://gitlab.com/api/v4/projects/{{input.project}}/pipelines/{{input.pipeline_id}}/cancel",
+      "headers": {
+        "Authorization": "Bearer {{connection:gitlab}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "project",
+          "pipeline_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "project": {
+            "type": "string",
+            "pattern": "^(?:[1-9][0-9]{0,11}|[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}(?:/[A-Za-z0-9_][A-Za-z0-9_.-]{0,254}){1,19})$",
+            "description": "The project: its numeric id, or its full path such as `my-group/my-project` (Anlyon encodes the slashes)."
+          },
+          "pipeline_id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,11}$",
+            "description": "The pipeline's id, from list-pipelines."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "gitlab: approve closing an issue",
+      "matchKind": "action",
+      "matchActionName": "close-issue",
+      "effect": "require_approval"
+    },
+    {
+      "name": "gitlab: approve closing a merge request",
+      "matchKind": "action",
+      "matchActionName": "update-merge-request",
+      "condition": "has(input.state_event) && input.state_event == 'close'",
+      "effect": "require_approval"
+    },
+    {
+      "name": "gitlab: approve approving a merge request",
+      "matchKind": "action",
+      "matchActionName": "approve-merge-request",
+      "effect": "require_approval"
+    },
+    {
+      "name": "gitlab: approve merging a merge request",
+      "matchKind": "action",
+      "matchActionName": "merge-merge-request",
+      "effect": "require_approval"
+    },
+    {
+      "name": "gitlab: approve retrying a pipeline",
+      "matchKind": "action",
+      "matchActionName": "retry-pipeline",
+      "effect": "require_approval"
+    },
+    {
+      "name": "gitlab: approve canceling a pipeline",
+      "matchKind": "action",
+      "matchActionName": "cancel-pipeline",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "gitlab: issues opened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-issue"
+    },
+    {
+      "name": "gitlab: issues updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "update-issue"
+    },
+    {
+      "name": "gitlab: issues closed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "close-issue"
+    },
+    {
+      "name": "gitlab: issues reopened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "reopen-issue"
+    },
+    {
+      "name": "gitlab: issue comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "comment-on-issue"
+    },
+    {
+      "name": "gitlab: merge requests opened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "create-merge-request"
+    },
+    {
+      "name": "gitlab: merge requests updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "update-merge-request"
+    },
+    {
+      "name": "gitlab: merge request comments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "comment-on-merge-request"
+    },
+    {
+      "name": "gitlab: merge requests approved per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "approve-merge-request"
+    },
+    {
+      "name": "gitlab: merge requests merged per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "merge-merge-request"
+    },
+    {
+      "name": "gitlab: pipelines retried per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "retry-pipeline"
+    },
+    {
+      "name": "gitlab: pipelines canceled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "cancel-pipeline"
+    }
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.todoist.com/api/v1/).",
+  "params": {},
+  "input": {
+    "task_id": "6XGgmFVcrG5RRjVr",
+    "content": "Dana asked for the security review."
+  },
+  "expectedUrl": "https://api.todoist.com/api/v1/comments",
+  "response": {
+    "id": "6XGgmFQrx44wfK02",
+    "posted_uid": "1234567",
+    "content": "Dana asked for the security review.",
+    "file_attachment": null,
+    "uids_to_notify": null,
+    "is_deleted": false,
+    "posted_at": "2026-10-20T11:00:00Z",
+    "reactions": null
+  },
+  "expectedReadBackUrl": "https://api.todoist.com/api/v1/comments/6XGgmFQrx44wfK02",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "id": "6XGgmFQrx44wfK02",
+      "posted_uid": "1234567",
+      "content": "Dana asked for the security review.",
+      "file_attachment": null,
+      "uids_to_notify": null,
+      "is_deleted": false,
+      "posted_at": "2026-10-20T11:00:00Z",
+      "reactions": null
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "id": "6XGgmFQrx44wfK02",
+      "posted_uid": "1234567",
+      "content": "Another comment",
+      "file_attachment": null,
+      "uids_to_notify": null,
+      "is_deleted": false,
+      "posted_at": "2026-10-20T11:00:00Z",
+      "reactions": null
+    }
+  }
+}

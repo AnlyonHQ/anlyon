@@ -1,0 +1,1438 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/intercom",
+  "version": "0.3.0",
+  "description": "A support agent's Intercom toolset: search, read and update contacts, tag them and attach them to companies; search and read conversations, reply, add notes, assign, snooze, close, reopen and tag them; list admins, teams, tags and companies; search Help Center articles. Reads return Intercom's response; every write is limited, can require approval and leaves a receipt.",
+  "secrets": [
+    {
+      "name": "INTERCOM",
+      "kind": "connection",
+      "integrationId": "intercom",
+      "hosts": [
+        "api.intercom.io"
+      ],
+      "description": "The connected Intercom credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "search-contacts",
+      "kind": "read",
+      "description": "Search contacts with an Intercom query, for example {\"field\":\"email\",\"operator\":\"=\",\"value\":\"sam@example.com\"}, or {\"operator\":\"AND\",\"value\":[...]} to combine filters. Returns up to 15 contacts per page and total_count; pass pages.next.starting_after as starting_after for the next page. Changes nothing. A contact created in the last few minutes may not be found yet.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/contacts/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "{{input.query}}",
+        "pagination": {
+          "per_page": 15,
+          "starting_after": "{{input.starting_after}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "object",
+            "description": "An Intercom search query: a filter {field, operator, value} or {operator: AND|OR, value: [filters]} (up to 15 filters per group, nested at most two levels)."
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^[^\\s]{1,1000}$",
+            "description": "pages.next.starting_after from the previous page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-contacts",
+      "kind": "read",
+      "description": "List the workspace's contacts (users and leads), 15 per page. Pass pages.next.starting_after from the response as starting_after for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/contacts?per_page=15&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "starting_after": {
+            "type": "string",
+            "pattern": "^[^\\s]{1,1000}$",
+            "description": "pages.next.starting_after from the previous page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-contact",
+      "kind": "read",
+      "description": "Get one contact by its Intercom id: role, email, name, phone, custom attributes, and the first tags, notes and companies with links to the rest.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The contact's Intercom id (24 hex characters)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-tags",
+      "kind": "read",
+      "description": "List every tag in the workspace (id and name), to find the tag_id that tag-contact and tag-conversation take. Intercom returns all tags in one response; there is no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/tags",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-conversations",
+      "kind": "read",
+      "description": "Search conversations with an Intercom query, for example {\"operator\":\"AND\",\"value\":[{\"field\":\"state\",\"operator\":\"=\",\"value\":\"open\"},{\"field\":\"admin_assignee_id\",\"operator\":\"=\",\"value\":991267708}]}. Returns up to 10 conversations per page, without their parts, and total_count; pass pages.next.starting_after as starting_after for the next page. Changes nothing.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/search",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "query": "{{input.query}}",
+        "pagination": {
+          "per_page": 10,
+          "starting_after": "{{input.starting_after}}"
+        }
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "type": "object",
+            "description": "An Intercom search query: a filter {field, operator, value} or {operator: AND|OR, value: [filters]} (up to 15 filters per group, nested at most two levels)."
+          },
+          "starting_after": {
+            "type": "string",
+            "pattern": "^[^\\s]{1,1000}$",
+            "description": "pages.next.starting_after from the previous page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-conversations",
+      "kind": "read",
+      "description": "List the workspace's conversations, 10 per page, without their parts. Pass pages.next.starting_after from the response as starting_after for the next page; use search-conversations to filter by state, assignee or tag.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/conversations?per_page=10&starting_after={{input.starting_after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "starting_after": {
+            "type": "string",
+            "pattern": "^[^\\s]{1,1000}$",
+            "description": "pages.next.starting_after from the previous page."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-conversation",
+      "kind": "read",
+      "description": "Get one conversation with its parts (customer messages, replies, notes, assignments and state changes) as plain text: up to the 500 most recent parts. A very long conversation can exceed the 64 KB the agent receives and is then cut off.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}?display_as=plaintext",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-admins",
+      "kind": "read",
+      "description": "List the workspace's teammates (admins): id, name, email, away mode and team ids. An admin id is what conversation actions take as admin_id and assign-conversation takes as assignee_id. Returns every admin in one response; there is no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/admins",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-admin",
+      "kind": "read",
+      "description": "Get one teammate (admin) by id: name, email, job title, away mode and the ids of the teams they belong to.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/admins/{{input.admin_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "admin_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-teams",
+      "kind": "read",
+      "description": "List the workspace's teams: id, name and the ids of their admins. A team id is what assign-conversation-to-team takes. Returns every team in one response; there is no paging.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/teams",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {}
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-companies",
+      "kind": "read",
+      "description": "List companies, 20 per page, most recently active first. page starts at 1; pages.total_pages in the response says how many pages there are. Changes nothing (Intercom lists companies with a POST). Companies with no contacts are not listed, and paging stops after 10,000 companies.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/companies/list?page={{input.page}}&per_page=20",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "type": "integer",
+            "description": "The page to fetch, starting at 1."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-company",
+      "kind": "read",
+      "description": "Get one company by its Intercom id (not your own company_id): name, plan, size, website, user count, monthly spend, custom attributes, tags and segments.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/companies/{{input.company_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "company_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "company_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The company's Intercom id (24 hex characters), not your own company_id."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "search-articles",
+      "kind": "read",
+      "description": "Search Help Center articles for a phrase. Returns up to 10 matching articles with their full bodies, and total_count. Intercom documents no parameter for further pages, so narrow the phrase when total_count is larger; many long articles can exceed the 64 KB the agent receives. Pass state published to see only what customers can see.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/articles/search?phrase={{input.phrase}}&state={{input.state}}&help_center_id={{input.help_center_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "phrase"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "phrase": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "published",
+              "draft",
+              "all"
+            ]
+          },
+          "help_center_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "Only search this Help Center."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-article",
+      "kind": "read",
+      "description": "Get one Help Center article by id: title, description, body (HTML), state, public URL and translations.",
+      "method": "GET",
+      "urlTemplate": "https://api.intercom.io/articles/{{input.article_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "article_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "article_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "create-contact",
+      "kind": "write",
+      "description": "Create one contact, as a lead or a user, with an email and a name. Read back by contact id; the email must match. Limitation: no provider idempotency, so a retry after an unknown outcome can be refused as a duplicate or create a second lead.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/contacts",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "role": "{{input.role}}",
+        "email": "{{input.email}}",
+        "name": "{{input.name}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "role",
+          "email",
+          "name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": [
+              "lead",
+              "user"
+            ]
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/contacts/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "email",
+            "equals": "{{input.email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-contact",
+      "kind": "write",
+      "description": "Update one contact's name, email, phone, external id or custom attributes; only the fields you pass change. Read back by contact id; name, email and phone must equal what Intercom returned for the update. Limitations: custom attributes are not part of the read-back, and a custom attribute must already exist in the workspace.",
+      "method": "PUT",
+      "urlTemplate": "https://api.intercom.io/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.name}}",
+        "email": "{{input.email}}",
+        "phone": "{{input.phone}}",
+        "external_id": "{{input.external_id}}",
+        "custom_attributes": "{{input.custom_attributes}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The contact's Intercom id (24 hex characters)."
+          },
+          "name": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$"
+          },
+          "email": {
+            "type": "string",
+            "pattern": "^[^@\\s]{1,64}@[^@\\s]{1,190}$"
+          },
+          "phone": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,40}$"
+          },
+          "external_id": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,200}$",
+            "description": "Your own id for this contact."
+          },
+          "custom_attributes": {
+            "type": "object",
+            "description": "Existing custom attributes to set, by name: {\"plan\": \"pro\"}."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/contacts/{{input.contact_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.contact_id}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{response.name}}"
+          },
+          {
+            "path": "email",
+            "equals": "{{response.email}}"
+          },
+          {
+            "path": "phone",
+            "equals": "{{response.phone}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "tag-contact",
+      "kind": "write",
+      "description": "Add one existing tag to a contact. Read back from the contact's tags; the tag must be among them. Adding a tag the contact already has changes nothing.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/contacts/{{input.contact_id}}/tags",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "id": "{{input.tag_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "tag_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The contact's Intercom id (24 hex characters)."
+          },
+          "tag_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "A tag id from list-tags."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/contacts/{{input.contact_id}}/tags",
+        "status": 200,
+        "match": [
+          {
+            "path": "type",
+            "equals": "list"
+          },
+          {
+            "path": "data.*.id",
+            "equals": "{{input.tag_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "untag-contact",
+      "kind": "write",
+      "description": "Remove one tag from a contact. Read back from the contact's tags; the tag must no longer be among them.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.intercom.io/contacts/{{input.contact_id}}/tags/{{input.tag_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "tag_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The contact's Intercom id (24 hex characters)."
+          },
+          "tag_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "A tag id from list-tags."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/contacts/{{input.contact_id}}/tags",
+        "status": 200,
+        "match": [
+          {
+            "path": "type",
+            "equals": "list"
+          },
+          {
+            "path": "data.*.id",
+            "equals": "{{input.tag_id}}",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "attach-contact-to-company",
+      "kind": "write",
+      "description": "Attach a contact to one company, by the company's Intercom id. Read back from the contact's companies; the company must be among them. Limitation: the read-back sees only the first 50 of the contact's companies, so for a contact with more it can miss this one and fail.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/contacts/{{input.contact_id}}/companies",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "id": "{{input.company_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "company_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The contact's Intercom id (24 hex characters)."
+          },
+          "company_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The company's Intercom id (24 hex characters), not your own company_id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/contacts/{{input.contact_id}}/companies?per_page=50",
+        "status": 200,
+        "match": [
+          {
+            "path": "type",
+            "equals": "list"
+          },
+          {
+            "path": "data.*.id",
+            "equals": "{{input.company_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "detach-contact-from-company",
+      "kind": "write",
+      "description": "Detach a contact from one company. Read back from the contact's companies; the company must no longer be among them. Limitation: the read-back sees only the first 50 of the contact's companies, so for a contact with more it can pass without having seen this one.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.intercom.io/contacts/{{input.contact_id}}/companies/{{input.company_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "company_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The contact's Intercom id (24 hex characters)."
+          },
+          "company_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The company's Intercom id (24 hex characters), not your own company_id."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/contacts/{{input.contact_id}}/companies?per_page=50",
+        "status": 200,
+        "match": [
+          {
+            "path": "type",
+            "equals": "list"
+          },
+          {
+            "path": "data.*.id",
+            "equals": "{{input.company_id}}",
+            "absent": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-contact",
+      "kind": "write",
+      "description": "Permanently delete one contact. No read-back: Intercom documents no answer for reading a deleted contact, so the receipt rests on the delete response (deleted: true). It cannot be undone.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.intercom.io/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The contact's Intercom id (24 hex characters)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "create-conversation",
+      "kind": "write",
+      "description": "Start a conversation as a message from a contact (a lead or a user), for example to record a request that came in by phone. Read back from the new conversation; its contact must be this contact. Limitations: no provider idempotency, so a retry after an unknown outcome can create a second conversation; workflows or Fin may answer it as they would any inbound message.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "from": {
+          "type": "{{input.from_type}}",
+          "id": "{{input.contact_id}}"
+        },
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "from_type",
+          "contact_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "from_type": {
+            "type": "string",
+            "enum": [
+              "lead",
+              "user"
+            ],
+            "description": "The contact's role."
+          },
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "description": "The contact's Intercom id (24 hex characters)."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The message, plain text (HTML is not supported)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/conversations/{{response.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "contacts.contacts.0.id",
+            "equals": "{{input.contact_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reply-to-conversation",
+      "kind": "write",
+      "description": "Reply to the customer in one conversation, as the admin you name; the customer sees it in the Messenger or by email. No read-back: Intercom stores the reply as HTML among the conversation's parts, and the stored HTML cannot be compared exactly with the text sent. Limitation: no provider idempotency, so a retry after an unknown outcome can send a second reply.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}/reply",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "message_type": "comment",
+        "type": "admin",
+        "admin_id": "{{input.admin_id}}",
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "admin_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The teammate the action is recorded as (list-admins)."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The reply the customer reads."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "add-conversation-note",
+      "kind": "write",
+      "description": "Add an internal note to one conversation, as the admin you name; only teammates see it. No read-back: Intercom stores the note as HTML among the conversation's parts, and the stored HTML cannot be compared exactly with the text sent. Limitation: no provider idempotency, so a retry after an unknown outcome can add a second note.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}/reply",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "message_type": "note",
+        "type": "admin",
+        "admin_id": "{{input.admin_id}}",
+        "body": "{{input.body}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "admin_id",
+          "body"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The teammate the action is recorded as (list-admins)."
+          },
+          "body": {
+            "type": "string",
+            "pattern": "^[\\s\\S]{1,10000}$",
+            "description": "The note; simple HTML is accepted."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "assign-conversation",
+      "kind": "write",
+      "description": "Assign one conversation to a teammate (assignee_id, the admin's id as a number, from list-admins), recorded as the admin you name in admin_id. Read back from the conversation; admin_assignee_id must equal assignee_id. Limitations: assigning a closed conversation reopens it, and the read-back can match a conversation already assigned to that teammate.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}/parts",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "message_type": "assignment",
+        "type": "admin",
+        "admin_id": "{{input.admin_id}}",
+        "assignee_id": "{{input.assignee_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "admin_id",
+          "assignee_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The teammate the action is recorded as (list-admins)."
+          },
+          "assignee_id": {
+            "type": "integer",
+            "description": "The teammate to assign, as a number: 991267708."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "admin_assignee_id",
+            "equals": "{{input.assignee_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "assign-conversation-to-team",
+      "kind": "write",
+      "description": "Assign one conversation to a team (team_id, the team's id as a number, from list-teams), recorded as the admin you name in admin_id. Read back from the conversation; team_assignee_id must equal team_id. Limitations: assigning a closed conversation reopens it, and the read-back can match a conversation already assigned to that team.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}/parts",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "message_type": "assignment",
+        "type": "team",
+        "admin_id": "{{input.admin_id}}",
+        "assignee_id": "{{input.team_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "admin_id",
+          "team_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The teammate the action is recorded as (list-admins)."
+          },
+          "team_id": {
+            "type": "integer",
+            "description": "The team to assign, as a number: 814865."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "team_assignee_id",
+            "equals": "{{input.team_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "snooze-conversation",
+      "kind": "write",
+      "description": "Snooze one conversation until a time (snoozed_until, Unix seconds, in the future), as the admin you name; Intercom reopens it at that time. Read back from the conversation; its state must be snoozed and snoozed_until must match.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}/parts",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "message_type": "snoozed",
+        "admin_id": "{{input.admin_id}}",
+        "snoozed_until": "{{input.snoozed_until}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "admin_id",
+          "snoozed_until"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The teammate the action is recorded as (list-admins)."
+          },
+          "snoozed_until": {
+            "type": "integer",
+            "description": "When the conversation reopens, as a Unix timestamp in seconds."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "state",
+            "equals": "snoozed"
+          },
+          {
+            "path": "snoozed_until",
+            "equals": "{{input.snoozed_until}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "close-conversation",
+      "kind": "write",
+      "description": "Close one conversation, as the admin you name. Read back from the conversation; its state must be closed. Limitation: the read-back can match a conversation that was already closed.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}/parts",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "message_type": "close",
+        "type": "admin",
+        "admin_id": "{{input.admin_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "admin_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "state",
+            "equals": "closed"
+          }
+        ]
+      }
+    },
+    {
+      "name": "reopen-conversation",
+      "kind": "write",
+      "description": "Reopen one closed or snoozed conversation, as the admin you name. Read back from the conversation; its state must be open. Limitation: the read-back can match a conversation that was already open.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}/parts",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "message_type": "open",
+        "type": "admin",
+        "admin_id": "{{input.admin_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "admin_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "state",
+            "equals": "open"
+          }
+        ]
+      }
+    },
+    {
+      "name": "tag-conversation",
+      "kind": "write",
+      "description": "Add one existing tag to a conversation, as the admin you name. Read back from the conversation; the tag must be among its tags. Adding a tag the conversation already has changes nothing.",
+      "method": "POST",
+      "urlTemplate": "https://api.intercom.io/conversations/{{input.conversation_id}}/tags",
+      "headers": {
+        "Authorization": "Bearer {{connection:intercom}}",
+        "Accept": "application/json",
+        "Intercom-Version": "2.11",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "id": "{{input.tag_id}}",
+        "admin_id": "{{input.admin_id}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "conversation_id",
+          "tag_id",
+          "admin_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$"
+          },
+          "tag_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "A tag id from list-tags."
+          },
+          "admin_id": {
+            "type": "string",
+            "pattern": "^[0-9]{1,20}$",
+            "description": "The teammate the action is recorded as (list-admins)."
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.intercom.io/conversations/{{input.conversation_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.conversation_id}}"
+          },
+          {
+            "path": "tags.tags.*.id",
+            "equals": "{{input.tag_id}}"
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "intercom: approve deleting a contact",
+      "matchKind": "action",
+      "matchActionName": "delete-contact",
+      "effect": "require_approval"
+    },
+    {
+      "name": "intercom: approve replying to a customer",
+      "matchKind": "action",
+      "matchActionName": "reply-to-conversation",
+      "effect": "require_approval"
+    },
+    {
+      "name": "intercom: approve closing a conversation",
+      "matchKind": "action",
+      "matchActionName": "close-conversation",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "intercom: contacts created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "create-contact"
+    },
+    {
+      "name": "intercom: contacts updated per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-contact"
+    },
+    {
+      "name": "intercom: contact tags added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "tag-contact"
+    },
+    {
+      "name": "intercom: contact tags removed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "untag-contact"
+    },
+    {
+      "name": "intercom: contacts attached to companies per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "attach-contact-to-company"
+    },
+    {
+      "name": "intercom: contacts detached from companies per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 100,
+      "actionName": "detach-contact-from-company"
+    },
+    {
+      "name": "intercom: contacts deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-contact"
+    },
+    {
+      "name": "intercom: conversations started per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "create-conversation"
+    },
+    {
+      "name": "intercom: conversation replies per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "reply-to-conversation"
+    },
+    {
+      "name": "intercom: conversation notes per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "add-conversation-note"
+    },
+    {
+      "name": "intercom: conversations assigned to a teammate per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "assign-conversation"
+    },
+    {
+      "name": "intercom: conversations assigned to a team per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "assign-conversation-to-team"
+    },
+    {
+      "name": "intercom: conversations snoozed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "snooze-conversation"
+    },
+    {
+      "name": "intercom: conversations closed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "close-conversation"
+    },
+    {
+      "name": "intercom: conversations reopened per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "reopen-conversation"
+    },
+    {
+      "name": "intercom: conversation tags added per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 300,
+      "actionName": "tag-conversation"
+    }
+  ]
+}

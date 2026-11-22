@@ -1,0 +1,16 @@
+{
+  "_source": "Shaped after the response documented in the official twilio/sendgrid-oai spec (spec/json/tsg_suppressions_v3.json, GetSuppressionBounces).",
+  "params": {},
+  "input": {
+    "email": "ada@example.com"
+  },
+  "expectedUrl": "https://api.sendgrid.com/v3/suppression/bounces/ada%40example.com",
+  "response": [
+    {
+      "created": 1760000000,
+      "email": "ada@example.com",
+      "reason": "550 5.1.1 The email account that you tried to reach does not exist.",
+      "status": "5.1.1"
+    }
+  ]
+}

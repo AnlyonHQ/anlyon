@@ -1,0 +1,31 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.close.com/api/resources/opportunities, GET /opportunity/).",
+  "params": {},
+  "input": {
+    "lead_id": "lead_Acme01",
+    "status_type": "active"
+  },
+  "expectedUrl": "https://api.close.com/api/v1/opportunity/?lead_id=lead_Acme01&status_type=active&_limit=20&_fields=id,lead_id,status_id,status_label,status_type,value,value_period,value_formatted,confidence,note,user_id,date_won,date_created,date_updated",
+  "response": {
+    "has_more": false,
+    "total_results": 1,
+    "data": [
+      {
+        "id": "oppo_AcmeRenewal01",
+        "lead_id": "lead_Acme01",
+        "status_id": "stat_OppDemo01",
+        "status_label": "Demo Completed",
+        "status_type": "active",
+        "value": 1200000,
+        "value_period": "one_time",
+        "value_formatted": "$12,000",
+        "confidence": 40,
+        "note": "Renewal for 2027.",
+        "user_id": "user_Alice01",
+        "date_won": null,
+        "date_created": "2026-10-21T10:00:00.000000+00:00",
+        "date_updated": "2026-10-21T10:00:00.000000+00:00"
+      }
+    ]
+  }
+}

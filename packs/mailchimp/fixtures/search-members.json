@@ -1,0 +1,28 @@
+{
+  "params": {},
+  "accountHost": "us21.api.mailchimp.com",
+  "_source": "Shaped after the response documented in Mailchimp's official OpenAPI spec (https://api.mailchimp.com/schema/openapi/OpenAPI.json, getSearchMembers).",
+  "input": {
+    "query": "ada@example.com",
+    "list_id": "4ca5becb8d"
+  },
+  "expectedUrl": "https://us21.api.mailchimp.com/3.0/search-members?query=ada%40example.com&list_id=4ca5becb8d&fields=exact_matches.members.id,exact_matches.members.email_address,exact_matches.members.full_name,exact_matches.members.status,exact_matches.members.list_id,exact_matches.total_items,full_search.members.id,full_search.members.email_address,full_search.members.full_name,full_search.members.status,full_search.members.list_id,full_search.total_items",
+  "response": {
+    "exact_matches": {
+      "members": [
+        {
+          "id": "3e3417d7ef77d5932a6734b916515ed5",
+          "email_address": "ada@example.com",
+          "full_name": "Ada Lovelace",
+          "status": "subscribed",
+          "list_id": "4ca5becb8d"
+        }
+      ],
+      "total_items": 1
+    },
+    "full_search": {
+      "members": [],
+      "total_items": 0
+    }
+  }
+}

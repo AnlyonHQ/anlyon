@@ -1,0 +1,736 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/resend",
+  "version": "0.2.0",
+  "description": "Resend for an agent: read sent emails, domains, contacts and segments; send an email from the domain fixed at install, reschedule or cancel a scheduled email, and create, rename, unsubscribe, delete and segment contacts, with every write governed.",
+  "parameters": [
+    {
+      "name": "sending_domain",
+      "description": "The one verified Resend domain this pack sends from, e.g. mail.example.com. Every from address must be on it.",
+      "pattern": "^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\\.)+[a-z]{2,63}$"
+    }
+  ],
+  "secrets": [
+    {
+      "name": "RESEND",
+      "kind": "connection",
+      "integrationId": "resend",
+      "hosts": [
+        "api.resend.com"
+      ],
+      "description": "The connected Resend API key, with Full access"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-emails",
+      "kind": "read",
+      "description": "List sent and scheduled emails, newest first: id, from, to, subject, created_at, last_event and scheduled_at, without bodies or tags (use get-email). 20 per page; when has_more is true, pass the last email's id as after for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/emails?limit=20&after={{input.after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-email",
+      "kind": "read",
+      "description": "Get one sent or scheduled email by id: from, to, cc, bcc, subject, html and text bodies, tags, last_event (for example delivered, bounced, scheduled) and scheduled_at. A long body can be cut at the response limit.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/emails/{{input.email_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-domains",
+      "kind": "read",
+      "description": "List the account's sending domains with their verification status, region and capabilities. 20 per page; when has_more is true, pass the last domain's id as after for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/domains?limit=20&after={{input.after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-domain",
+      "kind": "read",
+      "description": "Get one domain by id: its status, tracking settings, capabilities and the DNS records (SPF, DKIM, tracking) with each record's verification status.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/domains/{{input.domain_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "domain_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "domain_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-contacts",
+      "kind": "read",
+      "description": "List contacts, optionally only those in one segment: id, email, first and last name, created_at and whether they unsubscribed. 20 per page; when has_more is true, pass the last contact's id as after for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/contacts?limit=20&segment_id={{input.segment_id}}&after={{input.after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-contact",
+      "kind": "read",
+      "description": "Get one contact by id or by email address: name, whether they unsubscribed from broadcasts, created_at and custom properties.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/contacts/{{input.contact}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact": {
+            "type": "string",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}|[^\\s@/,;<>\"]{1,64}@[^\\s@/,;<>\"]{1,250}\\.[A-Za-z]{2,63})$",
+            "description": "The contact's id, or its email address."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-segments",
+      "kind": "read",
+      "description": "List the account's segments (the groups of contacts broadcasts are sent to): id, name and created_at. 20 per page; when has_more is true, pass the last segment's id as after for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/segments?limit=20&after={{input.after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-segment",
+      "kind": "read",
+      "description": "Get one segment by id: its name and created_at. Use list-contacts with segment_id for its members.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/segments/{{input.segment_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "segment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-contact-segments",
+      "kind": "read",
+      "description": "List the segments one contact belongs to. 20 per page; when has_more is true, pass the last segment's id as after for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.resend.com/contacts/{{input.contact_id}}/segments?limit=20&after={{input.after}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          },
+          "after": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "send-email",
+      "kind": "write",
+      "description": "Send one email from an address on the sending domain fixed at install, to up to 50 recipients, with a subject and an html or text body. Counted in emails, one per recipient across to, cc and bcc; Resend's idempotency key and a read-back of the sent email grade the receipt. A sent email cannot be recalled.",
+      "requiresApproval": false,
+      "adapter": {
+        "type": "resend.email_send",
+        "credentialSecret": "RESEND",
+        "config": {
+          "domain": "{{param:sending_domain}}"
+        }
+      }
+    },
+    {
+      "name": "reschedule-email",
+      "kind": "write",
+      "description": "Move one scheduled email to a new send time, an ISO 8601 time at most 30 days ahead. Only an email that is still scheduled can be changed. No read-back: Resend reports the schedule in its own timestamp format (2026-10-20 09:00:00+00), which cannot be compared exactly with the ISO 8601 value sent; check it with get-email.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.resend.com/emails/{{input.email_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "scheduled_at": "{{input.scheduled_at}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email_id",
+          "scheduled_at"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          },
+          "scheduled_at": {
+            "type": "string",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}(:[0-9]{2}(\\.[0-9]{1,3})?)?(Z|[+-][0-9]{2}:[0-9]{2})$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "cancel-scheduled-email",
+      "kind": "write",
+      "description": "Cancel one scheduled email so it is never sent; a canceled email cannot be rescheduled. Read back by id; last_event must be canceled. Limitation: the read-back can match an email that was already canceled.",
+      "method": "POST",
+      "urlTemplate": "https://api.resend.com/emails/{{input.email_id}}/cancel",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.resend.com/emails/{{input.email_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "last_event",
+            "equals": "canceled"
+          }
+        ]
+      }
+    },
+    {
+      "name": "create-contact",
+      "kind": "write",
+      "description": "Create one contact with this email, and optionally a first and last name and whether they are unsubscribed from broadcasts. Read back by the new contact's id; the email must match. Limitation: no provider idempotency, so a retry after an unknown outcome can fail as a duplicate or create a second contact.",
+      "method": "POST",
+      "urlTemplate": "https://api.resend.com/contacts",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "email": "{{input.email}}",
+        "first_name": "{{input.first_name}}",
+        "last_name": "{{input.last_name}}",
+        "unsubscribed": "{{input.unsubscribed}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "email"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "pattern": "^[a-z0-9._%+-]{1,64}@[a-z0-9.-]{1,250}\\.[a-z]{2,63}$",
+            "description": "Lowercase, so the read-back compares it exactly."
+          },
+          "first_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$"
+          },
+          "last_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$"
+          },
+          "unsubscribed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.resend.com/contacts/{{response.id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "email",
+            "equals": "{{input.email}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "update-contact-name",
+      "kind": "write",
+      "description": "Set one contact's first and last name; pass both, the current value for the one that does not change. Read back by id; both names must match.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.resend.com/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "first_name": "{{input.first_name}}",
+        "last_name": "{{input.last_name}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "first_name",
+          "last_name"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          },
+          "first_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$"
+          },
+          "last_name": {
+            "type": "string",
+            "pattern": "^[^\\r\\n]{1,100}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.resend.com/contacts/{{input.contact_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "first_name",
+            "equals": "{{input.first_name}}"
+          },
+          {
+            "path": "last_name",
+            "equals": "{{input.last_name}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "set-contact-subscription",
+      "kind": "write",
+      "description": "Unsubscribe one contact from all broadcasts (unsubscribed: true) or subscribe them again (false). Read back by id; unsubscribed must equal the value sent. Limitation: subscribing again someone who opted out may need their consent.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.resend.com/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "unsubscribed": "{{input.unsubscribed}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "unsubscribed"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          },
+          "unsubscribed": {
+            "type": "boolean"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.resend.com/contacts/{{input.contact_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "unsubscribed",
+            "equals": "{{input.unsubscribed}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "delete-contact",
+      "kind": "write",
+      "description": "Delete one contact by id, removing them from every segment. This cannot be undone. No read-back: Resend does not document what reading a deleted contact returns, so the receipt rests on Resend's deleted: true answer.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.resend.com/contacts/{{input.contact_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      }
+    },
+    {
+      "name": "add-contact-to-segment",
+      "kind": "write",
+      "description": "Add one existing contact to one segment, so broadcasts to that segment reach them. Read back from the contact's segments; the segment must be among them.",
+      "method": "POST",
+      "urlTemplate": "https://api.resend.com/contacts/{{input.contact_id}}/segments/{{input.segment_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "segment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          },
+          "segment_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.resend.com/contacts/{{input.contact_id}}/segments",
+        "status": 200,
+        "match": [
+          {
+            "path": "object",
+            "equals": "list"
+          },
+          {
+            "path": "data.*.id",
+            "equals": "{{input.segment_id}}"
+          }
+        ]
+      }
+    },
+    {
+      "name": "remove-contact-from-segment",
+      "kind": "write",
+      "description": "Remove one contact from one segment; the contact itself is kept. Read back from the contact's segments; the segment must no longer be among them.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.resend.com/contacts/{{input.contact_id}}/segments/{{input.segment_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:resend}}",
+        "User-Agent": "anlyon",
+        "Content-Type": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "contact_id",
+          "segment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "contact_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          },
+          "segment_id": {
+            "type": "string",
+            "pattern": "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$"
+          }
+        }
+      },
+      "requiresApproval": false,
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.resend.com/contacts/{{input.contact_id}}/segments",
+        "status": 200,
+        "match": [
+          {
+            "path": "object",
+            "equals": "list"
+          },
+          {
+            "path": "data.*.id",
+            "equals": "{{input.segment_id}}",
+            "absent": true
+          }
+        ]
+      }
+    }
+  ],
+  "policies": [
+    {
+      "name": "resend: approve sending an email",
+      "matchKind": "action",
+      "matchActionName": "send-email",
+      "effect": "require_approval"
+    },
+    {
+      "name": "resend: approve canceling a scheduled email",
+      "matchKind": "action",
+      "matchActionName": "cancel-scheduled-email",
+      "effect": "require_approval"
+    },
+    {
+      "name": "resend: approve deleting a contact",
+      "matchKind": "action",
+      "matchActionName": "delete-contact",
+      "effect": "require_approval"
+    },
+    {
+      "name": "resend: approve subscribing a contact again",
+      "matchKind": "action",
+      "matchActionName": "set-contact-subscription",
+      "condition": "input.unsubscribed == false",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "resend: emails per day",
+      "dimension": "emails",
+      "period": "day",
+      "amount": 100,
+      "actionName": "send-email"
+    },
+    {
+      "name": "resend: emails rescheduled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "reschedule-email"
+    },
+    {
+      "name": "resend: scheduled emails canceled per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 50,
+      "actionName": "cancel-scheduled-email"
+    },
+    {
+      "name": "resend: contacts created per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "create-contact"
+    },
+    {
+      "name": "resend: contacts renamed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "update-contact-name"
+    },
+    {
+      "name": "resend: contact subscriptions changed per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "set-contact-subscription"
+    },
+    {
+      "name": "resend: contacts deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-contact"
+    },
+    {
+      "name": "resend: contacts added to segments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "add-contact-to-segment"
+    },
+    {
+      "name": "resend: contacts removed from segments per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 200,
+      "actionName": "remove-contact-from-segment"
+    }
+  ]
+}

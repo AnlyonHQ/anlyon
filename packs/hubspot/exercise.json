@@ -1,0 +1,253 @@
+{
+  "needs": {},
+  "steps": [
+    {
+      "action": "list-deal-pipelines",
+      "input": {}
+    },
+    {
+      "action": "get-property",
+      "input": {
+        "objectType": "contacts",
+        "propertyName": "hs_lead_status"
+      }
+    },
+    {
+      "action": "search-contacts",
+      "input": {
+        "query": "anlyon-exercise"
+      }
+    },
+    {
+      "action": "create-contact",
+      "input": {
+        "email": "anlyon-exercise-{{run}}@example.com",
+        "firstname": "Anlyon",
+        "lastname": "Exercise {{run}}"
+      },
+      "save": {
+        "contact_id": "id"
+      }
+    },
+    {
+      "action": "get-contact",
+      "input": {
+        "contactId": "{{saved.contact_id}}"
+      }
+    },
+    {
+      "action": "get-contact-by-email",
+      "input": {
+        "email": "anlyon-exercise-{{run}}@example.com"
+      }
+    },
+    {
+      "action": "update-contact",
+      "input": {
+        "contactId": "{{saved.contact_id}}",
+        "jobtitle": "Exercise run {{run}}",
+        "city": "London"
+      }
+    },
+    {
+      "action": "update-contact-stage",
+      "input": {
+        "contactId": "{{saved.contact_id}}",
+        "lifecyclestage": "salesqualifiedlead"
+      }
+    },
+    {
+      "action": "set-lead-status",
+      "input": {
+        "contactId": "{{saved.contact_id}}",
+        "leadStatus": "IN_PROGRESS"
+      }
+    },
+    {
+      "action": "add-note",
+      "input": {
+        "contactId": "{{saved.contact_id}}",
+        "body": "Anlyon exercise {{run}}: contact note.",
+        "timestamp": "2026-10-15T09:30:00Z"
+      },
+      "save": {
+        "note_id": "id"
+      }
+    },
+    {
+      "action": "create-company",
+      "input": {
+        "name": "Anlyon exercise {{run}}",
+        "domain": "anlyon-exercise.example"
+      },
+      "save": {
+        "company_id": "id"
+      }
+    },
+    {
+      "action": "search-companies",
+      "input": {
+        "query": "anlyon"
+      }
+    },
+    {
+      "action": "get-company",
+      "input": {
+        "companyId": "{{saved.company_id}}"
+      }
+    },
+    {
+      "action": "update-company",
+      "input": {
+        "companyId": "{{saved.company_id}}",
+        "numberofemployees": "12",
+        "description": "Created by an Anlyon pack exercise; archived at the end of the run."
+      }
+    },
+    {
+      "action": "add-company-note",
+      "input": {
+        "companyId": "{{saved.company_id}}",
+        "body": "Anlyon exercise {{run}}: company note.",
+        "timestamp": "2026-10-15T09:30:00Z"
+      },
+      "save": {
+        "company_note_id": "id"
+      }
+    },
+    {
+      "action": "create-deal",
+      "input": {
+        "dealname": "Anlyon exercise {{run}}",
+        "amount": "100.00",
+        "dealstage": "appointmentscheduled"
+      },
+      "save": {
+        "deal_id": "id"
+      }
+    },
+    {
+      "action": "search-deals",
+      "input": {}
+    },
+    {
+      "action": "get-deal",
+      "input": {
+        "dealId": "{{saved.deal_id}}"
+      }
+    },
+    {
+      "action": "update-deal",
+      "input": {
+        "dealId": "{{saved.deal_id}}",
+        "hs_priority": "low",
+        "closedate": "2026-12-31T00:00:00Z"
+      }
+    },
+    {
+      "action": "update-deal-stage",
+      "input": {
+        "dealId": "{{saved.deal_id}}",
+        "dealstage": "qualifiedtobuy"
+      }
+    },
+    {
+      "action": "add-deal-note",
+      "input": {
+        "dealId": "{{saved.deal_id}}",
+        "body": "Anlyon exercise {{run}}: deal note.",
+        "timestamp": "2026-10-15T09:30:00Z"
+      },
+      "save": {
+        "deal_note_id": "id"
+      }
+    },
+    {
+      "action": "associate-records",
+      "input": {
+        "fromObjectType": "contacts",
+        "fromObjectId": "{{saved.contact_id}}",
+        "toObjectType": "companies",
+        "toObjectId": "{{saved.company_id}}"
+      }
+    },
+    {
+      "action": "associate-records",
+      "input": {
+        "fromObjectType": "deals",
+        "fromObjectId": "{{saved.deal_id}}",
+        "toObjectType": "contacts",
+        "toObjectId": "{{saved.contact_id}}"
+      }
+    },
+    {
+      "action": "associate-records",
+      "input": {
+        "fromObjectType": "deals",
+        "fromObjectId": "{{saved.deal_id}}",
+        "toObjectType": "companies",
+        "toObjectId": "{{saved.company_id}}"
+      }
+    },
+    {
+      "action": "list-associations",
+      "input": {
+        "objectType": "contacts",
+        "objectId": "{{saved.contact_id}}",
+        "toObjectType": "companies"
+      }
+    },
+    {
+      "action": "list-notes",
+      "input": {
+        "objectType": "contact",
+        "objectId": "{{saved.contact_id}}"
+      }
+    },
+    {
+      "action": "remove-association",
+      "input": {
+        "objectType": "contacts",
+        "objectId": "{{saved.contact_id}}",
+        "toObjectType": "deals",
+        "toObjectId": "{{saved.deal_id}}"
+      }
+    },
+    {
+      "action": "delete-note",
+      "input": {
+        "noteId": "{{saved.note_id}}"
+      }
+    },
+    {
+      "action": "delete-note",
+      "input": {
+        "noteId": "{{saved.company_note_id}}"
+      }
+    },
+    {
+      "action": "delete-note",
+      "input": {
+        "noteId": "{{saved.deal_note_id}}"
+      }
+    },
+    {
+      "action": "archive-deal",
+      "input": {
+        "dealId": "{{saved.deal_id}}"
+      }
+    },
+    {
+      "action": "archive-company",
+      "input": {
+        "companyId": "{{saved.company_id}}"
+      }
+    },
+    {
+      "action": "archive-contact",
+      "input": {
+        "contactId": "{{saved.contact_id}}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "_source": "Shaped after the provider's documented response (https://cal.com/docs/api-reference/v2/bookings/get-all-attendees-for-a-booking).",
+  "params": {},
+  "input": {
+    "booking_uid": "a1B2c3D4e5F6g7H8i9J0kL"
+  },
+  "expectedUrl": "https://api.cal.com/v2/bookings/a1B2c3D4e5F6g7H8i9J0kL/attendees",
+  "response": {
+    "status": "success",
+    "data": [
+      {
+        "id": 251,
+        "name": "Dana Reyes",
+        "email": "dana@example.com",
+        "displayEmail": "dana@example.com",
+        "timeZone": "America/New_York",
+        "language": "en",
+        "absent": false
+      }
+    ]
+  }
+}

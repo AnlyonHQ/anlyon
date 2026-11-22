@@ -1,0 +1,50 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.pagerduty.com/api-reference/).",
+  "params": {},
+  "input": {
+    "query": "checkout"
+  },
+  "expectedUrl": "https://api.pagerduty.com/schedules?limit=25&query=checkout",
+  "response": {
+    "schedules": [
+      {
+        "id": "PI7DH85",
+        "type": "schedule",
+        "summary": "Checkout primary",
+        "name": "Checkout primary",
+        "time_zone": "Europe/London",
+        "description": "Weekly rotation",
+        "users": [
+          {
+            "id": "PXPGF42",
+            "type": "user_reference",
+            "summary": "Dana Lee",
+            "self": "https://api.pagerduty.com/users/PXPGF42",
+            "html_url": "https://acme.pagerduty.com/users/PXPGF42"
+          },
+          {
+            "id": "PAM4FGS",
+            "type": "user_reference",
+            "summary": "Sam Ortiz",
+            "self": "https://api.pagerduty.com/users/PAM4FGS",
+            "html_url": "https://acme.pagerduty.com/users/PAM4FGS"
+          }
+        ],
+        "escalation_policies": [
+          {
+            "id": "PT20YPA",
+            "type": "escalation_policy_reference",
+            "summary": "Checkout escalation",
+            "self": "https://api.pagerduty.com/escalation_policies/PT20YPA",
+            "html_url": "https://acme.pagerduty.com/escalation_policies/PT20YPA"
+          }
+        ],
+        "teams": []
+      }
+    ],
+    "limit": 25,
+    "offset": 0,
+    "more": false,
+    "total": null
+  }
+}

@@ -1,0 +1,43 @@
+{
+  "params": {},
+  "accountHost": "us21.api.mailchimp.com",
+  "_source": "Shaped after the response documented in Mailchimp's official OpenAPI spec (https://api.mailchimp.com/schema/openapi/OpenAPI.json, postListsIdSegmentsIdMembers).",
+  "input": {
+    "list_id": "4ca5becb8d",
+    "segment_id": 2001,
+    "email": "ada@example.com"
+  },
+  "expectedUrl": "https://us21.api.mailchimp.com/3.0/lists/4ca5becb8d/segments/2001/members",
+  "response": {
+    "id": "3e3417d7ef77d5932a6734b916515ed5",
+    "email_address": "ada@example.com",
+    "full_name": "Ada Lovelace",
+    "status": "subscribed",
+    "list_id": "4ca5becb8d"
+  },
+  "expectedReadBackUrl": "https://us21.api.mailchimp.com/3.0/lists/4ca5becb8d/members/3e3417d7ef77d5932a6734b916515ed5/tags?count=100&fields=tags.id,tags.name,total_items",
+  "readBack": {
+    "status": 200,
+    "json": {
+      "tags": [
+        {
+          "id": 2001,
+          "name": "Customer"
+        }
+      ],
+      "total_items": 1
+    }
+  },
+  "mismatchedReadBack": {
+    "status": 200,
+    "json": {
+      "tags": [
+        {
+          "id": 2050,
+          "name": "Renewal due"
+        }
+      ],
+      "total_items": 1
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "_source": "Shaped after the provider's documented response (https://developer.monday.com/api-reference/reference/items-page, https://developer.monday.com/api-reference/reference/groups).",
+  "params": {},
+  "input": {
+    "board_id": "5091234567",
+    "group_id": "topics"
+  },
+  "expectedUrl": "https://api.monday.com/v2",
+  "expectedBody": {
+    "query": "query ($board_id: ID!, $group_id: String!, $column_ids: [String!]) { boards(ids: [$board_id]) { id groups(ids: [$group_id]) { id title items_page(limit: 20) { cursor items { id name state updated_at group { id title } column_values(ids: $column_ids) { id type text } } } } } }",
+    "variables": {
+      "board_id": "5091234567",
+      "group_id": "topics"
+    }
+  },
+  "response": {
+    "data": {
+      "boards": [
+        {
+          "id": "5091234567",
+          "groups": [
+            {
+              "id": "topics",
+              "title": "This week",
+              "items_page": {
+                "cursor": null,
+                "items": [
+                  {
+                    "id": "9120000001",
+                    "name": "Globex onboarding",
+                    "state": "active",
+                    "updated_at": "2026-10-23T14:02:11Z",
+                    "group": {
+                      "id": "topics",
+                      "title": "This week"
+                    },
+                    "column_values": [
+                      {
+                        "id": "status",
+                        "type": "status",
+                        "text": "Working on it"
+                      },
+                      {
+                        "id": "date4",
+                        "type": "date",
+                        "text": "2026-11-02"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9120000002",
+                    "name": "Initech onboarding",
+                    "state": "active",
+                    "updated_at": "2026-10-23T14:02:11Z",
+                    "group": {
+                      "id": "topics",
+                      "title": "This week"
+                    },
+                    "column_values": [
+                      {
+                        "id": "status",
+                        "type": "status",
+                        "text": "Stuck"
+                      },
+                      {
+                        "id": "date4",
+                        "type": "date",
+                        "text": "2026-11-05"
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "extensions": {
+      "request_id": "req_list_group_items_1"
+    }
+  }
+}

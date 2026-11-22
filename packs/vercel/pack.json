@@ -1,0 +1,727 @@
+{
+  "$schema": "../schema/anlyon-pack.v1.json",
+  "format": "anlyon-pack/v1",
+  "pack": "anlyon/vercel",
+  "version": "0.1.0",
+  "description": "Vercel tools an agent can be given: read teams, deployments, build logs, aliases and project domains, and check a domain's DNS; redeploy, promote, roll back, cancel and delete deployments, each write governed and read back where Vercel allows.",
+  "secrets": [
+    {
+      "name": "VERCEL",
+      "kind": "connection",
+      "integrationId": "vercel",
+      "hosts": [
+        "api.vercel.com"
+      ],
+      "description": "The connected Vercel credential"
+    }
+  ],
+  "actions": [
+    {
+      "name": "list-teams",
+      "kind": "read",
+      "description": "List the teams the token can reach, 20 per page, with each team's id, slug and name. Every other action needs a team id from here; a Hobby account is listed as a team too. Vercel returns pagination.next when there are more; pass it as until for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v2/teams?limit=20&until={{input.until}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [],
+        "additionalProperties": false,
+        "properties": {
+          "until": {
+            "type": "integer",
+            "description": "For the next page: the pagination.next value from the previous response (a timestamp in milliseconds)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-deployments",
+      "kind": "read",
+      "description": "List a team's deployments, newest first, 20 per page: uid, name (the project), url, state, target, projectId, created time, creator and Git metadata. Filter by project, target, state, branch or commit. Vercel returns pagination.next when there are more; pass it as until for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v7/deployments?teamId={{input.team_id}}&limit=20&projectId={{input.project}}&target={{input.target}}&state={{input.state}}&branch={{input.branch}}&sha={{input.sha}}&until={{input.until}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "project": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]{1,100}$",
+            "description": "Only this project's deployments: its id (prj_...) or its name."
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "production",
+              "preview"
+            ],
+            "description": "Only production or only preview deployments."
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "BUILDING",
+              "ERROR",
+              "INITIALIZING",
+              "QUEUED",
+              "READY",
+              "CANCELED",
+              "BLOCKED"
+            ],
+            "description": "Only deployments in this state."
+          },
+          "branch": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._/-]{1,255}$",
+            "description": "Only deployments built from this Git branch."
+          },
+          "sha": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{7,40}$",
+            "description": "Only deployments built from this Git commit SHA."
+          },
+          "until": {
+            "type": "integer",
+            "description": "For the next page: the pagination.next value from the previous response (a timestamp in milliseconds)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-deployment",
+      "kind": "read",
+      "description": "Get one deployment: readyState, target, url, aliases, the error code and message of a failed build, the Git source, creator, regions and timings. It lists the names of the environment variables the build had, never their values. A deployment with a very large route table can be cut at 64 KB.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v13/deployments/{{input.deployment_id}}?teamId={{input.team_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "deployment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "deployment_id": {
+            "type": "string",
+            "pattern": "^dpl_[A-Za-z0-9]{1,64}$",
+            "description": "A deployment id (dpl_...), from list-deployments (uid) or get-deployment (id)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-deployment-events",
+      "kind": "read",
+      "description": "Read a deployment's build log: up to 50 events, oldest first, or newest first with direction=backward. Each event has a type, a created time in milliseconds and its text. For the next page, pass the last event's created time as since (oldest first) or until (newest first). It never follows a live build: call it again for new lines. Limitation: the log holds whatever the build printed, so a build that prints a secret shows it here.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v3/deployments/{{input.deployment_id}}/events?teamId={{input.team_id}}&limit=50&direction={{input.direction}}&since={{input.since}}&until={{input.until}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "deployment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "deployment_id": {
+            "type": "string",
+            "pattern": "^dpl_[A-Za-z0-9]{1,64}$",
+            "description": "A deployment id (dpl_...), from list-deployments (uid) or get-deployment (id)."
+          },
+          "direction": {
+            "type": "string",
+            "enum": [
+              "forward",
+              "backward"
+            ],
+            "description": "forward (the default) for oldest first, backward for newest first."
+          },
+          "since": {
+            "type": "integer",
+            "description": "Only events after this time, in milliseconds: the last event's created time when reading forward."
+          },
+          "until": {
+            "type": "integer",
+            "description": "Only events before this time, in milliseconds: the last event's created time when reading backward."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-deployment-aliases",
+      "kind": "read",
+      "description": "List the aliases assigned to one deployment: each hostname (custom domains and vercel.app URLs), its uid and when it was created.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v2/deployments/{{input.deployment_id}}/aliases?teamId={{input.team_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "deployment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "deployment_id": {
+            "type": "string",
+            "pattern": "^dpl_[A-Za-z0-9]{1,64}$",
+            "description": "A deployment id (dpl_...), from list-deployments (uid) or get-deployment (id)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-project-domains",
+      "kind": "read",
+      "description": "List a project's domains, 20 per page: name, Git branch, redirect, whether it is verified, and the TXT records still needed to verify it. Pass production=true for production domains only. Vercel returns pagination.next when there are more; pass it as until for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v9/projects/{{input.project}}/domains?teamId={{input.team_id}}&limit=20&production={{input.production}}&verified={{input.verified}}&until={{input.until}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "project"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "project": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9._-]{1,100}$",
+            "description": "The project's id (prj_...) or its name."
+          },
+          "production": {
+            "type": "boolean",
+            "description": "true for the project's production domains only."
+          },
+          "verified": {
+            "type": "boolean",
+            "description": "true for verified domains only, false for unverified ones only."
+          },
+          "until": {
+            "type": "integer",
+            "description": "For the next page: the pagination.next value from the previous response (a timestamp in milliseconds)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-domain-config",
+      "kind": "read",
+      "description": "Check how a domain is set up for Vercel: misconfigured (true when its DNS does not point at Vercel), configuredBy (A, CNAME, http or dns-01), and the recommended CNAME and A records.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v6/domains/{{input.domain}}/config?teamId={{input.team_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "domain"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "domain": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9.-]{0,252}$",
+            "description": "A domain name, such as www.example.com."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "get-alias",
+      "kind": "read",
+      "description": "Get one alias by its hostname (www.example.com) or its uid: the deployment it serves (deploymentId), its project and when it was created. Use it on a production domain to see which deployment is live.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v4/aliases/{{input.alias}}?teamId={{input.team_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "alias"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "alias": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,252}$",
+            "description": "The alias hostname (www.example.com, my-app.vercel.app) or its uid."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "list-promote-aliases",
+      "kind": "read",
+      "description": "List the aliases of a project's latest promote, 20 per page, with each alias's status. Use it after promote-deployment to see which domains have moved. Pass failed_only=true for the ones that failed. Vercel returns pagination.next when there are more; pass it as until for the next page.",
+      "method": "GET",
+      "urlTemplate": "https://api.vercel.com/v1/projects/{{input.project_id}}/promote/aliases?teamId={{input.team_id}}&limit=20&failedOnly={{input.failed_only}}&until={{input.until}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "project_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "project_id": {
+            "type": "string",
+            "pattern": "^prj_[A-Za-z0-9]{1,64}$",
+            "description": "The project id (prj_...), from the projectId of any of its deployments in list-deployments."
+          },
+          "failed_only": {
+            "type": "boolean",
+            "description": "true for the aliases that failed to move only."
+          },
+          "until": {
+            "type": "integer",
+            "description": "For the next page: the pagination.next value from the previous response (a timestamp in milliseconds)."
+          }
+        }
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "redeploy",
+      "kind": "write",
+      "description": "Start a new build of an existing deployment, with the project's current settings and environment variables. Pass target=production to build it for production; without it the new deployment is a preview. Returns the new deployment with its id and readyState. Read back by the new deployment's id; its id and project name must match. Limitation: the read-back shows the deployment exists, not that its build finished; follow it with get-deployment. Each call starts a build, which counts toward the team's build usage. No provider idempotency, so a retry after an unknown outcome can start a second build.",
+      "method": "POST",
+      "urlTemplate": "https://api.vercel.com/v13/deployments?teamId={{input.team_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      },
+      "bodyTemplate": {
+        "name": "{{input.project_name}}",
+        "deploymentId": "{{input.deployment_id}}",
+        "target": "{{input.target}}"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "project_name",
+          "deployment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "project_name": {
+            "type": "string",
+            "pattern": "^[a-z0-9._-]{1,100}$",
+            "description": "The project's name, as in the name field of list-deployments."
+          },
+          "deployment_id": {
+            "type": "string",
+            "pattern": "^dpl_[A-Za-z0-9]{1,64}$",
+            "description": "The deployment to build again (dpl_...), from list-deployments."
+          },
+          "target": {
+            "type": "string",
+            "enum": [
+              "production"
+            ],
+            "description": "production to build for production. Leave it out for a preview."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.vercel.com/v13/deployments/{{response.id}}?teamId={{input.team_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{response.id}}"
+          },
+          {
+            "path": "name",
+            "equals": "{{input.project_name}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "promote-deployment",
+      "kind": "write",
+      "description": "Point a project's production domains at an existing production deployment, without rebuilding it: a staged build that has not served production yet, or, after a rollback, the deployment to restore. Promoting after a rollback undoes it and turns Vercel's assignment of production domains to new builds back on. To put a preview build in production, use redeploy with target=production. Read back from one of the project's production domains (from list-project-domains); it must serve this deployment. Limitation: Vercel answers 202 while the move is still running, and a read-back made before it ends grades a mismatch; check with list-promote-aliases or get-alias.",
+      "method": "POST",
+      "urlTemplate": "https://api.vercel.com/v10/projects/{{input.project_id}}/promote/{{input.deployment_id}}?teamId={{input.team_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "project_id",
+          "deployment_id",
+          "domain"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "project_id": {
+            "type": "string",
+            "pattern": "^prj_[A-Za-z0-9]{1,64}$",
+            "description": "The project id (prj_...), from the projectId of any of its deployments in list-deployments."
+          },
+          "deployment_id": {
+            "type": "string",
+            "pattern": "^dpl_[A-Za-z0-9]{1,64}$",
+            "description": "The production deployment to serve (dpl_...), from list-deployments with target=production."
+          },
+          "domain": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9.-]{0,252}$",
+            "description": "One of the project's production domains, from list-project-domains with production=true. It is used to read the change back."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.vercel.com/v4/aliases/{{input.domain}}?teamId={{input.team_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "deploymentId",
+            "equals": "{{input.deployment_id}}"
+          },
+          {
+            "path": "projectId",
+            "equals": "{{input.project_id}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "rollback-deployment",
+      "kind": "write",
+      "description": "Instant Rollback: point a project's production domains back at an earlier deployment that served production before. It does not rebuild, so that deployment keeps the environment variables it was built with. On the Hobby plan, the target must be the deployment just before the current one. Read back from one of the project's production domains (from list-project-domains); it must serve this deployment. Limitation: after a rollback Vercel stops assigning the production domains to new production builds, until a deployment is promoted again (promote-deployment).",
+      "method": "POST",
+      "urlTemplate": "https://api.vercel.com/v1/projects/{{input.project_id}}/rollback/{{input.deployment_id}}?teamId={{input.team_id}}&description={{input.reason}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "project_id",
+          "deployment_id",
+          "domain"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "project_id": {
+            "type": "string",
+            "pattern": "^prj_[A-Za-z0-9]{1,64}$",
+            "description": "The project id (prj_...), from the projectId of any of its deployments in list-deployments."
+          },
+          "deployment_id": {
+            "type": "string",
+            "pattern": "^dpl_[A-Za-z0-9]{1,64}$",
+            "description": "The earlier production deployment to serve again (dpl_...), from list-deployments with target=production."
+          },
+          "domain": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9.-]{0,252}$",
+            "description": "One of the project's production domains, from list-project-domains with production=true. It is used to read the change back."
+          },
+          "reason": {
+            "type": "string",
+            "pattern": "^[^\\n]{1,500}$",
+            "description": "Why the rollback is made, shown in Vercel next to it. One line."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.vercel.com/v4/aliases/{{input.domain}}?teamId={{input.team_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "deploymentId",
+            "equals": "{{input.deployment_id}}"
+          },
+          {
+            "path": "projectId",
+            "equals": "{{input.project_id}}"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "cancel-deployment",
+      "kind": "write",
+      "description": "Cancel a deployment that is queued or building. Vercel refuses one that has already finished. Read back from the deployment; its readyState must be CANCELED.",
+      "method": "PATCH",
+      "urlTemplate": "https://api.vercel.com/v12/deployments/{{input.deployment_id}}/cancel?teamId={{input.team_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "deployment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "deployment_id": {
+            "type": "string",
+            "pattern": "^dpl_[A-Za-z0-9]{1,64}$",
+            "description": "The queued or building deployment (dpl_...), from list-deployments with state=BUILDING or QUEUED."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "verify": {
+        "url": "https://api.vercel.com/v13/deployments/{{input.deployment_id}}?teamId={{input.team_id}}",
+        "status": 200,
+        "match": [
+          {
+            "path": "id",
+            "equals": "{{input.deployment_id}}"
+          },
+          {
+            "path": "readyState",
+            "equals": "CANCELED"
+          }
+        ]
+      },
+      "requiresApproval": false
+    },
+    {
+      "name": "delete-deployment",
+      "kind": "write",
+      "description": "Delete one deployment. Its URLs stop serving it, and it cannot be restored. Returns the deployment's uid and state DELETED. No read-back: Vercel does not document what reading a deleted deployment returns.",
+      "method": "DELETE",
+      "urlTemplate": "https://api.vercel.com/v13/deployments/{{input.deployment_id}}?teamId={{input.team_id}}",
+      "headers": {
+        "Authorization": "Bearer {{connection:vercel}}",
+        "Accept": "application/json"
+      },
+      "inputSchema": {
+        "type": "object",
+        "required": [
+          "team_id",
+          "deployment_id"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "team_id": {
+            "type": "string",
+            "pattern": "^team_[A-Za-z0-9]{1,64}$",
+            "description": "The team that owns the project: its id (team_...) from list-teams. A Hobby account is a team too."
+          },
+          "deployment_id": {
+            "type": "string",
+            "pattern": "^dpl_[A-Za-z0-9]{1,64}$",
+            "description": "A deployment id (dpl_...), from list-deployments (uid) or get-deployment (id)."
+          }
+        }
+      },
+      "impact": {
+        "dimension": "resource_mutations",
+        "amount": "1",
+        "bound": "exact"
+      },
+      "requiresApproval": false
+    }
+  ],
+  "policies": [
+    {
+      "name": "vercel: approve redeploying",
+      "matchKind": "action",
+      "matchActionName": "redeploy",
+      "effect": "require_approval"
+    },
+    {
+      "name": "vercel: approve promoting a deployment to production",
+      "matchKind": "action",
+      "matchActionName": "promote-deployment",
+      "effect": "require_approval"
+    },
+    {
+      "name": "vercel: approve rolling back production",
+      "matchKind": "action",
+      "matchActionName": "rollback-deployment",
+      "effect": "require_approval"
+    },
+    {
+      "name": "vercel: approve cancelling a deployment",
+      "matchKind": "action",
+      "matchActionName": "cancel-deployment",
+      "effect": "require_approval"
+    },
+    {
+      "name": "vercel: approve deleting a deployment",
+      "matchKind": "action",
+      "matchActionName": "delete-deployment",
+      "effect": "require_approval"
+    }
+  ],
+  "limits": [
+    {
+      "name": "vercel: redeploys per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "redeploy"
+    },
+    {
+      "name": "vercel: promotions per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "promote-deployment"
+    },
+    {
+      "name": "vercel: rollbacks per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 10,
+      "actionName": "rollback-deployment"
+    },
+    {
+      "name": "vercel: cancellations per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "cancel-deployment"
+    },
+    {
+      "name": "vercel: deployments deleted per day",
+      "dimension": "resource_mutations",
+      "period": "day",
+      "amount": 20,
+      "actionName": "delete-deployment"
+    }
+  ]
+}
