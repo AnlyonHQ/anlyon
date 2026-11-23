@@ -7,6 +7,15 @@ SDK and integration owners can assess upgrade impact.
 Changes to operations that only Anlyon's hosted service serves are recorded with that service,
 not here. Every entry below applies to this server.
 
+## 2026-11-23
+
+### Security
+
+- `POST /api/v2/workspaces/{workspaceId}/members` is retired and answers `410 USE_INVITATIONS` for
+  every request. Adding a person by user ID skipped their consent: an admin could put any account
+  in a workspace, and with enforced SSO lock it out of sign-in. Invite people with
+  `POST /api/v2/workspaces/{workspaceId}/invitations`.
+
 ## 2026-11-19 (unreleased)
 
 Fixes before the first release.

@@ -5626,12 +5626,14 @@ paths:
       responses: { '200': { $ref: '#/components/responses/WorkspaceMemberList' }, '400': { $ref: '#/components/responses/BadRequest' }, '401': { $ref: '#/components/responses/Unauthorized' }, '403': { $ref: '#/components/responses/Forbidden' } }
     post:
       tags: [Members]
-      summary: Add an existing user to a workspace
+      summary: Add an existing user to a workspace (retired)
+      deprecated: true
+      x-anlyon-replacement: 'POST /api/v2/workspaces/{workspaceId}/invitations'
+      x-anlyon-removal-date: '2027-05-23'
       description: >-
-        Requires the admin role or higher. `userId` must be a platform user ID.
-        An email address is refused with 410 `USE_INVITATIONS`: adding by
-        email skipped the person's consent and revealed whether the address had
-        an account. Invite them with `POST /api/v2/workspaces/{workspaceId}/invitations`.
+        Retired. Every request is refused with 410 `USE_INVITATIONS`: adding a
+        person directly, by user ID or by email, skipped their consent. Invite
+        them with `POST /api/v2/workspaces/{workspaceId}/invitations`.
       operationId: addWorkspaceMember
       security: [{ SessionAuth: [] }]
       x-anlyon-audience: dashboard
