@@ -175,7 +175,7 @@ export async function sendTestWebhook(webhookUrl: string, secret?: string): Prom
     });
 
     logger.info({
-      webhookUrl,
+      webhookHost: webhookHost(webhookUrl),
       status: response.status,
       success: response.ok,
     }, "Test webhook sent");
@@ -183,11 +183,11 @@ export async function sendTestWebhook(webhookUrl: string, secret?: string): Prom
     return response.ok;
   } catch (error) {
     if (error instanceof SsrfBlockedError) {
-      logger.warn({ webhookUrl, error: error.message }, "Invalid test webhook URL");
+      logger.warn({ webhookHost: webhookHost(webhookUrl), error: error.message }, "Invalid test webhook URL");
       return false;
     }
     logger.error({
-      webhookUrl,
+      webhookHost: webhookHost(webhookUrl),
       error: error instanceof Error ? error.message : "Unknown error",
     }, "Test webhook failed");
     return false;
