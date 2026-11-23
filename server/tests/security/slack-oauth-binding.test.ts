@@ -24,6 +24,17 @@ vi.mock("../../src/core/workspace/service.ts", async (importOriginal) => ({
   hasWorkspaceAccess: async (_workspaceId: string, userId: string) => userId !== "removed_member",
 }));
 
+vi.mock("../../src/core/workspace/roles.ts", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../src/core/workspace/roles.ts")>()),
+  assertMemberPermission: async (_workspaceId: string, userId: string) => {
+    if (userId === "viewer") {
+      const { AuthorizationError } = await import("../../src/utils/errors.ts");
+      throw new AuthorizationError("Your role cannot manage integrations");
+    }
+    return { workspaceRole: "admin", role: "admin", grantedInEnvironmentId: null, emergencyAccess: true };
+  },
+}));
+
 vi.mock("../../src/core/integrations/slack-service.ts", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../src/core/integrations/slack-service.ts")>()),
   exchangeSlackCode: async () => {
@@ -103,6 +114,14 @@ describe("GET /integrations/slack/callback", () => {
   it("refuses the initiator once they have left the workspace", async () => {
     state.row = { ...state.row, userId: "removed_member" };
     await callback({ "x-test-user": "removed_member" });
+    expect(state.inserts).toBe(0);
+  });
+
+  it("refuses a member whose role cannot manage integrations", async () => {
+    state.row = { ...state.row, userId: "viewer" };
+    const response = await callback({ "x-test-user": "viewer" });
+    expect(response.headers.get("location")).toContain("error=");
+    expect(state.exchanges).toBe(0);
     expect(state.inserts).toBe(0);
   });
 

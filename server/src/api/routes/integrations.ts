@@ -294,6 +294,8 @@ integrationsRouter.post("/slack/oauth/start", validateBody(slackOAuthStartSchema
 integrationsRouter.get("/slack/authorize", requireSessionOnly, async (c: Context) => {
   const workspaceId = c.get("workspaceId");
   const userId = c.get("userId");
+  const { assertMemberPermission } = await import("../../core/workspace/roles.ts");
+  await assertMemberPermission(workspaceId, userId, "integrations.manage");
 
   if (!instanceSetting("slack.client_id") || !instanceSetting("slack.client_secret")) {
     throw new ApiError(500, "config_error", "Slack OAuth is not configured");
@@ -402,6 +404,17 @@ integrationsRouter.get("/slack/callback", async (c: Context) => {
       `${frontendUrl}/integrations?error=${encodeURIComponent(
         "Finish connecting Slack while signed in as the person who started it."
       )}`
+    );
+  }
+  const { assertMemberPermission } = await import("../../core/workspace/roles.ts");
+  const mayManage = await assertMemberPermission(oauthState.workspaceId, session.user.id, "integrations.manage").then(
+    () => true,
+    () => false,
+  );
+  if (!mayManage) {
+    logger.warn({ workspaceId: oauthState.workspaceId }, "Slack OAuth callback by a member who cannot manage integrations; refusing");
+    return c.redirect(
+      `${frontendUrl}/integrations?error=${encodeURIComponent("Your role cannot connect integrations in this workspace.")}`
     );
   }
 
