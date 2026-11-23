@@ -22,6 +22,24 @@ describe("inputs in a URL", () => {
     expect(url.pathname.startsWith("/v1/customers/")).toBe(true);
   });
 
+  it.each([".", ".."])("refuse %s as a whole path segment, which a URL parser would resolve", (value) => {
+    expect(() => interpolateUrl("https://api.clickup.com/api/v2/task/{{input.task}}/tag/{{input.tag}}", { task: "abc", tag: value }, vault)).toThrow(
+      /cannot be/,
+    );
+    expect(() => interpolateUrlWithStubbedSecrets("https://h.example/v1/{{input.id}}/x", { id: value })).toThrow(/cannot be/);
+  });
+
+  it("refuse a dot segment an input forms with the template's own text", () => {
+    expect(() => interpolateUrl("https://h.example/v1/{{input.a}}./x", { a: "" }, vault)).toThrow(
+      /"\." or "\.\." segment/,
+    );
+  });
+
+  it("still allow dots inside a segment and in the query", () => {
+    expect(resolved("https://h.example/v1/{{input.id}}", { id: "file..v2.txt" }).pathname).toBe("/v1/file..v2.txt");
+    expect(resolved("https://h.example/v1/search?q={{input.q}}", { q: ".." }).searchParams.get("q")).toBe("..");
+  });
+
   it("cannot add query parameters or a fragment", () => {
     const url = resolved("https://api.stripe.com/v1/customers/{{input.id}}", { id: "a?expand[]=sources#x" });
     expect(url.search).toBe("");
