@@ -20,12 +20,21 @@ RUN for name in $(env | sed -n 's/^\(VITE_[A-Za-z0-9_]*\)=.*/\1/p'); do unset "$
     pnpm --workspace-concurrency=1 --filter anlyon-scheduler-ui build
 RUN mv dashboard/dist /console
 
-FROM caddy:2-alpine
+FROM caddy:2.11.9-alpine@sha256:003a97808e781aa9f7e75cc2f43d34d461099031faf5e20faefb9f61126836f0
 
-COPY --from=build /console /srv
-COPY dashboard/docker/Caddyfile /etc/caddy/Caddyfile
+RUN apk add --no-cache libcap \
+    && setcap -r /usr/bin/caddy \
+    && apk del libcap \
+    && addgroup -S -g 1001 console \
+    && adduser -S -u 1001 -G console -H -h /srv console
+
+COPY --from=build --chown=console:console /console /srv
+COPY --chown=console:console dashboard/docker/Caddyfile /etc/caddy/Caddyfile
 COPY dashboard/docker/entrypoint.sh /usr/local/bin/anlyon-console-entrypoint
-RUN chmod +x /usr/local/bin/anlyon-console-entrypoint
+RUN chmod 755 /usr/local/bin/anlyon-console-entrypoint \
+    && chown console:console /srv /etc/caddy /data /config
+
+USER console
 
 ENV ANLYON_API_URL=""
 ENV ANLYON_EDITION=community

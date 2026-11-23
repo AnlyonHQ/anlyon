@@ -562,7 +562,10 @@ resolve_source() {
     usage_error "--images ghcr needs --version (the release whose images to pull)."
   fi
   if [ -z "$REF" ]; then
-    if [ -n "$VERSION" ]; then REF="v$VERSION"; else REF=main; fi
+    if [ -n "$VERSION" ]; then REF="v$VERSION"; else
+      REF=main
+      case "$CMD" in install|upgrade) warn "No release version given: installing the development branch (main), which is not a tested release. Pass --version <x.y.z>, or use https://anlyon.com/install." ;; esac
+    fi
   fi
   [ -n "$REPO" ] || REPO=AnlyonHQ/anlyon
   GIT_URL=${SOURCE:-https://github.com/$REPO.git}
@@ -1048,6 +1051,7 @@ use_ip_instead() {
   dn_old=$HOST
   address_for "$PUBLIC_IP4"
   say "Continuing on $PUBLIC_URL over plain HTTP."
+  warn "Sign-ins, API keys and the setup token will cross the internet unencrypted until $dn_old points here and HTTPS is set up."
   note "To move to $dn_old later: point it here, then in $ANLYON_DIR/.env set"
   note "ANLYON_PUBLIC_URL=https://$dn_old, SITE_ADDRESS=$dn_old, ANLYON_PORT=80, ANLYON_HTTPS_PORT=443,"
   note "and run: cd $ANLYON_DIR && docker compose up -d"
@@ -1500,11 +1504,21 @@ print_finish() {
 
 confirm_plain_http() {
   is_ipv4 "$HOST" || return 0
-  case "$HOST" in 127.*|10.*|192.168.*|169.254.*) return 0 ;; 172.*)
+  cph_private=0
+  case "$HOST" in 127.*) return 0 ;; 10.*|192.168.*|169.254.*) cph_private=1 ;; 172.*)
     cph_second=${HOST#172.}; cph_second=${cph_second%%.*}
-    if [ "$cph_second" -ge 16 ] && [ "$cph_second" -le 31 ]; then return 0; fi ;;
+    if [ "$cph_second" -ge 16 ] && [ "$cph_second" -le 31 ]; then cph_private=1; fi ;;
   esac
   [ "$ALLOW_HTTP" -eq 1 ] && return 0
+  if [ "$cph_private" -eq 1 ]; then
+    if [ "$ASSUME_YES" -eq 1 ] || [ "$HAVE_TTY" -ne 1 ]; then
+      warn "$PUBLIC_URL is served over plain HTTP: sign-ins, API keys and the setup token cross your local network unencrypted."
+      return 0
+    fi
+    ask "Serve $HOST over plain HTTP? Sign-ins, API keys and the setup token will cross your local network unencrypted" y ||
+      die "Stopped. Use --domain <host name> for a certificate, or --allow-http to accept plain HTTP."
+    return 0
+  fi
   if [ "$ASSUME_YES" -eq 1 ] || [ "$HAVE_TTY" -ne 1 ]; then
     die "$PUBLIC_URL would serve a public address over plain HTTP: sign-ins, API keys and the setup token would cross the internet unencrypted. Use --domain <host name>, or pass --allow-http to accept that."
   fi
