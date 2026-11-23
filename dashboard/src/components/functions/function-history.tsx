@@ -27,6 +27,7 @@ import {
 	useFunctionVersion,
 	useFunctionVersions,
 } from "@/hooks/api/use-functions";
+import { API_BASE_URL } from "@/lib/constants";
 import {
 	BUDGET_LABEL,
 	BUDGETS,
@@ -425,7 +426,7 @@ export function UseInCode({ name }: { name: string }) {
 // run.status: "succeeded", or "awaiting_approval" with run.plan`,
 		python: `run = anlyon.functions.run(${JSON.stringify(name)}, {"id": "rec_123"}).data
 # run["status"]: "succeeded", or "awaiting_approval" with run["plan"]`,
-		curl: `curl -X POST https://api.anlyon.com/api/v2/functions/${encodeURIComponent(name)}/runs \\
+		curl: `curl -X POST ${API_BASE_URL}/api/v2/functions/${encodeURIComponent(name)}/runs \\
   -H "Authorization: Bearer $ANLYON_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"input": {"id": "rec_123"}}'`,
@@ -435,8 +436,7 @@ export function UseInCode({ name }: { name: string }) {
 			await navigator.clipboard.writeText(snippets[language]);
 			setCopied(true);
 			setTimeout(() => setCopied(false), 1500);
-		} catch {
-		}
+		} catch {}
 	};
 	return (
 		<Popover>

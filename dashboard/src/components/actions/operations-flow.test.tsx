@@ -10,6 +10,7 @@ import {
 } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-client";
+import { API_BASE_URL } from "@/lib/constants";
 import { cataloguePack, type OperationsApi } from "@/lib/packs";
 import type { ConnectionIntegration } from "@/lib/types";
 
@@ -248,14 +249,14 @@ describe("Operations after connect", () => {
 				.map((p) => p.textContent)
 				.join("\n");
 		expect(code()).toContain(
-			"claude mcp add --transport http anlyon https://api.anlyon.com/mcp",
+			`claude mcp add --transport http anlyon ${API_BASE_URL}/mcp`,
 		);
 		expect(code()).toContain("Workspace Acme, environment Production");
 		expect(screen.getByText(/action_hubspot-create-company/)).toBeTruthy();
 
 		const picker = screen.getByLabelText("Your agent runs in");
 		fireEvent.change(picker, { target: { value: "cursor" } });
-		expect(code()).toContain('"url": "https://api.anlyon.com/mcp"');
+		expect(code()).toContain(`"url": "${API_BASE_URL}/mcp"`);
 		fireEvent.change(picker, { target: { value: "codex" } });
 		expect(code()).toContain("codex mcp login anlyon");
 		fireEvent.change(picker, { target: { value: "ai-sdk" } });
@@ -266,7 +267,7 @@ describe("Operations after connect", () => {
 		);
 		fireEvent.change(picker, { target: { value: "curl" } });
 		expect(code()).toContain(
-			"https://api.anlyon.com/api/v2/actions/hubspot-create-company/invoke",
+			`${API_BASE_URL}/api/v2/actions/hubspot-create-company/invoke`,
 		);
 		expect(screen.getByText(/is not governed by Anlyon/)).toBeTruthy();
 	});
