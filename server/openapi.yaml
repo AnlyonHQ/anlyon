@@ -89,8 +89,8 @@ info:
     url: https://anlyon.com/support
     email: support@anlyon.com
   license:
-    name: Proprietary
-    url: https://anlyon.com/terms
+    name: Elastic License 2.0
+    url: https://github.com/AnlyonHQ/anlyon/blob/main/LICENSE
 
 servers:
   - url: https://api.anlyon.com
