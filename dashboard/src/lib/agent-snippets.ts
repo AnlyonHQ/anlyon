@@ -1,6 +1,10 @@
 import { actionToolName } from "./action-tool-name";
+import { API_BASE_URL } from "./constants";
 
-export const HOSTED_MCP_URL = "https://api.anlyon.com/mcp";
+const HOSTED_API_URL = "https://api.anlyon.com";
+const API_URL = API_BASE_URL;
+const MCP_URL = `${API_URL}/mcp`;
+const SELF_HOSTED = API_URL !== HOSTED_API_URL;
 
 export const AGENT_KEY_SCOPES = [
 	"actions:invoke",
@@ -75,15 +79,9 @@ export function agentSnippet(
 				label: "Claude Code",
 				signsIn: true,
 				blocks: [
-					block(
-						"bash",
-						[
-							"claude mcp add --transport http anlyon https://api.anlyon.com/mcp",
-						],
-						{
-							before: [`# ${where}: choose them when you sign in with /mcp.`],
-						},
-					),
+					block("bash", [`claude mcp add --transport http anlyon ${MCP_URL}`], {
+						before: [`# ${where}: choose them when you sign in with /mcp.`],
+					}),
 				],
 				toolHint: `Run /mcp, select anlyon and sign in. The tools appear as ${mcpToolNames(tools)}.`,
 			};
@@ -97,7 +95,7 @@ export function agentSnippet(
 						"{",
 						'  "mcpServers": {',
 						'    "anlyon": {',
-						'      "url": "https://api.anlyon.com/mcp"',
+						`      "url": "${MCP_URL}"`,
 						"    }",
 						"  }",
 						"}",
@@ -111,10 +109,7 @@ export function agentSnippet(
 				label: "Codex",
 				signsIn: true,
 				blocks: [
-					block("toml", [
-						"[mcp_servers.anlyon]",
-						'url = "https://api.anlyon.com/mcp"',
-					]),
+					block("toml", ["[mcp_servers.anlyon]", `url = "${MCP_URL}"`]),
 					block("bash", ["codex mcp login anlyon"]),
 				],
 				toolHint: `Add the block to ~/.codex/config.toml, then sign in and choose ${where.toLowerCase()}. The tools appear as ${mcpToolNames(tools)}.`,
@@ -132,7 +127,9 @@ export function agentSnippet(
 							"import { Client } from '@anlyonhq/sdk';",
 							"import { createAnlyonTools } from '@anlyonhq/ai-sdk';",
 							"",
-							"const client = new Client({ apiKey: process.env.ANLYON_API_KEY! });",
+							SELF_HOSTED
+								? `const client = new Client({ apiKey: process.env.ANLYON_API_KEY!, baseUrl: "${API_URL}" });`
+								: "const client = new Client({ apiKey: process.env.ANLYON_API_KEY! });",
 							"const tools = createAnlyonTools(client);",
 						],
 						{
@@ -160,7 +157,9 @@ export function agentSnippet(
 							before: ["import os", ""],
 							after: [
 								"",
-								'client = Client(api_key=os.environ["ANLYON_API_KEY"])',
+								SELF_HOSTED
+									? `client = Client(api_key=os.environ["ANLYON_API_KEY"], base_url="${API_URL}")`
+									: 'client = Client(api_key=os.environ["ANLYON_API_KEY"])',
 								`tools = action_tools(client, names=[${tools.map((t) => `"${t}"`).join(", ")}])`,
 							],
 						},
@@ -182,7 +181,7 @@ export function agentSnippet(
 						],
 						{
 							before: [
-								`curl --fail-with-body -X POST https://api.anlyon.com/api/v2/actions/${tools[0] ?? "<action>"}/invoke \\`,
+								`curl --fail-with-body -X POST ${API_URL}/api/v2/actions/${tools[0] ?? "<action>"}/invoke \\`,
 							],
 							after: ["  -d '{ \"input\": { } }'"],
 						},
@@ -193,5 +192,4 @@ export function agentSnippet(
 	}
 }
 
-export const CURL_INVOKE_PREFIX =
-	"curl --fail-with-body -X POST https://api.anlyon.com/api/v2/actions/";
+export const CURL_INVOKE_PREFIX = `curl --fail-with-body -X POST ${API_URL}/api/v2/actions/`;

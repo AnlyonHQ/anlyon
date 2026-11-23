@@ -19,10 +19,12 @@ export interface SafeFetchOptions {
   allowPrivateNetwork?: boolean;
 }
 
+const AZURE_WIRESERVER = "168.63.129.16";
+
 const AWS_IPV6_METADATA = [0xfd00, 0xec2, 0, 0, 0, 0, 0, 0x254];
 
 function isIpv4LinkLocalOrMetadata(ip: string): boolean {
-  return /^169\.254\./.test(ip) || /^0\./.test(ip) || ip === "100.100.100.200";
+  return /^169\.254\./.test(ip) || /^0\./.test(ip) || ip === "100.100.100.200" || ip === AZURE_WIRESERVER;
 }
 
 export function isLinkLocalOrMetadata(ip: string): boolean {

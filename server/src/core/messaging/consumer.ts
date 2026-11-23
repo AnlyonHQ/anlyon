@@ -21,6 +21,7 @@ import { extractSecretNames, interpolateObject, redactSecrets } from "../actions
 import { assertSecretsMayReachHost, resolveSecrets } from "../actions/secrets.ts";
 import { isWorkspaceSuspended, trackDeliveryOutcome } from "./abuse-guard.ts";
 import { getRunWithTree, ingestSpans } from "../runs/service.ts";
+import { urlHost } from "../../utils/url-host.ts";
 
 const MAX_DLQ_ENTRIES = 10_000;
 
@@ -106,7 +107,7 @@ export async function deliverMessage(messageData: MessageData): Promise<void> {
       return;
     }
 
-    logger.info({ messageId, url, method, attempt: attempts }, "Delivering message");
+    logger.info({ messageId, urlHost: urlHost(url), method, attempt: attempts }, "Delivering message");
 
     await logMessageExecution({
       messageId,
@@ -119,7 +120,7 @@ export async function deliverMessage(messageData: MessageData): Promise<void> {
 
     const circuitCheck = await CircuitBreaker.canRequest(url, workspaceId);
     if (!circuitCheck.allowed) {
-      logger.warn({ messageId, url, reason: circuitCheck.reason }, "Circuit breaker open");
+      logger.warn({ messageId, urlHost: urlHost(url), reason: circuitCheck.reason }, "Circuit breaker open");
       await scheduleRetryWithoutAttempt(messageData);
       return;
     }

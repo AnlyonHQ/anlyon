@@ -153,16 +153,41 @@ function render(
 ): string {
   if (mode === "url") template = dropAbsentQueryInputs(template, input);
   const authorityEnd = mode === "url" ? (/^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^/?#]*/.exec(template)?.[0].length ?? 0) : 0;
-  return template.replace(
+  const pathEnd = mode === "url" ? pathEndOf(template, authorityEnd) : 0;
+  const rendered = template.replace(
     ANY_REF,
     (_m, inputPath: string | undefined, modifier: string | undefined, secretName: string | undefined, offset: number) => {
       if (inputPath === undefined) return onSecret(secretName as string);
       const value = renderInput(input, inputPath);
       if (mode === "text") return value;
       if (offset < authorityEnd) return checkHostInput(inputPath, value);
-      return modifier === "path" ? encodePathInput(inputPath, value) : encodeURIComponent(value);
+      if (modifier === "path") return encodePathInput(inputPath, value);
+      if (offset < pathEnd) checkPathSegmentInput(inputPath, value);
+      return encodeURIComponent(value);
     }
   );
+  if (mode === "url") assertNoDotSegments(rendered);
+  return rendered;
+}
+
+function pathEndOf(url: string, authorityEnd: number): number {
+  const rest = url.slice(authorityEnd);
+  const end = rest.search(/[?#]/);
+  return end === -1 ? url.length : authorityEnd + end;
+}
+
+function checkPathSegmentInput(inputPath: string, value: string): void {
+  if (value === "." || value === "..") {
+    throw new ValidationError(`Input "${inputPath}" cannot be "${value}": it would change which endpoint the request goes to.`);
+  }
+}
+
+function assertNoDotSegments(url: string): void {
+  const authorityEnd = /^[a-zA-Z][a-zA-Z0-9+.-]*:\/\/[^/?#]*/.exec(url)?.[0].length ?? 0;
+  const path = url.slice(authorityEnd, pathEndOf(url, authorityEnd));
+  if (path.split("/").some((segment) => segment === "." || segment === "..")) {
+    throw new ValidationError(`The request URL's path has a "." or ".." segment, which would change which endpoint the request goes to.`);
+  }
 }
 
 function checkHostInput(inputPath: string, value: string): string {

@@ -21,6 +21,7 @@ import {
 	useEndUsers,
 } from "@/hooks/api/use-end-users";
 import { ApiError } from "@/lib/api-client";
+import { API_BASE_URL } from "@/lib/constants";
 import type {
 	EndUserConnectLink,
 	Environment,
@@ -61,12 +62,12 @@ if result and result.status == "pending_confirmation" and result.flow_id:
 
 # 3. Act in their account
 anlyon.for_user(user.id).actions.invoke(...)`,
-		curl: `curl -X POST https://api.anlyon.com/api/v2/end-users/USER_ID/connect-links \\
+		curl: `curl -X POST ${API_BASE_URL}/api/v2/end-users/USER_ID/connect-links \\
   -H "Authorization: Bearer $ANLYON_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"integration": ${id}}'
 # Send the user to data.url. Back on your redirect URL, confirm:
-curl -X POST https://api.anlyon.com/api/v2/end-users/USER_ID/connections/confirm \\
+curl -X POST ${API_BASE_URL}/api/v2/end-users/USER_ID/connections/confirm \\
   -H "Authorization: Bearer $ANLYON_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"flowId": "flw_from_the_redirect"}'`,

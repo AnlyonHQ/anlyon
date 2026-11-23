@@ -4,7 +4,6 @@ import { requirePermission, requireSession, requireWorkspaceAccess } from "../mi
 import { validateBody } from "../middleware/validation.ts";
 import { z } from "zod";
 import {
-  addMember,
   updateMemberRole,
   removeMember,
   leaveWorkspace,
@@ -24,14 +23,10 @@ import {
 } from "../../core/workspace/roles.ts";
 import { validateUUID } from "../../utils/uuid-validator.ts";
 import { pathParam } from "../params.ts";
+import { ApiError } from "../../utils/errors.ts";
 import { requireTeamFeature } from "../middleware/team-feature.ts";
 
 const members = new Hono();
-
-const addMemberSchema = z.object({
-  userId: z.string().min(1).max(320),
-  role: roleInputSchema.optional().default("member"),
-});
 
 const updateRoleSchema = z.object({
   role: roleInputSchema,
@@ -89,20 +84,12 @@ members.post(
   requireSession,
   requireWorkspaceAccess,
   requirePermission("members.manage"),
-  validateBody(addMemberSchema),
-  refuseRetiredOwnerRole,
-  async (c: Context) => {
-    const workspaceId = pathParam(c, "workspaceId");
-    const invitedByUserId = c.get("userId");
-    const { userId, role } = c.get("validatedBody");
-
-    await addMember(workspaceId, invitedByUserId, userId, role, auditCaller(c).context);
-    const member = await getMemberDetails(workspaceId, userId);
-
-    return c.json({
-      success: true,
-      data: member,
-    });
+  async () => {
+    throw new ApiError(
+      410,
+      "USE_INVITATIONS",
+      "Adding a member directly is no longer supported: the person must agree to join. Send an invitation instead: POST /api/v2/workspaces/{workspaceId}/invitations.",
+    );
   }
 );
 

@@ -41,3 +41,6 @@ anlyon = { workspace = true }
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/anlyon_langchain"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/anlyon_langchain", "README.md", "CHANGELOG.md", "LICENSE", "pyproject.toml"]

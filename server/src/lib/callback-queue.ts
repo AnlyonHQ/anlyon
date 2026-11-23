@@ -1,5 +1,6 @@
 import { redis, RedisKeys } from "./redis.ts";
 import { createLogger } from "./logger.ts";
+import { urlHost } from "../utils/url-host.ts";
 import { safeFetch, SsrfBlockedError } from "./safe-http.ts";
 import { signDeliveryForWorkspace } from "../core/auth/delivery-secrets.ts";
 import { urlValidationCache } from "./url-cache.ts";
@@ -144,7 +145,7 @@ export class CallbackQueue {
 
   enqueue(workspaceId: string, url: string, data: CallbackData, environmentId?: string): void {
     if (this.queue.length >= MAX_QUEUE_SIZE) {
-      logger.warn({ url }, "Callback queue full, dropping callback");
+      logger.warn({ urlHost: urlHost(url) }, "Callback queue full, dropping callback");
       callbackMetrics.increment("callbacks_dropped");
       return;
     }
@@ -220,7 +221,7 @@ export class CallbackQueue {
     try {
       if (task.environmentId && (await isEnvironmentHalted(task.environmentId))) {
         logger.info(
-          { url, messageId: data.messageId, environmentId: task.environmentId },
+          { urlHost: urlHost(url), messageId: data.messageId, environmentId: task.environmentId },
           "Callback deferred: environment halted",
         );
         this.deferForHalt(task);
@@ -229,7 +230,7 @@ export class CallbackQueue {
 
       const cachedNeg = urlValidationCache.get(url);
       if (cachedNeg && !cachedNeg.valid) {
-        logger.warn({ url, error: cachedNeg.error }, "Invalid callback URL, skipping");
+        logger.warn({ urlHost: urlHost(url), error: cachedNeg.error }, "Invalid callback URL, skipping");
         callbackMetrics.increment("callbacks_invalid_url");
         return;
       }
@@ -261,7 +262,7 @@ export class CallbackQueue {
       } catch (err) {
         if (err instanceof SsrfBlockedError) {
           urlValidationCache.set(url, false, err.message);
-          logger.warn({ url, error: err.message }, "Invalid callback URL, skipping");
+          logger.warn({ urlHost: urlHost(url), error: err.message }, "Invalid callback URL, skipping");
           callbackMetrics.increment("callbacks_invalid_url");
           return;
         }
@@ -275,7 +276,7 @@ export class CallbackQueue {
         await this.scheduleRetry(task);
       } else {
         logger.warn(
-          { url, messageId: data.messageId, attempts: attempt, status: response.status },
+          { urlHost: urlHost(url), messageId: data.messageId, attempts: attempt, status: response.status },
           "Callback failed after max attempts"
         );
         callbackMetrics.increment("callbacks_failed");
@@ -289,7 +290,7 @@ export class CallbackQueue {
         await this.scheduleRetry(task);
       } else {
         logger.error(
-          { url, messageId: data.messageId, error: errorMessage },
+          { urlHost: urlHost(url), messageId: data.messageId, error: errorMessage },
           "Callback execution failed after max attempts"
         );
         callbackMetrics.increment("callbacks_failed");
