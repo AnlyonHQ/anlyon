@@ -311,7 +311,7 @@ describe("IPv6 addresses that route to a private IPv4 address", () => {
     for (const ip of ["64:ff9b::8.8.8.8", "2002:0808:0808::1", "2606:4700:4700::1111", "2001:4860:4860::8888"]) {
       expect(isPrivateIp(ip), ip).toBe(false);
     }
-    for (const ip of ["::1", "::", "fc00::1", "fd12:3456::1", "fe80::1", "ff02::1", "10.0.0.1", "192.168.1.1", "127.0.0.1"]) {
+    for (const ip of ["::1", "::", "fc00::1", "fd12:3456::1", "fe80::1", "ff02::1", "10.0.0.1", "192.168.1.1", "127.0.0.1", "168.63.129.16", "::ffff:168.63.129.16"]) {
       expect(isPrivateIp(ip), ip).toBe(true);
     }
   });

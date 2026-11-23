@@ -99,7 +99,7 @@ export function isPrivateIp(ip: string): boolean {
   if (mapped) return isPrivateIp(mapped[1]);
 
   if (net.isIPv4(ip)) {
-    return PRIVATE_IPV4_RANGES.some((r) => r.test(ip)) || ip === "127.0.0.1";
+    return PRIVATE_IPV4_RANGES.some((r) => r.test(ip)) || ip === "127.0.0.1" || ip === "168.63.129.16";
   }
   if (net.isIPv6(ip)) {
     if (PRIVATE_IPV6_RANGES.some((r) => r.test(ip))) return true;

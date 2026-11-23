@@ -3,7 +3,7 @@ import { isLinkLocalOrMetadata, safeFetch, SsrfBlockedError } from "./safe-http.
 
 describe("isLinkLocalOrMetadata", () => {
   it("refuses the IPv4 metadata and link-local addresses", () => {
-    for (const ip of ["169.254.169.254", "169.254.0.1", "0.0.0.0", "100.100.100.200"]) {
+    for (const ip of ["169.254.169.254", "169.254.0.1", "0.0.0.0", "100.100.100.200", "168.63.129.16", "::ffff:168.63.129.16"]) {
       expect(isLinkLocalOrMetadata(ip), ip).toBe(true);
     }
   });
@@ -47,6 +47,7 @@ describe("safeFetch with private networks allowed", () => {
     "http://[::ffff:a9fe:a9fe]/latest/meta-data/",
     "http://[fd00:ec2::254]/latest/meta-data/",
     "http://100.100.100.200/latest/meta-data/",
+    "http://168.63.129.16/machine?comp=goalstate",
     "http://169.254.169.254/latest/meta-data/",
   ]) {
     it(`refuses ${url} before connecting`, async () => {
